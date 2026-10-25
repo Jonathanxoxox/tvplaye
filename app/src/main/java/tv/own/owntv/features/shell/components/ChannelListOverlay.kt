@@ -44,6 +44,12 @@ import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.i18n.HorizontalDirection
 import tv.own.owntv.core.i18n.horizontalDirection
 import tv.own.owntv.core.parser.XtEpgEntry
+import tv.own.owntv.core.live.EpgNowNext
+import tv.own.owntv.ui.format.rememberSystemTimeFormatter
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.produceState
+import kotlinx.coroutines.delay
 import tv.own.owntv.features.home.relativeLastWatchedLabel
 import tv.own.owntv.features.live.LiveStageRow
 import tv.own.owntv.core.live.ProviderTags
@@ -88,6 +94,8 @@ fun ChannelListOverlay(
     /** History only: channel id → when it was last watched, shown at the row's end. */
     watchedAt: Map<Long, Long>? = null,
     onOpenCategories: (() -> Unit)? = null,
+    /** The focused channel's guide for the panel beside the list (left sheet only). Null hides it. */
+    guideFor: (suspend (ChannelEntity) -> EpgNowNext?)? = null,
 ) {
     val layoutDirection = LocalLayoutDirection.current
     val dismissDirection = if (alignEnd) HorizontalDirection.END else HorizontalDirection.START
@@ -253,6 +261,73 @@ fun ChannelListOverlay(
                 textSize = 16,
                 modifier = Modifier.padding(start = 14.mpx, top = 14.mpx),
             )
+        }
+        if (guideFor != null && !alignEnd) {
+            val focusedChannel = channels.getOrNull(focusedIndex)
+            // Looked up once the focus rests: scrolling through the list must not query every row.
+            val guide by produceState<EpgNowNext?>(null, focusedChannel?.id) {
+                value = null
+                val ch = focusedChannel ?: return@produceState
+                delay(200)
+                value = runCatching { guideFor(ch) }.getOrNull()
+            }
+            ChannelMiniGuide(
+                channelName = focusedChannel?.let { ProviderTags.parse(it.name).name },
+                guide = guide,
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(start = 756.mpx, top = 22.mpx, bottom = 22.mpx)
+                    .fillMaxHeight()
+                    .width(600.mpx)
+                    .stageGlass(StageRadii.Sheet, overContent = true)
+                    .padding(horizontal = 30.mpx, vertical = 30.mpx),
+            )
+        }
+    }
+}
+
+/** The guide panel beside the channel list: what is on the focused channel now, then the next ones. */
+@Composable
+private fun ChannelMiniGuide(channelName: String?, guide: EpgNowNext?, modifier: Modifier = Modifier) {
+    val formatTime = rememberSystemTimeFormatter()
+    val accent = stageAccent.accent
+    val nowMs = remember(guide) { System.currentTimeMillis() }
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(10.mpx)) {
+        channelName?.let {
+            Text(it, style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        val now = guide?.now
+        if (now == null && guide?.next == null) {
+            Text(stringResource(R.string.tvplayer_no_guide), style = stageText(19, 500), color = StageColors.Muted)
+            return@Column
+        }
+        if (now != null) {
+            Text(
+                stringResource(R.string.content_live_now).uppercase() + "  " +
+                    stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)),
+                style = stageText(16, 800), color = accent, maxLines = 1,
+            )
+            Text(now.title, style = stageText(26, 700), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            val span = (now.stopMs - now.startMs).toFloat()
+            if (span > 0f) {
+                val progress = ((nowMs - now.startMs) / span).coerceIn(0f, 1f)
+                Box(Modifier.fillMaxWidth().height(4.mpx).background(StageColors.Ink.copy(alpha = 0.14f))) {
+                    Box(Modifier.fillMaxWidth(progress).height(4.mpx).background(accent))
+                }
+            }
+            now.description?.takeIf { it.isNotBlank() }?.let {
+                Text(it, style = stageText(17, 400), color = StageColors.Muted, maxLines = 5, overflow = TextOverflow.Ellipsis)
+            }
+        }
+        val later = listOfNotNull(guide?.next) + guide?.upcoming.orEmpty()
+        if (later.isNotEmpty()) {
+            Box(Modifier.padding(vertical = 6.mpx).fillMaxWidth().height(1.mpx).background(StageColors.Ink.copy(alpha = 0.10f)))
+            later.forEach { entry ->
+                Row(horizontalArrangement = Arrangement.spacedBy(16.mpx), verticalAlignment = Alignment.CenterVertically) {
+                    Text(formatTime(entry.startMs), style = stageText(18, 700), color = StageColors.Dim, maxLines = 1, modifier = Modifier.width(80.mpx))
+                    Text(entry.title, style = stageText(19, 600), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
         }
     }
 }

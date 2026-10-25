@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import tv.own.owntv.R
 import tv.own.owntv.core.i18n.HorizontalDirection
+import tv.own.owntv.core.live.EpgNowNext
 import tv.own.owntv.core.i18n.horizontalDirection
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutPress
@@ -210,6 +211,10 @@ fun PlayerHud(
     liveEpgCard: (@Composable () -> Unit)? = null,
     // Now/next lines for the channel-change banner (the playing channel's guide). Null = name only.
     zapGuide: (@Composable () -> Unit)? = null,
+    // The playing channel's guide for the info bar along the bottom after a channel change. Non-null
+    // switches the live player to the list-first remote: OK opens the channel list, long OK or Menu
+    // the options panel, and a channel change shows the bottom info bar instead of the corner card.
+    zapInfo: (@Composable () -> EpgNowNext?)? = null,
     // The archive's own wall-clock instant while catch-up/rewind is playing; null means the picture is
     // the present, and only the real clock shows. Drives the second, framed clock at top centre.
     // Lambda for the same reason as [timeshiftOffsetSec]: this instant advances every second too.
@@ -285,7 +290,16 @@ fun PlayerHud(
     val showNextCard = !isLive && error == null && nav.hasNext && nextUpTitle != null && !stopsAtItemEnd &&
         nextCardDue && !autoNextDismissed
 
-    var controlsVisible by remember { mutableStateOf(true) }
+    // List-first live player (see [zapInfo]): the picture alone on entry, with just the info bar.
+    val listFirst = zapInfo != null && onOpenChannelList != null
+    var controlsVisible by remember { mutableStateOf(!listFirst) }
+    var showOptions by remember { mutableStateOf(false) }
+    // Set by an OK press that has not been released yet: released quickly it opens the channel list,
+    // held it opens the options panel instead.
+    var okPressPending by remember { mutableStateOf(false) }
+    // The options panel ignores OK until the press that opened it has been released, or the
+    // auto-repeat of a held OK would choose its first row.
+    var optionsOpenedByOk by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) } // stream technical-info overlay
     // Used only by "Report this stream", which writes the current readout into the playback log.
     val reportContext = androidx.compose.ui.platform.LocalContext.current
@@ -299,7 +313,9 @@ fun PlayerHud(
     val canZap = onChannelUp != null && onChannelDown != null
     var channelFlash by remember { mutableIntStateOf(0) }
     var showFlash by remember { mutableStateOf(false) }
-    LaunchedEffect(channelFlash) { if (channelFlash > 0) { showFlash = true; delay(3000); showFlash = false } }
+    LaunchedEffect(channelFlash) { if (channelFlash > 0) { showFlash = true; delay(if (listFirst) 4000 else 3000); showFlash = false } }
+    // List-first: every channel change shows the info bar, from the list, a number or a zap alike.
+    LaunchedEffect(directTuneContextKey) { if (listFirst && directTuneContextKey != 0L) channelFlash++ }
 
     // Engine-switch confirmation toast: a brief "Switched to MPV/ExoPlayer" at the bottom-center when the
     // user flips the engine via the HUD toggle. Mirrors the channel-flash pattern above.
@@ -439,10 +455,10 @@ fun PlayerHud(
         // Don't auto-hide under an overlay — hiding is what triggers the catch-all focus grab below.
         if (controlsVisible && !forceShow && !inert) { delay(4500); controlsVisible = false }
     }
-    LaunchedEffect(controlsVisible, error, dialog, inert, showNextCard) {
+    LaunchedEffect(controlsVisible, error, dialog, inert, showNextCard, showOptions) {
         // Never steal focus while a dialog is open (its rows own it) or while a shell overlay is up
         // (inert — the overlay owns the D-pad); when either closes this re-runs and hands focus back.
-        if (dialog != HudDialog.NONE || inert) return@LaunchedEffect
+        if (dialog != HudDialog.NONE || inert || showOptions) return@LaunchedEffect
         // The next-episode countdown card owns focus while it's up so Play now / Cancel are reachable.
         if (showNextCard) { runCatching { nextFocus.requestFocus() }; return@LaunchedEffect }
         if (controlsVisible) {
@@ -557,6 +573,32 @@ fun PlayerHud(
                     }
                 }
             }
+            // ---- List-first OK: a short press opens the channel list, a long one the options ----
+            val isOk = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
+            if (listFirst && isOk && !controlsVisible && !inert && dialog == HudDialog.NONE && !showOptions &&
+                !showNextCard && error == null && onToastOk == null
+            ) {
+                when (e.type) {
+                    KeyEventType.KeyDown -> {
+                        if (e.nativeKeyEvent.repeatCount == 0) {
+                            okPressPending = true
+                        } else if (okPressPending) {
+                            okPressPending = false
+                            optionsOpenedByOk = true
+                            showOptions = true
+                        }
+                    }
+                    KeyEventType.KeyUp -> if (okPressPending) {
+                        okPressPending = false
+                        onOpenChannelList?.invoke()
+                    }
+                }
+                return@onPreviewKeyEvent true
+            }
+            if (listFirst && e.key == Key.Menu && !inert && dialog == HudDialog.NONE && !showOptions) {
+                if (e.type == KeyEventType.KeyDown) { optionsOpenedByOk = false; showOptions = true }
+                return@onPreviewKeyEvent true
+            }
             // ---- Existing key handling (unchanged, but skip for digit KeyUp already consumed above) ----
             if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
             when {
@@ -631,7 +673,7 @@ fun PlayerHud(
                 .padding(start = 28.dp, top = if (controlsVisible) 92.dp else 28.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            if (isLive && (tuned != null || (showFlash && !controlsVisible))) {
+            if (isLive && (tuned != null || (showFlash && !controlsVisible && !listFirst))) {
                 // A fresh tune drives the card from the lookup result, not player metadata: the Stalker and
                 // mpv paths publish their metadata after an async resolve, which would show the old channel.
                 if (tuned != null) {
@@ -645,6 +687,11 @@ fun PlayerHud(
                 is TuneOsd.Message -> ChannelNumberCard(osd.digits, error = osd.text)
                 is TuneOsd.Tuned, null -> Unit
             }
+        }
+
+        // List-first: the channel change shows the info bar along the bottom instead of the corner card.
+        if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
+            ZapInfoBar(player, zapInfo(), modifier = Modifier.align(Alignment.BottomCenter))
         }
 
         // The REC badge, and it is deliberately OUTSIDE `if (controlsVisible)`.
@@ -876,6 +923,44 @@ fun PlayerHud(
                 }
             }
         }
+    }
+
+    if (showOptions) {
+        val close = { showOptions = false }
+        val open: (HudDialog) -> Unit = { d -> showOptions = false; dialog = d }
+        val meta by player.currentMeta.collectAsStateWithLifecycle()
+        val qualities by player.videoQualities.collectAsStateWithLifecycle()
+        val options = buildList {
+            onToggleFavorite?.let { toggle ->
+                add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { close(); toggle() })
+            }
+            onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.HISTORY) { close(); prev() }) }
+            if (onJumpBack != null) add(LiveOption(stringResource(R.string.player_tool_catchup), OwnTVIcon.CATCHUP) { open(HudDialog.JUMP_BACK) })
+            add(LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { open(HudDialog.AUDIO) })
+            add(LiveOption(stringResource(R.string.player_tool_subtitles), OwnTVIcon.SUBTITLE, subCount.takeIf { it > 0 }?.toString()) { open(HudDialog.SUBS) })
+            add(LiveOption(stringResource(R.string.player_tool_aspect), OwnTVIcon.ASPECT) { open(HudDialog.ZOOM) })
+            if (qualities.isNotEmpty()) add(LiveOption(stringResource(R.string.player_tool_quality), OwnTVIcon.VIDEO) { open(HudDialog.QUALITY) })
+            onRecordThis?.let { rec ->
+                add(LiveOption(stringResource(if (recordingThis) R.string.recording_stop else R.string.recording_record), OwnTVIcon.LIVE_TV) { close(); rec() })
+            }
+            onMultiview?.let { mv -> add(LiveOption(stringResource(R.string.multiview_button), OwnTVIcon.LIST_GRID) { close(); mv() }) }
+            toggleCompat?.let { toggle ->
+                add(LiveOption(
+                    stringResource(R.string.player_tool_engine), OwnTVIcon.VIDEO,
+                    stringResource(if (compatMode == true) R.string.player_engine_mpv else R.string.player_engine_exo),
+                ) { close(); toggle() })
+            }
+            add(LiveOption(stringResource(R.string.player_sleep_timer), OwnTVIcon.BEDTIME) { open(HudDialog.SLEEP_TIMER) })
+            add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { close(); showInfo = !showInfo })
+            onPip?.let { pip -> add(LiveOption(stringResource(R.string.player_tool_mini), OwnTVIcon.PIP) { close(); pip() }) }
+            add(LiveOption(stringResource(R.string.tvplayer_option_controls), OwnTVIcon.LIST) { close(); controlsVisible = true })
+        }
+        LiveOptionsPanel(
+            title = meta.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.tvplayer_options_title),
+            options = options,
+            ignoreOkUntilReleased = optionsOpenedByOk,
+            onDismiss = close,
+        )
     }
 
     when (dialog) {

@@ -425,6 +425,9 @@ class LiveViewModel(
     val nowNext: StateFlow<EpgNowNext?> = keyedNowNext.map { it.second }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** Now, next and later for any channel — the guide panel beside the in-player channel list. */
+    suspend fun guideFor(ch: ChannelEntity): EpgNowNext? = epgReader.nowNext(ch, custom.value, epgOffset.value)
+
     /**
      * Now/next for the channel-change banner. Null until the answer is for the channel actually on
      * screen: [nowNext] is debounced, so for a moment after a zap it still holds the previous channel's

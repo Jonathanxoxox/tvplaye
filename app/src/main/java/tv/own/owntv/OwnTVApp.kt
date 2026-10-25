@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import coil3.ImageLoader
+import kotlinx.coroutines.flow.first
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
@@ -133,6 +134,19 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         appScope.launch {
             runCatching {
                 GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>().applyStageDefaults()
+            }
+        }
+        // Like a classic IPTV player, start on the last channel watched. Applied once, as soon as a profile
+        // exists (after setup); a later choice in Settings stays the user's.
+        appScope.launch {
+            runCatching {
+                val prefs = getSharedPreferences("tvplayer", MODE_PRIVATE)
+                if (!prefs.getBoolean("startup_last_channel_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    val profileId = settings.activeProfileId.first { it >= 0L }
+                    settings.setStartupMode(profileId, tv.own.owntv.core.settings.StartupMode.LAST_CHANNEL)
+                    prefs.edit().putBoolean("startup_last_channel_applied", true).apply()
+                }
             }
         }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",

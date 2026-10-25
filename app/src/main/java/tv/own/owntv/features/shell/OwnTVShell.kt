@@ -1696,6 +1696,10 @@ fun OwnTVShell(
                             tv.own.owntv.features.shell.components.ZapGuideLines(guide)
                         }
                     } else null,
+                    // The bottom info bar after a channel change, and with it the list-first remote.
+                    zapInfo = if (isLiveChannel) {
+                        { liveVm.zapGuide.collectAsStateWithLifecycle().value }
+                    } else null,
                     // Guide card for the playing channel (nowNext follows previewChannel = what's playing).
                     liveEpgCard = if (isLiveChannel) {
                         {
@@ -1847,6 +1851,7 @@ fun OwnTVShell(
                             onSelect = { liveVm.ensurePlaying(it); showChannelList = false },
                             onDismiss = { showChannelList = false },
                             onOpenCategories = { liveVm.showCategories() },
+                            guideFor = liveVm::guideFor,
                             modifier = Modifier.fillMaxSize(),
                         )
                     }
