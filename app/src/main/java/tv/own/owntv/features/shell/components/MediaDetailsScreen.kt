@@ -97,7 +97,7 @@ fun MediaDetailsScreen(details: MediaDetailsUi, onExit: () -> Unit, modifier: Mo
             else -> false
         }
     }
-    val page = stageTone(Color(0xFF0D0E11), LocalStagePalette.current.page)
+    val page = stageTone(Color(0xFF0B5257), LocalStagePalette.current.page)
     tv.own.owntv.ui.components.OwnTVPopup(onDismissRequest = onExit, stageLayout = true, stageScaled = false) {
         LaunchedEffect(Unit) { kotlinx.coroutines.delay(60); runCatching { focus.requestFocus() } }
         Box(modifier.fillMaxSize().background(page).trapAllFocusExit()) {

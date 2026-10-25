@@ -157,7 +157,7 @@ internal fun LiveStageRow(
             Text(
                 channel.number?.toString().orEmpty(),
                 style = stageText(20, 600).copy(textAlign = TextAlign.End, fontFeatureSettings = Tabular),
-                color = if (focused) stageTone(Color(0xFFE8EBF0), StageColors.FxLine) else StageColors.Dim,
+                color = if (focused) StageColors.FxLine else StageColors.Dim,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.width(50.mpx),
             )

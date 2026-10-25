@@ -1289,6 +1289,8 @@ fun OwnTVShell(
                             onRestored = { restoreFocus = false },
                             modifier = Modifier
                                 .fillMaxSize()
+                                // Clear of the menu's icon strip, which stays at the left edge.
+                                .padding(start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 0.mpx else 110.mpx)
                                 .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
                                 .focusGroup(),
                         )
@@ -1353,6 +1355,8 @@ fun OwnTVShell(
                             onRestored = { restoreFocus = false },
                             modifier = Modifier
                                 .fillMaxSize()
+                                // Clear of the menu's icon strip, which stays at the left edge.
+                                .padding(start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 0.mpx else 110.mpx)
                                 .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
                                 .focusGroup(),
                         )

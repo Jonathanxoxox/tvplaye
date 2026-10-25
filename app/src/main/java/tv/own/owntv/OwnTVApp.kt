@@ -164,6 +164,12 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setBackgroundAccentLight(false)
                     prefs.edit().putBoolean("defaults_v2_applied", true).apply()
                 }
+                // The cyan accent of the petrol theme (logo, playing channel, progress, timeline).
+                if (!prefs.getBoolean("defaults_v3_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    settings.setCustomAccent("#2BC0DC")
+                    prefs.edit().putBoolean("defaults_v3_applied", true).apply()
+                }
             }
         }
         // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and

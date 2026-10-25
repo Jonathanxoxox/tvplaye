@@ -148,10 +148,10 @@ fun StageRail(
     onNowPlaying: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    // TV Player: the menu as a classic IPTV player draws it. Out of sight until ◀ calls it in, then a
-    // flat panel down the full left edge with an icon and a name per row; no capsule, no edge glow.
-    // The rows stay focusable while hidden, so ◀ from the content still reaches them.
-    val open = state == RailState.OPEN || state == RailState.PINNED
+    // TV Player: the menu as the classic IPTV player draws it. At rest a narrow strip of icons down the
+    // left edge; with focus it widens to icons and names, the app name on top and Settings at the bottom.
+    // Focus is the near-white bar every list uses; the open section keeps a lighter bar.
+    val expanded = state == RailState.OPEN || state == RailState.PINNED
     val counts = size >= NavSize.WIDE
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val scope = rememberCoroutineScope()
@@ -162,35 +162,14 @@ fun StageRail(
         selected == MainSection.SEARCH || selected in visibleSections -> selected
         else -> StageRailOrder.firstOrNull { it in visibleSections } ?: MainSection.MORE
     }
-    val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections } + MainSection.MORE
-    val menuAccent = MenuHighlight
-
-    val slide = remember { Animatable(-1f) }
-    val slideSpec: androidx.compose.animation.core.AnimationSpec<Float> = ownTvTween(220)
-    LaunchedEffect(open) { slide.animateTo(if (open) 0f else -1f, slideSpec) }
+    val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections }
 
     Box(modifier.fillMaxSize()) {
-        if (state == RailState.OPEN) {
-            Box(
-                Modifier.fillMaxSize()
-                    .alpha((1f + slide.value).coerceIn(0f, 1f))
-                    .background(Brush.horizontalGradient(
-                        0f to Color.Black.copy(alpha = 0.75f),
-                        0.45f to Color.Black.copy(alpha = 0.45f),
-                        1f to Color.Black.copy(alpha = 0.15f),
-                    )),
-            )
-        }
-        val width = MenuWidth
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
-                .width(width)
-                .graphicsLayer {
-                    translationX = slide.value * width.toPx() * (if (rtl) -1f else 1f)
-                }
-                .alpha((1f + slide.value).coerceIn(0f, 1f))
+                .width(if (expanded) MenuWidth else StripWidth)
                 .onFocusChanged {
                     // Every entry from the content lands on the selected section, not on whatever item
                     // happens to line up; moves inside the rail do not re-trigger this.
@@ -225,67 +204,65 @@ fun StageRail(
                     true
                 }
                 .focusGroup()
-                .background(MenuPanel)
-                .padding(horizontal = 18.mpx, vertical = 36.mpx),
-            verticalArrangement = Arrangement.spacedBy(4.mpx),
+                .background(if (expanded) MenuPanel else StripPanel)
+                .padding(horizontal = if (expanded) 26.mpx else 14.mpx, vertical = 40.mpx),
+            horizontalAlignment = if (expanded) Alignment.Start else Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.mpx),
         ) {
-            MenuClock()
-            Spacer(Modifier.height(22.mpx))
+            MenuLogo(expanded)
+            Spacer(Modifier.weight(0.55f))
             if (nowPlaying != null) {
                 RailItem(
                     icon = if (nowPlaying.audioMode) OwnTVIcon.EQ else OwnTVIcon.PLAY,
                     label = stringResource(R.string.shell_now_playing),
                     trailing = if (nowPlaying.audioMode && counts) stringResource(R.string.shell_now_playing_audio) else null,
+                    expanded = expanded,
                     active = false,
-                    accent = menuAccent,
                     onClick = onNowPlaying,
                 )
-                RailSeparator()
             }
             items.forEach { section ->
                 RailItem(
                     icon = section.stageIcon,
                     label = stringResource(section.labelRes),
                     trailing = if (counts) count(section)?.let { NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(it) } else null,
-                    active = section == selected ||
-                        (section == MainSection.MORE && selected == MainSection.SETTINGS),
-                    accent = menuAccent,
+                    expanded = expanded,
+                    active = section == selected,
                     onClick = { onSelect(section) },
                     modifier = if (section == focusSection) Modifier.focusRequester(selectedItemFocusRequester) else Modifier,
                 )
             }
             Spacer(Modifier.weight(1f))
-            RailSeparator()
-            RailProfile(profileName, profileLine.takeIf { counts }, avatarId, avatarPath, menuAccent, onSwitchProfile, onPickAvatar)
+            // Settings at the bottom, like the classic player's gear (More holds Settings and the rest).
+            RailItem(
+                icon = OwnTVIcon.GEAR,
+                label = stringResource(MainSection.MORE.labelRes),
+                trailing = null,
+                expanded = expanded,
+                active = selected == MainSection.MORE || selected == MainSection.SETTINGS,
+                onClick = { onSelect(MainSection.MORE) },
+                modifier = if (focusSection == MainSection.MORE) Modifier.focusRequester(selectedItemFocusRequester) else Modifier,
+            )
         }
     }
 }
 
-/** The menu panel: near-black grey, a little see-through so the picture behind it still shows. */
-private val MenuPanel = Color(0xF214161A)
-private val MenuWidth = 420.mpx
+/** The open menu, a shade lighter than the page; the resting strip lighter still. */
+private val MenuPanel = Color(0xFF14787C)
+private val StripPanel = Color(0xFF1A878B)
+private val MenuWidth = 440.mpx
+private val StripWidth = 110.mpx
 
-/** Focus in the menu is a soft white bar with white text, not the accent fill used elsewhere. */
-private val MenuHighlight = tv.own.owntv.ui.theme.StageAccent(
-    accent = Color.White.copy(alpha = 0.16f),
-    onAccent = Color.White,
-    focus = Color.Transparent,
-)
-
-/** The time at the top of the menu, large and plain. */
+/** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable
-private fun MenuClock() {
-    val formatTime = tv.own.owntv.ui.format.rememberSystemTimeFormatter()
-    var now by remember { mutableStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            kotlinx.coroutines.delay(60_000L - now % 60_000L)
-            now = System.currentTimeMillis()
-        }
-    }
+private fun MenuLogo(expanded: Boolean) {
+    val name = stringResource(R.string.tvplayer_app_name)
     Text(
-        formatTime(now), style = stageText(40, 700), color = StageColors.Text, maxLines = 1,
-        modifier = Modifier.padding(start = 18.mpx),
+        if (expanded) name else name.split(' ').joinToString("") { it.take(1) },
+        style = stageText(if (expanded) 46 else 40, 800),
+        color = stageAccent.accent,
+        maxLines = 1,
+        modifier = Modifier.padding(start = if (expanded) 16.mpx else 0.mpx),
     )
 }
 
@@ -302,87 +279,49 @@ private val MainSection.stageIcon: OwnTVIcon
         MainSection.MORE, MainSection.SETTINGS -> OwnTVIcon.TILES
     }
 
-@Composable
-private fun RailSeparator() {
-    Box(
-        Modifier.fillMaxWidth().padding(horizontal = 18.mpx, vertical = 10.mpx)
-            .height(1.mpx)
-            .background(StageColors.Ink.copy(alpha = 0.10f)),
-    )
-}
-
 /**
- * One menu row, 64 high: icon and name, the count at the end from Size Wide up. The open section is
- * marked by a short accent bar at the row's start and its name in bold; focus is the soft white bar.
+ * One menu row: on the strip only the icon (64 square), open the icon and the name. Focus is the
+ * near-white bar with dark grey icon and text; the open section a lighter bar.
  */
 @Composable
 private fun RailItem(
     icon: OwnTVIcon,
     label: String,
     trailing: String?,
+    expanded: Boolean,
     active: Boolean,
-    accent: tv.own.owntv.ui.theme.StageAccent,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val bar = stageAccent.accent
+    val a = stageAccent
     val r = 10.mpx
     StageSurface(
         onClick = onClick,
         radius = r,
-        accent = accent,
-        modifier = modifier.fillMaxWidth().heightIn(min = 64.mpx),
-        contentAlignment = Alignment.CenterStart,
+        idle = if (active) Modifier.background(Color.White.copy(alpha = 0.14f), RoundedCornerShape(r)) else Modifier,
+        modifier = modifier.then(if (expanded) Modifier.fillMaxWidth().heightIn(min = 68.mpx) else Modifier.size(68.mpx)),
+        contentAlignment = if (expanded) Alignment.CenterStart else Alignment.Center,
     ) { focused ->
-        if (active) {
-            Box(
-                Modifier.align(Alignment.CenterStart).size(4.mpx, 30.mpx)
-                    .background(bar, RoundedCornerShape(2.mpx)),
-            )
+        val tint = if (focused) a.onAccent else Color.White
+        if (!expanded) {
+            OwnTVIcon(icon, tint, Modifier.size(32.mpx))
+            return@StageSurface
         }
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 22.mpx, vertical = 8.mpx),
-            horizontalArrangement = Arrangement.spacedBy(22.mpx),
+            Modifier.fillMaxWidth().padding(horizontal = 20.mpx, vertical = 8.mpx),
+            horizontalArrangement = Arrangement.spacedBy(24.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OwnTVIcon(icon, if (focused || active) Color.White else StageColors.NavText, Modifier.size(30.mpx))
+            OwnTVIcon(icon, tint, Modifier.size(32.mpx))
             Text(
                 label,
-                style = stageText(24, if (active) 700 else 500),
-                color = if (focused || active) Color.White else StageColors.ItemText,
+                style = stageText(26, if (focused) 400 else 600),
+                color = tint,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
             if (trailing != null) {
-                Text(trailing, style = stageText(18, 500), color = StageColors.Dim, maxLines = 1)
-            }
-        }
-    }
-}
-
-/** The profile at the bottom of the menu: avatar and name. OK switches profile; a long press changes the avatar. */
-@Composable
-private fun RailProfile(name: String, line: String?, avatarId: Int, avatarPath: String, accent: tv.own.owntv.ui.theme.StageAccent, onSwitchProfile: () -> Unit, onPickAvatar: () -> Unit) {
-    val initial = name.trim().take(1).uppercase().ifEmpty { "?" }
-    StageSurface(
-        onClick = onSwitchProfile,
-        onLongClick = onPickAvatar,
-        radius = 10.mpx,
-        accent = accent,
-        modifier = Modifier.fillMaxWidth(),
-        contentAlignment = Alignment.CenterStart,
-    ) { _ ->
-        Row(
-            Modifier.padding(horizontal = 16.mpx, vertical = 10.mpx),
-            horizontalArrangement = Arrangement.spacedBy(16.mpx),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RailAvatar(initial, size = 40, textSize = 18, avatarId = avatarId, imagePath = avatarPath)
-            Column {
-                Text(name, style = stageText(20, 600), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                if (line != null) {
-                    Text(line, style = stageText(15, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
+                Text(trailing, style = stageText(18, 500), color = if (focused) a.onAccent else StageColors.Muted, maxLines = 1)
             }
         }
     }

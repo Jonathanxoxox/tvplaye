@@ -55,6 +55,7 @@ import androidx.tv.material3.Text
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.theme.StageAccent
 import tv.own.owntv.ui.theme.StageColors
+import tv.own.owntv.ui.theme.StageFocusFill
 import tv.own.owntv.ui.theme.LocalStagePalette
 import tv.own.owntv.ui.theme.StagePalette
 import tv.own.owntv.ui.theme.StageRadii
@@ -109,30 +110,16 @@ private fun Modifier.stageFocusDecor(style: StageFocus, radius: Dp, a: StageAcce
         }
         return@drawBehind
     }
+    // TV Player: focus is a near-white bar with a soft shadow, as in the classic IPTV player; a poster
+    // gets a white frame instead, so its picture stays visible.
     when (style) {
-        StageFocus.FX -> {
-            drawBoxShadow(a.accent.copy(alpha = 0.28f), 44 * px, r)
-            // A row-sized sweep: small enough to stay a brush (see GradientTextures).
-            drawRoundRect(
-                Brush.horizontalGradient(listOf(a.accent.copy(alpha = 0.34f), a.accent.copy(alpha = 0.14f))),
-                cornerRadius = CornerRadius(r),
-            )
-            drawInnerRing(a.focus, 2 * px, r)
-        }
-        StageFocus.FILLED -> {
-            drawBoxShadow(a.accent.copy(alpha = 0.35f), 30 * px, r, dy = 10 * px)
-            drawRoundRect(a.accent, cornerRadius = CornerRadius(r))
-            drawOuterRing(a.focus, 2 * px, r)
-        }
-        StageFocus.PRIMARY -> {
-            drawBoxShadow(a.accent.copy(alpha = 0.45f), 40 * px, r, dy = 14 * px)
-            drawRoundRect(a.accent, cornerRadius = CornerRadius(r))
-            drawOuterRing(a.focus, 3 * px, r)
+        StageFocus.FX, StageFocus.FILLED, StageFocus.PRIMARY -> {
+            drawBoxShadow(Color.Black.copy(alpha = 0.25f), 18 * px, r, dy = 6 * px)
+            drawRoundRect(StageFocusFill, cornerRadius = CornerRadius(r))
         }
         StageFocus.POSTER -> {
-            drawBoxShadow(a.accent.copy(alpha = 0.35f), 60 * px, r, dy = 24 * px)
-            drawOuterRing(a.accent.copy(alpha = 0.35f), 4 * px, r, inset = 3 * px)
-            drawOuterRing(a.focus, 3 * px, r)
+            drawBoxShadow(Color.Black.copy(alpha = 0.35f), 40 * px, r, dy = 16 * px)
+            drawOuterRing(StageFocusFill, 4 * px, r)
         }
     }
 }
@@ -1130,4 +1117,4 @@ fun StageSwitch(on: Boolean) {
 val stageStillBack: Color
     @Composable
     @androidx.compose.runtime.ReadOnlyComposable
-    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else Color(0xFF1A1C20)
+    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else Color(0xFF0F6266)

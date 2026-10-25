@@ -20,19 +20,19 @@ import tv.own.owntv.core.theme.OwnTVPalette
 val AccentCyan = Color(OwnTVPalette.AccentCyan)
 
 // ---------------- DARK ----------------
-// TV Player: the neutrals are plain cool greys instead of OwnTV's green-tinted ones, so the guide
-// and lists read like a classic IPTV player; the accent roles still come from core.
-val DarkBackground = Color(0xFF101215)
-val DarkSurface = Color(0xFF15171B)
-val DarkSurfaceContainerLowest = Color(0xFF0C0D10)
-val DarkSurfaceContainerLow = Color(0xFF181A1E)
-val DarkSurfaceContainer = Color(0xFF1D2024)
-val DarkSurfaceContainerHigh = Color(0xFF25282D)
-val DarkSurfaceContainerHighest = Color(0xFF2F3238)
-val DarkOnSurface = Color(0xFFECEEF1)
-val DarkOnSurfaceVariant = Color(0xFFA4A9B1)
-val DarkOutline = Color(0xFF5D626B)
-val DarkOutlineVariant = Color(0xFF34383F)
+// TV Player: petrol surfaces like the classic IPTV player's "Cyan Blau" theme; the accent roles
+// still come from core.
+val DarkBackground = Color(0xFF0B5257)
+val DarkSurface = Color(0xFF0D5C61)
+val DarkSurfaceContainerLowest = Color(0xFF094A4F)
+val DarkSurfaceContainerLow = Color(0xFF10666A)
+val DarkSurfaceContainer = Color(0xFF137074)
+val DarkSurfaceContainerHigh = Color(0xFF187B7F)
+val DarkSurfaceContainerHighest = Color(0xFF1E878B)
+val DarkOnSurface = Color(0xFFF4FAFA)
+val DarkOnSurfaceVariant = Color(0xFFB3D4D6)
+val DarkOutline = Color(0xFF5E9EA1)
+val DarkOutlineVariant = Color(0xFF2A7F83)
 val DarkSecondary = Color(OwnTVPalette.DarkSecondary)
 val DarkOnSecondary = Color(OwnTVPalette.DarkOnSecondary)
 val DarkSecondaryContainer = Color(OwnTVPalette.DarkSecondaryContainer)

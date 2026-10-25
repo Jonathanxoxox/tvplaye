@@ -82,28 +82,29 @@ data class StagePalette(
     fun shadow(alpha: Float): Color = shadowTint.copy(alpha = alpha * shadowScale)
 
     companion object {
-        // TV Player: neutral greys without OwnTV's green undertone.
+        // TV Player: the petrol and cyan look of the classic IPTV player Jonathan uses ("Cyan Blau").
+        // Focused rows are a near-white bar, so their text ([fxText], [fxLine]) is a dark grey.
         val Dark = StagePalette(
             isLight = false,
-            text = Color(0xFFF2F3F5),
-            muted = Color(0xFFA6ABB3),
-            dim = Color(0xFF6E737C),
-            itemText = Color(0xFFD8DBE0),
-            menuItemText = Color(0xFFDDE0E5),
-            tagText = Color(0xFFC9CDD3),
+            text = Color(0xFFF4FAFA),
+            muted = Color(0xFFB3D4D6),
+            dim = Color(0xFF86B6B9),
+            itemText = Color(0xFFEAF4F5),
+            menuItemText = Color(0xFFEAF4F5),
+            tagText = Color(0xFFCBE3E4),
             ink = Color.White,
-            page = Color(0xFF0B0C0F),
-            glassTint = Color(0xFF17191D),
-            glassOff = Color(0xFF17191D),
+            page = Color(0xFF0B5257),
+            glassTint = Color(0xFF12696D),
+            glassOff = Color(0xFF12696D),
             ok = Color(0xFF7BE3A4),
             warn = Color(0xFFFFB86B),
             danger = Color(0xFFFF8A7A),
-            body = Color(0xFFC8CCD2),
-            navText = Color(0xFFC3C7CE),
-            fxText = Color.White,
-            fxLine = Color(0xFFDCE0E6),
-            scrim = Color(4, 5, 7).copy(alpha = 0.55f),
-            wash = Color(9, 10, 12),
+            body = Color(0xFFD6E8E9),
+            navText = Color(0xFFE6F2F3),
+            fxText = Color(0xFF4A5C5F),
+            fxLine = Color(0xFF66787B),
+            scrim = Color(3, 40, 43).copy(alpha = 0.55f),
+            wash = Color(11, 82, 87),
             shadowTint = Color.Black,
             shadowScale = 1f,
             segmentOn = Color.White.copy(alpha = 0.13f),
@@ -227,6 +228,10 @@ object StageRadii {
     val Tag = 6.mpx
 }
 
+/** TV Player: the near-white bar a focused item becomes in the dark theme, and the text on it. */
+val StageFocusFill = Color(0xFFE9F1F2)
+val StageOnFocus = Color(0xFF4A5C5F)
+
 /** The accent triple every Stage treatment is built from. */
 data class StageAccent(val accent: Color, val onAccent: Color, val focus: Color)
 
@@ -235,7 +240,9 @@ val stageAccent: StageAccent
     @ReadOnlyComposable
     // In light the pale focus colour vanishes on white, so every ring is the accent itself.
     get() = OwnTVTheme.colors.let {
-        StageAccent(it.primary, it.onPrimary, if (LocalStagePalette.current.isLight) it.primary else it.focusBorder)
+        if (LocalStagePalette.current.isLight) StageAccent(it.primary, it.onPrimary, it.primary)
+        // Dark: focus is the near-white bar ([StageFocusFill]), so whatever sits on it is dark grey.
+        else StageAccent(it.primary, StageOnFocus, it.focusBorder)
     }
 
 /**

@@ -444,22 +444,7 @@ fun EpgScreen(
         // Top (44 → 404): the video, and beside it the programme under the cursor.
         Row(Modifier.padding(start = fx(64), end = fx(64), top = 44.mpx).fillMaxWidth().height(360.mpx)) {
         val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
-        // The programme under the cursor, with what it can do, at the left; the video at the right.
-        Box(Modifier.weight(1f).fillMaxHeight()) {
-            if (topChannel != null) {
-                val chName = ProviderTags.parse(topChannel.name).name
-                GuideProgrammeBlock(
-                    eyebrow = shown?.let { programmeEyebrow(it, chName, liveNow) },
-                    title = shown?.title ?: chName,
-                    details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
-                    synopsis = shown?.description,
-                    modifier = Modifier.padding(end = 46.mpx, top = 20.mpx).widthIn(max = 1080.mpx),
-                )
-            }
-            // The key hints at the bottom of the top area, level with the video's bottom edge.
-            Box(Modifier.align(Alignment.BottomStart)) { GuideKeyHints(cellMode = inCellMode && gridHasFocus) }
-        }
-
+        // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
         GuideVideo(
             channel = videoChannel,
             channelLine = videoChannel?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
@@ -468,6 +453,21 @@ fun EpgScreen(
             showVideo = effectivePreview && previewArmed,
             modifier = Modifier.width(640.mpx),
         )
+        Box(Modifier.weight(1f).fillMaxHeight()) {
+            if (topChannel != null) {
+                val chName = ProviderTags.parse(topChannel.name).name
+                GuideProgrammeBlock(
+                    eyebrow = shown?.let { programmeEyebrow(it, chName, liveNow) },
+                    title = shown?.title ?: chName,
+                    details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
+                    synopsis = shown?.description,
+                    modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
+                )
+            }
+            // The key hints at the bottom of the top area, level with the video's bottom edge.
+            Box(Modifier.align(Alignment.BottomStart).padding(start = 46.mpx)) { GuideKeyHints(cellMode = inCellMode && gridHasFocus) }
+        }
+
         }
 
         // The control line (452): one row with every guide header button.
