@@ -639,6 +639,10 @@ fun PlayerHud(
                 // The category list lives at logical Start; history lives at logical End.
                 onOpenChannelList != null && !controlsVisible &&
                     e.key.horizontalDirection(layoutDirection) == HorizontalDirection.START -> { onOpenChannelList(); true }
+                // List-first: Right jumps back to the channel watched before, as classic IPTV players do;
+                // the history list moves into the options panel.
+                listFirst && onPreviousChannel != null && !controlsVisible &&
+                    e.key.horizontalDirection(layoutDirection) == HorizontalDirection.END -> { cancelDirectTune(); onPreviousChannel(); true }
                 onOpenHistoryList != null && !controlsVisible &&
                     e.key.horizontalDirection(layoutDirection) == HorizontalDirection.END -> { onOpenHistoryList(); true }
                 onToastOk != null && !controlsVisible &&
@@ -935,6 +939,7 @@ fun PlayerHud(
                 add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { close(); toggle() })
             }
             onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.HISTORY) { close(); prev() }) }
+            onOpenHistoryList?.let { history -> add(LiveOption(stringResource(R.string.content_category_recently_watched), OwnTVIcon.HISTORY) { close(); history() }) }
             if (onJumpBack != null) add(LiveOption(stringResource(R.string.player_tool_catchup), OwnTVIcon.CATCHUP) { open(HudDialog.JUMP_BACK) })
             add(LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { open(HudDialog.AUDIO) })
             add(LiveOption(stringResource(R.string.player_tool_subtitles), OwnTVIcon.SUBTITLE, subCount.takeIf { it > 0 }?.toString()) { open(HudDialog.SUBS) })
