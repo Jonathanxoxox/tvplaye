@@ -126,7 +126,7 @@ internal class LauncherRows(private val context: Context) {
             val p = pick.programme
             val running = p.startMs <= now
             val label = if (running) context.getString(R.string.tvplayer_tile_now) else time.format(Date(p.startMs))
-            val more = if (alternatives > 0) SEPARATOR + context.getString(R.string.tvplayer_more_channels, alternatives) else ""
+            val more = if (alternatives > 0) SEPARATOR + context.resources.getQuantityString(R.plurals.tvplayer_more_channels, alternatives, alternatives) else ""
             Tile(
                 id = "s:${pick.channel.id}:${p.startMs}",
                 title = "$label: ${p.title}",
@@ -174,7 +174,10 @@ internal class LauncherRows(private val context: Context) {
 
     private fun startLabel(start: Long, now: Long): String {
         val minutes = (start - now) / 60_000
-        if (minutes in 0..59) return context.getString(R.string.tvplayer_tile_in_minutes, minutes.coerceAtLeast(1).toInt())
+        if (minutes in 0..59) {
+            val m = minutes.coerceAtLeast(1).toInt()
+            return context.resources.getQuantityString(R.plurals.tvplayer_tile_in_minutes, m, m)
+        }
         val day = Calendar.getInstance().apply { timeInMillis = start }.get(Calendar.DAY_OF_YEAR)
         val today = Calendar.getInstance().apply { timeInMillis = now }.get(Calendar.DAY_OF_YEAR)
         val clock = time.format(Date(start))

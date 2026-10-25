@@ -15,9 +15,15 @@
     <string name="tvplayer_row_favorites" translatable="false">Favoriten</string>
     <string name="tvplayer_tile_now" translatable="false">Jetzt</string>
     <string name="tvplayer_tile_live" translatable="false">LIVE</string>
-    <string name="tvplayer_tile_in_minutes" translatable="false">In %1$d Min.</string>
+    <plurals name="tvplayer_tile_in_minutes" translatable="false">
+        <item quantity="one">In %1$d Min.</item>
+        <item quantity="other">In %1$d Min.</item>
+    </plurals>
     <string name="tvplayer_tile_tomorrow" translatable="false">Morgen %1$s</string>
-    <string name="tvplayer_more_channels" translatable="false">+%1$d weitere Sender</string>
+    <plurals name="tvplayer_more_channels" translatable="false">
+        <item quantity="one">+%1$d weiterer Sender</item>
+        <item quantity="other">+%1$d weitere Sender</item>
+    </plurals>
     <string name="tvplayer_nothing_now" translatable="false">Gerade kein Fußball</string>
     <string name="tvplayer_nothing_now_desc" translatable="false">Sobald Spiele von Real Madrid, Barça oder den großen Ligen laufen, erscheinen sie hier.</string>
 </resources>
