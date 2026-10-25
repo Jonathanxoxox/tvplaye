@@ -4,7 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.content.res.Configuration
 import coil3.ImageLoader
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
@@ -162,6 +166,11 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                 }
             }
         }
+        // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and
+        // whenever the favourites change, in whichever screen that happened.
+        tv.own.owntv.launcher.LauncherRowsWorker.schedule(this)
+        tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this, delaySeconds = 20)
+        appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
         // or older than the chosen hours). It reads one small file and touches no database.
         appScope.launch {
@@ -250,5 +259,18 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         // The engines judge the level themselves: UI_HIDDEN (every Home press) is not pressure for them,
         // and used to leave mpv on a trimmed cache for the rest of the session.
         runCatching { GlobalContext.getOrNull()?.getOrNull<tv.own.owntv.player.PlaybackEngines>()?.onTrimMemory(level) }
+    }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private suspend fun refreshLauncherRowsOnFavoriteChange() {
+        val koin = GlobalContext.get()
+        val settings = koin.get<tv.own.owntv.core.settings.SettingsRepository>()
+        val favorites = koin.get<tv.own.owntv.core.database.dao.FavoriteDao>()
+        settings.activeProfileId
+            .filter { it >= 0L }
+            .flatMapLatest { pid -> favorites.observeFavoriteIds(pid, tv.own.owntv.core.model.MediaType.LIVE) }
+            .distinctUntilChanged()
+            .drop(1)
+            .collect { tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
     }
 }

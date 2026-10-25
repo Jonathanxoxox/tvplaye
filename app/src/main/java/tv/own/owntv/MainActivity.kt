@@ -108,10 +108,15 @@ open class MainActivity : ComponentActivity() {
         super.attachBaseContext(tv.own.owntv.core.i18n.AppLocale.wrap(newBase, tag))
     }
 
+    /** A tile from the app's own launcher rows names the channel directly; everything else is core's. */
+    private fun deepLinkOf(uri: android.net.Uri?): LauncherDeepLink? =
+        tv.own.owntv.launcher.LauncherRows.channelFrom(uri)?.let { (source, id) -> LauncherDeepLink.Live(sourceId = source, itemId = id) }
+            ?: LauncherDeepLink.parse(uri)
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingDeepLink = LauncherDeepLink.parse(intent.data)
+        pendingDeepLink = deepLinkOf(intent.data)
         Log.d(TAG, "onNewIntent deepLinkHost=${intent.data?.host} deepLinkType=${pendingDeepLink?.javaClass?.simpleName ?: "none"}")
     }
 
@@ -170,7 +175,7 @@ open class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         val splashDeadline = SystemClock.uptimeMillis() + SPLASH_TIMEOUT_MS
         splash.setKeepOnScreenCondition { !contentReady && SystemClock.uptimeMillis() < splashDeadline }
-        pendingDeepLink = LauncherDeepLink.parse(intent.data)
+        pendingDeepLink = deepLinkOf(intent.data)
         Log.d(TAG, "onCreate deepLinkHost=${intent.data?.host} deepLinkType=${pendingDeepLink?.javaClass?.simpleName ?: "none"}")
         val dbError = probeDatabase()
         if (dbError != null) {

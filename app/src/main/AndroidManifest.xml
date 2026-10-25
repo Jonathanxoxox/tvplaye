@@ -14,6 +14,7 @@
 
     <!-- Android TV provider writes for Watch Next cards. -->
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <!-- Downloads & backup to user-chosen folders (SAF's document picker is absent on most TVs).
          READ stays declared through API 32: dropping it left some OEM builds (TCL Android 12,
@@ -60,6 +61,22 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- The launcher rows' tiles, read by the launcher (see LauncherTiles). -->
+        <provider
+            android:name="tv.own.owntv.launcher.LauncherTileProvider"
+            android:authorities="${applicationId}.tiles"
+            android:exported="true" />
+
+        <!-- Puts the launcher rows up after a reboot and when the launcher asks for them. -->
+        <receiver
+            android:name="tv.own.owntv.launcher.LauncherRowsReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.media.tv.action.INITIALIZE_PROGRAMS" />
+            </intent-filter>
+        </receiver>
 
         <!-- Disable WorkManager default auto-init; OwnTVApp provides Configuration. -->
         <provider

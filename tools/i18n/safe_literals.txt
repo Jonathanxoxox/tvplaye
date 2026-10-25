@@ -863,6 +863,98 @@
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	**
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	-
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	•
+2	empty	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\0
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	$folded
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	$phrase
+1	regex	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	[^a-z0-9]+
+1	regex	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\\p{M}+
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	arena
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	barca
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	barcelona
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	bein
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	bundesliga
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	canal
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	champions
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	champions league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	clasico
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	club world cup
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	conference league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	copa del rey
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dazn
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dfb pokal
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	el clasico
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eleven
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	espn
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	europa league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eurosport
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fc barcelona
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fifa
+3	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	football
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fussball
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	futbol
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	gol
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	jornada
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	la liga
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	laliga
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	liga
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	liga de campeones
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ligue 1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	magenta
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	matchday
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	movistar
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	nations league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	premier league
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	real madrid
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	rmtv
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	serie a
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sky
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	spieltag
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sport
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sports
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ss
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	supercopa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	tnt
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	uefa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ß
+2	empty	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	\0
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$label: ${p.title}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	${ch.name}: ${it.title}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	1080p
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	4k
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	@
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	RestrictedApi
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	backup
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	empty
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}:${current?.startMs}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	fhd
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	hd
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	open
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	owntv
+2	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	s:${pick.channel.id}:${p.startMs}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_channel
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_favorites
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_for_you
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_source
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	uhd
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	·
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	★
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	⚽
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	LauncherRows
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	launcher rows not refreshed
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	tvplayer-launcher-rows
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	tvplayer-launcher-rows-now
+2	empty	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	\0
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	${context.packageName}.tiles
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	${hash(id)}_$stamp.png
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	%02x
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	SHA-1
+1	regex	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	[0-9a-f]+_[0-9]+\\.png
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	content
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	image/png
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_logos
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_tiles
 2	empty	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	eq
 1	technical	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	eqBar$i
