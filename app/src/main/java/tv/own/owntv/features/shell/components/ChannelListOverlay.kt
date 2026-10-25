@@ -302,11 +302,13 @@ private fun ChannelMiniGuide(channelName: String?, guide: EpgNowNext?, modifier:
             return@Column
         }
         if (now != null) {
-            Text(
-                stringResource(R.string.content_live_now).uppercase() + "  " +
+            Row(horizontalArrangement = Arrangement.spacedBy(12.mpx)) {
+                Text(stringResource(R.string.content_live_now).uppercase(), style = stageText(16, 800), color = accent, maxLines = 1)
+                Text(
                     stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)),
-                style = stageText(16, 800), color = accent, maxLines = 1,
-            )
+                    style = stageText(16, 700), color = StageColors.Muted, maxLines = 1,
+                )
+            }
             Text(now.title, style = stageText(26, 700), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis)
             val span = (now.stopMs - now.startMs).toFloat()
             if (span > 0f) {

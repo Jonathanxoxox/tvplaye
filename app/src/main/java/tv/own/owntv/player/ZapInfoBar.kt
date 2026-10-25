@@ -68,14 +68,14 @@ internal fun ZapInfoBar(
             if (!logoUrl.isNullOrBlank()) {
                 AsyncImage(model = logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(6.dp))
             } else {
-                Text((title ?: "?").take(3).uppercase(), style = stageText(24, 800), color = hudInk.copy(alpha = 0.7f))
+                Text(title.orEmpty().take(3).uppercase(), style = stageText(24, 800), color = hudInk.copy(alpha = 0.7f))
             }
         }
         Column(Modifier.width(300.dp)) {
             subtitle?.takeIf { it.isNotBlank() }?.let {
                 Text(it, style = stageText(20, 600), color = hudInk.copy(alpha = 0.55f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
-            Text(title ?: "", style = stageText(28, 700), color = hudInk, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(title.orEmpty(), style = stageText(28, 700), color = hudInk, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         Column(Modifier.weight(1f)) {
             val now = guide?.now
