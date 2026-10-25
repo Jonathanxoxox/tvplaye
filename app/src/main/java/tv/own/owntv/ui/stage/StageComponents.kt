@@ -1130,4 +1130,4 @@ fun StageSwitch(on: Boolean) {
 val stageStillBack: Color
     @Composable
     @androidx.compose.runtime.ReadOnlyComposable
-    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else Color(0xFF0F1518)
+    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else Color(0xFF1A1C20)

@@ -150,6 +150,16 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setStartupMode(profileId, tv.own.owntv.core.settings.StartupMode.LAST_CHANNEL)
                     prefs.edit().putBoolean("defaults_v1_applied", true).apply()
                 }
+                // The classic IPTV look: dark, flat background without colour lights, a calm blue accent.
+                // Once only, so whatever the user picks in Settings afterwards stays.
+                if (!prefs.getBoolean("defaults_v2_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    settings.setThemeMode(tv.own.owntv.core.theme.ThemeMode.DARK)
+                    settings.setAccent(tv.own.owntv.core.theme.AccentColor.BLUE)
+                    settings.setBackgroundStyle(tv.own.owntv.core.theme.BackgroundStyle.PLAIN)
+                    settings.setBackgroundAccentLight(false)
+                    prefs.edit().putBoolean("defaults_v2_applied", true).apply()
+                }
             }
         }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",

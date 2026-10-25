@@ -284,7 +284,7 @@ private fun GlassBackgroundPreview() {
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(18.mpx))
-                .background(stageTone(Color(0xFF05080A), LocalStagePalette.current.page))
+                .background(stageTone(Color(0xFF0B0C0F), LocalStagePalette.current.page))
                 .drawBehind { drawInnerRing(previewRim, 1.mpx.toPx(), 18.mpx.toPx()) },
         ) {
             val scale = maxWidth / 1920.mpx

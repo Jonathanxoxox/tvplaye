@@ -149,19 +149,20 @@ internal fun LiveStageRow(
     StageRow(
         onClick = onClick,
         onLongClick = onLongClick,
-        height = 84.mpx,
+        // TV Player: 72 instead of 84, so about two more channels fit on screen.
+        height = 72.mpx,
         modifier = modifier.fillMaxWidth().onFocusChanged { if (it.hasFocus) onFocus() },
     ) { focused ->
         if (showNumber) {
             Text(
                 channel.number?.toString().orEmpty(),
                 style = stageText(20, 600).copy(textAlign = TextAlign.End, fontFeatureSettings = Tabular),
-                color = if (focused) stageTone(Color(0xFFE6F2EE), StageColors.FxLine) else StageColors.Dim,
+                color = if (focused) stageTone(Color(0xFFE8EBF0), StageColors.FxLine) else StageColors.Dim,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.width(50.mpx),
             )
         }
-        LivePlate(channel.displayLogoUrl, 76.mpx, 54.mpx)
+        LivePlate(channel.displayLogoUrl, 68.mpx, 46.mpx)
         Column(Modifier.weight(1f)) {
             Text(name.name, style = stageText(22, 700), color = if (focused) StageColors.FxText else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             val title = now?.title ?: nowTitle
@@ -178,7 +179,7 @@ internal fun LiveStageRow(
                 )
             }
             if (now != null) {
-                Spacer(Modifier.height(8.mpx))
+                Spacer(Modifier.height(6.mpx))
                 StageProgress(progressOf(now), Modifier.width(300.mpx), flat = true)
             }
         }

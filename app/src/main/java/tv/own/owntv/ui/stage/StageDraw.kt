@@ -126,7 +126,7 @@ fun Modifier.stageBackground(accent: Color): Modifier {
             light(accent, 0.22f, Offset(w * 0.08f, h * 0.04f), 900.mpx.toPx(), 620.mpx.toPx(), 0.62f)
         } else this
         bg.style == BackgroundStyle.PLAIN -> this
-            .drawBehind { drawRect(if (isLight) Color(0xFFF4F7F5) else Color(0xFF070B0A)) }
+            .drawBehind { drawRect(if (isLight) Color(0xFFF4F7F5) else Color(0xFF0D0E11)) }
             .then(if (bg.accentLight) Modifier.drawBehindLights { _, _ ->
                 light(accent, if (isLight) 0.06f else 0.07f, Offset.Zero, 1200.mpx.toPx(), 700.mpx.toPx(), 0.60f)
             } else Modifier)
