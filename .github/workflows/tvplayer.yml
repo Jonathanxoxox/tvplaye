@@ -18,15 +18,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v6
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
 
       # Das Android-SDK ist auf ubuntu-latest vorinstalliert; fehlende Plattformen lädt Gradle nach.
-      - uses: gradle/actions/setup-gradle@v6
+      - uses: gradle/actions/setup-gradle@v4
 
       - name: Build APK
         env:
@@ -43,14 +43,14 @@ jobs:
           mkdir -p dist
           cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/TVKanaele.apk
 
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@v4
         with:
           name: TVKanaele
           path: dist/TVKanaele.apk
           if-no-files-found: error
 
       - name: Publish "latest" release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: Neueste Version
