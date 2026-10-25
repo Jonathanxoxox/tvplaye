@@ -101,7 +101,7 @@ class MainActivity : Activity() {
         }
         findViewById<Button>(R.id.show_channels).setOnClickListener { requestAllChannelsBrowsable() }
         findViewById<Button>(R.id.open_tivimate).setOnClickListener {
-            if (!Launcher.openTiviMate(this)) message.text = getString(R.string.tivimate_missing)
+            if (!ChannelStarter.openTiviMate(this)) message.text = getString(R.string.tivimate_missing)
         }
 
         SyncWorker.schedule(this)
@@ -135,8 +135,8 @@ class MainActivity : Activity() {
     private fun updateStatus() {
         val lines = mutableListOf<String>()
         lines += when {
-            !Launcher.tiviMateInstalled(this) -> getString(R.string.tivimate_missing)
-            Launcher.tiviMateAcceptsLinks(this) -> getString(R.string.tivimate_links_ok)
+            !ChannelStarter.tiviMateInstalled(this) -> getString(R.string.tivimate_missing)
+            ChannelStarter.tiviMateAcceptsLinks(this) -> getString(R.string.tivimate_links_ok)
             else -> getString(R.string.tivimate_links_no)
         }
         if (!settings.isConfigured) lines += getString(R.string.not_configured)
@@ -186,7 +186,7 @@ class MainActivity : Activity() {
             isAllCaps = false
             text = "$time  ${p.title}\n${s.channel.name} · ${s.reasons.joinToString(", ")} · ${s.score} Punkte"
             textAlignment = View.TEXT_ALIGNMENT_VIEW_START
-            setOnClickListener { Launcher.play(this@MainActivity, s.channel) }
+            setOnClickListener { ChannelStarter.play(this@MainActivity, s.channel) }
         }
     }
 

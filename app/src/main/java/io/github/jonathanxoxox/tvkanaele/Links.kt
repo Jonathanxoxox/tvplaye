@@ -30,12 +30,12 @@ object Links {
 }
 
 /** Startet einen Sender mit dem in den Einstellungen gewählten Player. */
-object Launcher {
-    private const val TAG = "Launcher"
+object ChannelStarter {
+    private const val TAG = "ChannelStarter"
 
     fun tiviMateInstalled(context: Context) = appIntent(context, Settings.TIVIMATE_PACKAGE) != null
 
-    /** Ob TiviMate Stream-Links (ACTION_VIEW mit video/*) annimmt. Einmal am Fernseher prüfen lohnt sich. */
+    /** Ob TiviMate Stream-Links (ACTION_VIEW mit Video-Typ) annimmt. Einmal am Fernseher prüfen lohnt sich. */
     fun tiviMateAcceptsLinks(context: Context): Boolean {
         val probe = Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse("http://example.com/live.ts"), "video/*")
             .setPackage(Settings.TIVIMATE_PACKAGE)
@@ -98,7 +98,7 @@ class PlayActivity : Activity() {
                 Toast.makeText(this@PlayActivity, R.string.channel_gone, Toast.LENGTH_LONG).show()
                 startActivity(Intent(this@PlayActivity, MainActivity::class.java))
             } else {
-                Launcher.play(this@PlayActivity, channel)
+                ChannelStarter.play(this@PlayActivity, channel)
             }
             finish()
         }
