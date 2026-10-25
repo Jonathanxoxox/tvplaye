@@ -91,10 +91,10 @@ enum class RailState {
  */
 data class NowPlayingRail(val logoUrl: String?, val audioMode: Boolean, val playing: Boolean)
 
-/** The rail order: Search first, Sports then the Guide right after Live TV, More last. */
+/** The menu order: Search, then TV and the Guide first as in a classic IPTV player, More last. */
 private val StageRailOrder = listOf(
-    MainSection.SEARCH, MainSection.HOME, MainSection.LIVE_TV, MainSection.SPORTS, MainSection.EPG,
-    MainSection.MOVIES, MainSection.SERIES, MainSection.DOWNLOADS,
+    MainSection.SEARCH, MainSection.LIVE_TV, MainSection.EPG, MainSection.SPORTS,
+    MainSection.MOVIES, MainSection.SERIES, MainSection.DOWNLOADS, MainSection.HOME,
 )
 
 /** The rail's width with names: Normal 280 · Wide 340 · Extra wide 400; Compact is the 84 capsule. */
@@ -148,10 +148,11 @@ fun StageRail(
     onNowPlaying: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val open = (state == RailState.OPEN || state == RailState.PINNED) && size != NavSize.COMPACT
+    // TV Player: the menu as a classic IPTV player draws it. Out of sight until ◀ calls it in, then a
+    // flat panel down the full left edge with an icon and a name per row; no capsule, no edge glow.
+    // The rows stay focusable while hidden, so ◀ from the content still reaches them.
+    val open = state == RailState.OPEN || state == RailState.PINNED
     val counts = size >= NavSize.WIDE
-    val details = size == NavSize.EXTRA_WIDE
-    val full = length == NavLength.FULL
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val scope = rememberCoroutineScope()
     var hasFocus by remember { mutableStateOf(false) }
@@ -162,37 +163,34 @@ fun StageRail(
         else -> StageRailOrder.firstOrNull { it in visibleSections } ?: MainSection.MORE
     }
     val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections } + MainSection.MORE
+    val menuAccent = MenuHighlight
 
-    // Slide in from the edge (320 ms, or a snap with animations off): the capsule when it leaves
-    // HIDDEN, the open rail each time it opens.
-    val slide = remember { Animatable(0f) }
-    val slideSpec: androidx.compose.animation.core.AnimationSpec<Float> = ownTvTween(320)
-    LaunchedEffect(open, state == RailState.HIDDEN) {
-        val target = if (state == RailState.HIDDEN) -1f else 0f
-        if (open) slide.snapTo(-1f)
-        slide.animateTo(target, slideSpec)
-    }
+    val slide = remember { Animatable(-1f) }
+    val slideSpec: androidx.compose.animation.core.AnimationSpec<Float> = ownTvTween(220)
+    LaunchedEffect(open) { slide.animateTo(if (open) 0f else -1f, slideSpec) }
 
     Box(modifier.fillMaxSize()) {
-        if (state == RailState.OPEN && open) {
-            Box(Modifier.fillMaxSize().background(StageColors.Scrim))
+        if (state == RailState.OPEN) {
+            Box(
+                Modifier.fillMaxSize()
+                    .alpha((1f + slide.value).coerceIn(0f, 1f))
+                    .background(Brush.horizontalGradient(
+                        0f to Color.Black.copy(alpha = 0.75f),
+                        0.45f to Color.Black.copy(alpha = 0.45f),
+                        1f to Color.Black.copy(alpha = 0.15f),
+                    )),
+            )
         }
-        if (state == RailState.HIDDEN) RailEdgeGlow(Modifier.align(Alignment.CenterStart))
-
-        val width = if (open) size.openWidth.mpx else 84.mpx
-        val edge = if (open) 24.mpx else 28.mpx
+        val width = MenuWidth
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .offset(x = edge)
-                .then(if (full) Modifier.padding(vertical = 24.mpx).fillMaxHeight() else Modifier)
+                .fillMaxHeight()
                 .width(width)
                 .graphicsLayer {
-                    val travel = (width + edge).toPx()
-                    translationX = slide.value * travel * (if (rtl) -1f else 1f)
+                    translationX = slide.value * width.toPx() * (if (rtl) -1f else 1f)
                 }
-                // Fades as it slides out, so its shadow never lingers at the edge once hidden.
-                .alpha(if (state == RailState.HIDDEN) (1f + slide.value).coerceIn(0f, 1f) else 1f)
+                .alpha((1f + slide.value).coerceIn(0f, 1f))
                 .onFocusChanged {
                     // Every entry from the content lands on the selected section, not on whatever item
                     // happens to line up; moves inside the rail do not re-trigger this.
@@ -217,9 +215,7 @@ fun StageRail(
                         }
                     }
                 }
-                // ▶ always leaves for the content. The open rail can cover the content's left
-                // column (More's sheet), and then the D-pad search finds nothing to its right and focus
-                // simply stayed in the rail.
+                // ▶ always leaves for the content (the open menu covers the content's left column).
                 .onKeyEvent { e ->
                     val out = if (rtl) Key.DirectionLeft else Key.DirectionRight
                     if (e.key != out) return@onKeyEvent false
@@ -229,47 +225,68 @@ fun StageRail(
                     true
                 }
                 .focusGroup()
-                .stageGlass(if (open) 34.mpx else 42.mpx, overContent = true)
-                .padding(
-                    horizontal = if (open) 16.mpx else 0.mpx,
-                    vertical = if (open) 22.mpx else 16.mpx,
-                ),
-            horizontalAlignment = if (open) Alignment.Start else Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(6.mpx),
+                .background(MenuPanel)
+                .padding(horizontal = 18.mpx, vertical = 36.mpx),
+            verticalArrangement = Arrangement.spacedBy(4.mpx),
         ) {
-            RailBrand(open)
+            MenuClock()
+            Spacer(Modifier.height(22.mpx))
             if (nowPlaying != null) {
                 RailItem(
                     icon = if (nowPlaying.audioMode) OwnTVIcon.EQ else OwnTVIcon.PLAY,
                     label = stringResource(R.string.shell_now_playing),
                     trailing = if (nowPlaying.audioMode && counts) stringResource(R.string.shell_now_playing_audio) else null,
-                    detail = null,
-                    open = open,
                     active = false,
-                    accentIcon = true,
+                    accent = menuAccent,
                     onClick = onNowPlaying,
                 )
-                RailSeparator(open)
+                RailSeparator()
             }
             items.forEach { section ->
                 RailItem(
                     icon = section.stageIcon,
                     label = stringResource(section.labelRes),
                     trailing = if (counts) count(section)?.let { NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(it) } else null,
-                    detail = if (details) detail(section) else null,
-                    open = open,
                     active = section == selected ||
                         (section == MainSection.MORE && selected == MainSection.SETTINGS),
+                    accent = menuAccent,
                     onClick = { onSelect(section) },
                     modifier = if (section == focusSection) Modifier.focusRequester(selectedItemFocusRequester) else Modifier,
                 )
             }
-            // Full height: the profile sits at the bottom, after the last separator.
-            if (full) Spacer(Modifier.weight(1f))
-            RailSeparator(open)
-            RailProfile(open, profileName, profileLine.takeIf { counts }, avatarId, avatarPath, onSwitchProfile, onPickAvatar)
+            Spacer(Modifier.weight(1f))
+            RailSeparator()
+            RailProfile(profileName, profileLine.takeIf { counts }, avatarId, avatarPath, menuAccent, onSwitchProfile, onPickAvatar)
         }
     }
+}
+
+/** The menu panel: near-black grey, a little see-through so the picture behind it still shows. */
+private val MenuPanel = Color(0xF214161A)
+private val MenuWidth = 420.mpx
+
+/** Focus in the menu is a soft white bar with white text, not the accent fill used elsewhere. */
+private val MenuHighlight = tv.own.owntv.ui.theme.StageAccent(
+    accent = Color.White.copy(alpha = 0.16f),
+    onAccent = Color.White,
+    focus = Color.Transparent,
+)
+
+/** The time at the top of the menu, large and plain. */
+@Composable
+private fun MenuClock() {
+    val formatTime = tv.own.owntv.ui.format.rememberSystemTimeFormatter()
+    var now by remember { mutableStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            kotlinx.coroutines.delay(60_000L - now % 60_000L)
+            now = System.currentTimeMillis()
+        }
+    }
+    Text(
+        formatTime(now), style = stageText(40, 700), color = StageColors.Text, maxLines = 1,
+        modifier = Modifier.padding(start = 18.mpx),
+    )
 }
 
 private val MainSection.stageIcon: OwnTVIcon
@@ -285,168 +302,86 @@ private val MainSection.stageIcon: OwnTVIcon
         MainSection.MORE, MainSection.SETTINGS -> OwnTVIcon.TILES
     }
 
-/** `.edge`: 7 × 150 at the screen edge, accent, glowing 22 px at 80% and 60 px at 35%, 90% opaque. */
 @Composable
-private fun RailEdgeGlow(modifier: Modifier) {
-    val accent = stageAccent.accent
+private fun RailSeparator() {
     Box(
-        modifier
-            .size(7.mpx, 150.mpx)
-            .alpha(0.9f)
-            .drawBehind {
-                val r = 7.mpx.toPx()
-                drawBoxShadow(accent.copy(alpha = 0.35f), 60.mpx.toPx(), r)
-                drawBoxShadow(accent.copy(alpha = 0.8f), 22.mpx.toPx(), r)
-                // border-radius: 0 7 7 0 — square against the screen edge, round on the inside.
-                drawRoundRect(accent, cornerRadius = CornerRadius(r))
-                drawRect(accent, size = size.copy(width = size.width / 2f))
-            },
-    )
-}
-
-/** The mark (50), with the wordmark beside it when the rail is open (`.brandrow`, 0 10 18 padding). */
-@Composable
-private fun ColumnScope.RailBrand(open: Boolean) {
-    val icon = rememberAppliedIcon()
-    if (!open) {
-        BrandMark(icon, 50.mpx, Modifier.padding(bottom = 12.mpx))
-        return
-    }
-    Row(
-        Modifier.padding(start = 10.mpx, end = 10.mpx, bottom = 18.mpx),
-        horizontalArrangement = Arrangement.spacedBy(14.mpx),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        BrandMark(icon, 50.mpx)
-        // The wordmark, 130 wide (`.brandrow`, `wordmarkC()`).
-        Wordmark(130.mpx)
-    }
-}
-
-@Composable
-private fun RailSeparator(open: Boolean) {
-    Box(
-        Modifier
-            .then(if (open) Modifier.fillMaxWidth().padding(horizontal = 14.mpx, vertical = 10.mpx) else Modifier.padding(vertical = 8.mpx).width(34.mpx))
+        Modifier.fillMaxWidth().padding(horizontal = 18.mpx, vertical = 10.mpx)
             .height(1.mpx)
-            .background(StageColors.Ink.copy(alpha = 0.12f)),
+            .background(StageColors.Ink.copy(alpha = 0.10f)),
     )
 }
 
 /**
- * `.frail .it`: a 58 × 58 icon tile in the capsule, a 60 high row with its label, [detail] line under it
- * and count when open.
- * Active = accent icon on accent 14%, plus the glowing dot outside the capsule; focused = FILLED.
+ * One menu row, 64 high: icon and name, the count at the end from Size Wide up. The open section is
+ * marked by a short accent bar at the row's start and its name in bold; focus is the soft white bar.
  */
 @Composable
 private fun RailItem(
     icon: OwnTVIcon,
     label: String,
     trailing: String?,
-    detail: String?,
-    open: Boolean,
     active: Boolean,
+    accent: tv.own.owntv.ui.theme.StageAccent,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    accentIcon: Boolean = false,
 ) {
-    val a = stageAccent
-    val r = 20.mpx
+    val bar = stageAccent.accent
+    val r = 10.mpx
     StageSurface(
         onClick = onClick,
         radius = r,
-        // At least 60, not exactly: with a large font size the name and its detail line need more, and a
-        // fixed height cut the detail line off (#7.2).
-        modifier = modifier.then(if (open) Modifier.fillMaxWidth().heightIn(min = 60.mpx) else Modifier.size(58.mpx)),
-        idle = if (active) Modifier.background(a.accent.copy(alpha = 0.14f), RoundedCornerShape(r)) else Modifier,
-        contentAlignment = if (open) Alignment.CenterStart else Alignment.Center,
+        accent = accent,
+        modifier = modifier.fillMaxWidth().heightIn(min = 64.mpx),
+        contentAlignment = Alignment.CenterStart,
     ) { focused ->
-        val iconTint = when {
-            focused -> a.onAccent
-            active || accentIcon -> a.accent
-            else -> StageColors.NavText
-        }
-        if (!open) {
-            OwnTVIcon(icon, iconTint, Modifier.size(27.mpx))
-            if (active && !focused) RailActiveDot(Modifier.align(Alignment.CenterEnd).offset(x = 9.mpx))
-            return@StageSurface
+        if (active) {
+            Box(
+                Modifier.align(Alignment.CenterStart).size(4.mpx, 30.mpx)
+                    .background(bar, RoundedCornerShape(2.mpx)),
+            )
         }
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 18.mpx, vertical = 6.mpx),
-            horizontalArrangement = Arrangement.spacedBy(18.mpx),
+            Modifier.fillMaxWidth().padding(horizontal = 22.mpx, vertical = 8.mpx),
+            horizontalArrangement = Arrangement.spacedBy(22.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OwnTVIcon(icon, iconTint, Modifier.size(26.mpx))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    label,
-                    style = stageText(21, 600),
-                    color = if (focused) a.onAccent else if (active) a.accent else StageColors.Text,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                )
-                if (detail != null) {
-                    // `.dt`: 14/500 dim, 2 px under the name; on the focused (filled) row on-accent at 80%.
-                    Text(
-                        detail,
-                        style = stageText(14, 500),
-                        color = if (focused) a.onAccent.copy(alpha = 0.8f) else StageColors.Dim,
-                        maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(top = 2.mpx),
-                    )
-                }
-            }
+            OwnTVIcon(icon, if (focused || active) Color.White else StageColors.NavText, Modifier.size(30.mpx))
+            Text(
+                label,
+                style = stageText(24, if (active) 700 else 500),
+                color = if (focused || active) Color.White else StageColors.ItemText,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
             if (trailing != null) {
-                Text(trailing, style = stageText(16, 600), color = if (focused) a.onAccent else StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(trailing, style = stageText(18, 500), color = StageColors.Dim, maxLines = 1)
             }
         }
     }
 }
 
-/** `.it.on::after`: 6 px, 9 px outside the capsule's item, glowing 10 px. */
+/** The profile at the bottom of the menu: avatar and name. OK switches profile; a long press changes the avatar. */
 @Composable
-private fun RailActiveDot(modifier: Modifier) {
-    val accent = stageAccent.accent
-    Box(
-        modifier
-            .size(6.mpx)
-            .drawBehind {
-                drawBoxShadow(accent, 10.mpx.toPx(), size.minDimension / 2f)
-                drawCircle(accent)
-            },
-    )
-}
-
-/**
- * The profile: the 46 px avatar alone in the capsule, avatar + name when open, with "All playlists ·
- * switch ›" under it from Size Wide up ([line]). OK switches profile; a long press changes the avatar.
- */
-@Composable
-private fun RailProfile(open: Boolean, name: String, line: String?, avatarId: Int, avatarPath: String, onSwitchProfile: () -> Unit, onPickAvatar: () -> Unit) {
-    val a = stageAccent
+private fun RailProfile(name: String, line: String?, avatarId: Int, avatarPath: String, accent: tv.own.owntv.ui.theme.StageAccent, onSwitchProfile: () -> Unit, onPickAvatar: () -> Unit) {
     val initial = name.trim().take(1).uppercase().ifEmpty { "?" }
     StageSurface(
         onClick = onSwitchProfile,
         onLongClick = onPickAvatar,
-        radius = if (open) 20.mpx else 23.mpx,
-        modifier = if (open) Modifier.fillMaxWidth() else Modifier.padding(top = 4.mpx).size(46.mpx),
-        // Alone in the capsule the avatar covers a fill, so it takes the ring instead.
-        focusStyle = if (open) StageFocus.FILLED else StageFocus.POSTER,
-        contentAlignment = if (open) Alignment.CenterStart else Alignment.Center,
-    ) { focused ->
-        if (!open) {
-            RailAvatar(initial, avatarId = avatarId, imagePath = avatarPath)
-            return@StageSurface
-        }
+        radius = 10.mpx,
+        accent = accent,
+        modifier = Modifier.fillMaxWidth(),
+        contentAlignment = Alignment.CenterStart,
+    ) { _ ->
         Row(
-            Modifier.padding(start = 12.mpx, end = 12.mpx, top = 10.mpx, bottom = 6.mpx),
-            horizontalArrangement = Arrangement.spacedBy(14.mpx),
+            Modifier.padding(horizontal = 16.mpx, vertical = 10.mpx),
+            horizontalArrangement = Arrangement.spacedBy(16.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            RailAvatar(initial, avatarId = avatarId, imagePath = avatarPath)
+            RailAvatar(initial, size = 40, textSize = 18, avatarId = avatarId, imagePath = avatarPath)
             Column {
-                Text(name, style = stageText(19, 700), color = if (focused) a.onAccent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(name, style = stageText(20, 600), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 if (line != null) {
-                    Text("$line ›", style = stageText(15, 400), color = if (focused) a.onAccent else StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(line, style = stageText(15, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
         }

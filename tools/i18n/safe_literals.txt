@@ -717,7 +717,6 @@
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/SolidAmbientBackdrop.kt	solidAmbientRingPresence
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/SolidAmbientBackdrop.kt	solidAmbientRingScale
 2	empty	app/src/main/java/tv/own/owntv/features/shell/components/StageRail.kt	\0
-1	technical	app/src/main/java/tv/own/owntv/features/shell/components/StageRail.kt	$line ›
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/StageRail.kt	?
 2	empty	app/src/main/java/tv/own/owntv/features/shell/components/StageStatus.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/StageStatus.kt	EEEdMMM
