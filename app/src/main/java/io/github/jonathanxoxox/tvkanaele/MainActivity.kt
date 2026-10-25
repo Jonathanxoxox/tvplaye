@@ -63,6 +63,7 @@ class MainActivity : Activity() {
         bind(R.id.keywords, settings.keywords) { settings.keywords = it }
         bind(R.id.excludes, settings.excludes) { settings.excludes = it }
         bind(R.id.preferred, settings.preferredChannels) { settings.preferredChannels = it }
+        bind(R.id.owntv_source, settings.owntvSourceId.toString()) { settings.owntvSourceId = it.toIntOrNull() ?: 1 }
         bind(R.id.lookahead, settings.lookaheadHours.toString()) { settings.lookaheadHours = it.toIntOrNull() ?: 3 }
 
         val allFootball = findViewById<CheckBox>(R.id.cb_all_football).apply { isChecked = settings.includeAllFootball }
@@ -75,6 +76,7 @@ class MainActivity : Activity() {
                 Settings.Player.TIVIMATE_LINK -> R.id.player_tivimate_link
                 Settings.Player.TIVIMATE_APP -> R.id.player_tivimate_app
                 Settings.Player.BUILTIN -> R.id.player_builtin
+                Settings.Player.OWNTV -> R.id.player_owntv
                 Settings.Player.EXTERNAL -> R.id.player_external
             }
         )
@@ -89,6 +91,7 @@ class MainActivity : Activity() {
             settings.player = when (playerGroup.checkedRadioButtonId) {
                 R.id.player_tivimate_app -> Settings.Player.TIVIMATE_APP
                 R.id.player_builtin -> Settings.Player.BUILTIN
+                R.id.player_owntv -> Settings.Player.OWNTV
                 R.id.player_external -> Settings.Player.EXTERNAL
                 else -> Settings.Player.TIVIMATE_LINK
             }
@@ -139,6 +142,7 @@ class MainActivity : Activity() {
             ChannelStarter.tiviMateAcceptsLinks(this) -> getString(R.string.tivimate_links_ok)
             else -> getString(R.string.tivimate_links_no)
         }
+        if (ChannelStarter.ownTvInstalled(this)) lines += getString(R.string.owntv_found)
         if (!settings.isConfigured) lines += getString(R.string.not_configured)
         status.text = lines.joinToString("\n")
         lastSync.text = settings.lastSyncMessage?.let { getString(R.string.last_sync, it) } ?: ""

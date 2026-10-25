@@ -20,6 +20,8 @@ class Settings(context: Context) {
         /** Nur TiviMate öffnen (springt auf den zuletzt gesehenen Sender). */
         TIVIMATE_APP,
         BUILTIN,
+        /** OwnTV (offener IPTV-Player) über dessen Direktlink owntv://play/live auf genau den Sender. */
+        OWNTV,
         /** Beliebiger anderer Player (VLC, Just Player, MX …) über die Systemauswahl. */
         EXTERNAL,
     }
@@ -49,6 +51,11 @@ class Settings(context: Context) {
     var player: Player
         get() = enumOr(prefs.getString("player", null), Player.TIVIMATE_LINK)
         set(v) = put("player", v.name)
+
+    /** OwnTVs interne Nummer der Playlist (1, wenn dort nur eine eingetragen ist). */
+    var owntvSourceId: Int
+        get() = prefs.getInt("owntv_source", 1)
+        set(v) = prefs.edit().putInt("owntv_source", v.coerceAtLeast(1)).apply()
 
     var drawTiles by bool("draw_tiles", true)
     var watchNextEnabled by bool("watch_next", true)
@@ -107,5 +114,6 @@ class Settings(context: Context) {
 
     companion object {
         const val TIVIMATE_PACKAGE = "ar.tvplayer.tv"
+        const val OWNTV_PACKAGE = "tv.own.owntv"
     }
 }

@@ -36,6 +36,9 @@
     <string name="section_player">Beim Klick abspielen mit</string>
     <string name="player_tivimate_link">TiviMate, falls es den Sender annimmt, sonst eingebauter Player</string>
     <string name="player_tivimate_app">Nur TiviMate öffnen (zeigt den zuletzt gesehenen Sender)</string>
+    <string name="player_owntv">OwnTV (öffnet genau den Sender, mit Senderliste und Zappen)</string>
+    <string name="label_owntv_source">OwnTV: Nummer der Playlist (1, wenn dort nur eine eingetragen ist)</string>
+    <string name="owntv_found">OwnTV ist installiert.</string>
     <string name="player_builtin">Eingebauter Player</string>
     <string name="player_external">Anderer Player (Auswahl, z. B. VLC)</string>
 

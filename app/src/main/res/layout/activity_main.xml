@@ -103,11 +103,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp">
 
+            <RadioButton android:id="@+id/player_owntv" style="@style/Choice" android:text="@string/player_owntv" />
+            <RadioButton android:id="@+id/player_builtin" style="@style/Choice" android:text="@string/player_builtin" />
             <RadioButton android:id="@+id/player_tivimate_link" style="@style/Choice" android:text="@string/player_tivimate_link" />
             <RadioButton android:id="@+id/player_tivimate_app" style="@style/Choice" android:text="@string/player_tivimate_app" />
-            <RadioButton android:id="@+id/player_builtin" style="@style/Choice" android:text="@string/player_builtin" />
             <RadioButton android:id="@+id/player_external" style="@style/Choice" android:text="@string/player_external" />
         </RadioGroup>
+
+        <TextView style="@style/Label" android:text="@string/label_owntv_source" />
+        <EditText android:id="@+id/owntv_source" style="@style/Field" android:inputType="number" />
 
         <TextView style="@style/Section" android:text="@string/section_launcher" />
 

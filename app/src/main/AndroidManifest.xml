@@ -12,6 +12,7 @@
 
     <queries>
         <package android:name="ar.tvplayer.tv" />
+        <package android:name="tv.own.owntv" />
         <intent>
             <action android:name="android.intent.action.VIEW" />
             <data android:mimeType="video/*" android:scheme="http" />

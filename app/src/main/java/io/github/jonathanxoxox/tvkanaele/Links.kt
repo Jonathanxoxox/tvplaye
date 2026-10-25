@@ -53,10 +53,28 @@ object ChannelStarter {
             Settings.Player.TIVIMATE_APP ->
                 appIntent(context, Settings.TIVIMATE_PACKAGE)?.let { start(context, it) } == true || builtin(context, channel)
             Settings.Player.BUILTIN -> builtin(context, channel)
+            Settings.Player.OWNTV ->
+                start(context, Intent(Intent.ACTION_VIEW, ownTvLink(channel, Settings(context).owntvSourceId))
+                    .setPackage(Settings.OWNTV_PACKAGE)) || builtin(context, channel)
             Settings.Player.EXTERNAL ->
                 start(context, Intent.createChooser(view, context.getString(R.string.choose_player))) || builtin(context, channel)
         }
     }
+
+    fun ownTvInstalled(context: Context) = appIntent(context, Settings.OWNTV_PACKAGE) != null
+
+    /**
+     * Öffentlicher Direktlink von OwnTV (siehe LauncherDeepLink in OwnTV_Core). Bei Xtream ist die
+     * remoteId die stream_id; bei M3U findet OwnTV den Sender über den Namen.
+     */
+    fun ownTvLink(channel: IptvChannel, sourceId: Int): Uri =
+        Uri.Builder().scheme("owntv").authority("play").appendPath("live")
+            .appendQueryParameter("sourceId", sourceId.toString())
+            .apply {
+                if (channel.key.startsWith("x:")) appendQueryParameter("remoteId", channel.key.removePrefix("x:"))
+                else appendQueryParameter("name", channel.name)
+            }
+            .build()
 
     fun openTiviMate(context: Context): Boolean =
         appIntent(context, Settings.TIVIMATE_PACKAGE)?.let { start(context, it) } == true
