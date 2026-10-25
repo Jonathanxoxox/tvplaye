@@ -65,6 +65,9 @@ internal object GuideGridDefaults {
  * ↺ icons and the time in 14 dim. The cell at [focusTime] is the focused one: accent fill, 2 px focus
  * ring and glow. One Canvas per row rather than a node per programme, so a week of guide scrolls light.
  */
+/** TV Player: cells show only the title; the times and icons stay in the details above the grid. */
+private const val TitleOnly = true
+
 @Composable
 internal fun ProgrammeStripCanvas(
     programmes: List<EpgProgrammeEntity>,
@@ -83,7 +86,7 @@ internal fun ProgrammeStripCanvas(
     val a = tv.own.owntv.ui.theme.stageAccent
     val px = with(density) { 1.mpx.toPx() }
     val pxPerMin = with(density) { GuideGridDefaults.PxPerMin.toPx() }
-    val titleStyle = tv.own.owntv.ui.theme.stageText(18, 700).copy(textDirection = TextDirection.Content)
+    val titleStyle = tv.own.owntv.ui.theme.stageText(20, 500).copy(textDirection = TextDirection.Content)
     val timeStyle = tv.own.owntv.ui.theme.stageText(14, 400).copy(fontFeatureSettings = "tnum", textDirection = TextDirection.Content)
     val formatTime = rememberSystemTimeFormatter()
     val rangeTemplate = stringResource(R.string.content_live_time_range_plain)
@@ -112,7 +115,8 @@ internal fun ProgrammeStripCanvas(
         }
         val viewW = size.width
         val h = size.height
-        val r = CornerRadius(14 * px)
+        // TV Player: flat cells with small corners and narrow gaps, like the classic IPTV player's grid.
+        val r = CornerRadius(5 * px)
         // Feeds sometimes carry two programmes for the same time. Each one is drawn from where the one
         // before it ends, so they never sit on top of each other; one hidden completely is left out.
         var shownUntil = windowStart
@@ -138,20 +142,23 @@ internal fun ProgrammeStripCanvas(
             val e0 = p.stopMs.coerceIn(windowStart, windowEnd)
             if (e0 <= s0) return@forEachIndexed
             shownUntil = e0
-            val x = ((s0 - windowStart) / 60_000f) * pxPerMin - scrollPx.toFloat() + 3 * px
-            val w = ((e0 - s0) / 60_000f) * pxPerMin - 6 * px
+            val x = ((s0 - windowStart) / 60_000f) * pxPerMin - scrollPx.toFloat() + 2 * px
+            val w = ((e0 - s0) / 60_000f) * pxPerMin - 4 * px
             if (w <= 0f || x + w <= 0f || x >= viewW) return@forEachIndexed
             drawnAny = true
             val focused = focusTime != null && focusTime in p.startMs until p.stopMs
             val isNow = now in p.startMs until p.stopMs
             val fade = if (!focused && p.stopMs <= now) 0.5f else 1f
             val box = androidx.compose.ui.geometry.Rect(x, 0f, x + w, h)
-            if (focused) {
+            if (focused && palette.isLight) {
                 drawBoxShadow(a.accent.copy(alpha = 0.4f), 34 * px, r.x, dy = 12 * px, bounds = box)
                 drawRoundRect(a.accent, Offset(x, 0f), Size(w, h), r)
                 focusRing(x, w, h, r)
+            } else if (focused) {
+                drawBoxShadow(Color.Black.copy(alpha = 0.25f), 14 * px, r.x, dy = 4 * px, bounds = box)
+                drawRoundRect(tv.own.owntv.ui.theme.StageFocusFill, Offset(x, 0f), Size(w, h), r)
             } else {
-                drawRoundRect(ink.copy(alpha = (if (isNow) 0.085f else 0.045f) * fade), Offset(x, 0f), Size(w, h), r)
+                drawRoundRect(ink.copy(alpha = (if (isNow) 0.16f else 0.10f) * fade), Offset(x, 0f), Size(w, h), r)
             }
             // Text starts at the visible part of a cell that began before the timeline's left edge.
             val tx = maxOf(x, 0f)
@@ -161,7 +168,12 @@ internal fun ProgrammeStripCanvas(
             val smallColor = if (focused) Color.Black.copy(alpha = 0.6f) else dimColor.copy(alpha = fade)
             val iconColor = if (focused) a.onAccent else a.accent.copy(alpha = fade)
             val title = measurer.measure(p.title, titleStyle.copy(color = titleColor), overflow = TextOverflow.Ellipsis, maxLines = 1, softWrap = false, constraints = Constraints(maxWidth = textW))
-            drawText(title, topLeft = Offset(tx + 14 * px, 8 * px))
+            // The title alone, centred in the cell, as the classic player shows it.
+            drawText(title, topLeft = Offset(tx + 14 * px, (h - title.size.height) / 2f))
+            if (p.startMs in recordingStarts) {
+                drawCircle(if (focused) recRed else recRed.copy(alpha = fade), 4 * px, Offset(x + w - 12 * px, h / 2f))
+            }
+            if (TitleOnly) return@forEachIndexed
             // The small line: icons first, 8 apart, then the time.
             var cx = tx + 14 * px
             val lineTop = 8 * px + title.size.height + 3 * px
