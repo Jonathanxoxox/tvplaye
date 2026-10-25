@@ -1724,6 +1724,27 @@ fun OwnTVShell(
                     zapInfo = if (isLiveChannel) {
                         { liveVm.zapGuide.collectAsStateWithLifecycle().value }
                     } else null,
+                    // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
+                    onOpenGuide = if (isLiveChannel && MainSection.EPG in visibleSections) {
+                        { exitPlayer(); if (selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG) }
+                    } else null,
+                    // Long Down: search, the channel carrying on in the preview.
+                    onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
+                    // The control panel's channel tiles: the channels watched last, with what is on now.
+                    panelChannels = if (isTunedLive) {
+                        {
+                            val playingId = previewChannel?.id
+                            val recent by produceState(emptyList<tv.own.owntv.core.database.entity.ChannelEntity>(), playingId) {
+                                value = runCatching { liveVm.historyChannels(PANEL_CHANNELS + 1) }.getOrDefault(emptyList())
+                                    .map { it.channel }.filter { it.id != playingId }.take(PANEL_CHANNELS)
+                            }
+                            LaunchedEffect(recent) { liveVm.ensureNowPlaying(recent) }
+                            val now by liveVm.nowPlaying.collectAsStateWithLifecycle()
+                            recent.map { ch ->
+                                tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.ensurePlaying(ch) }
+                            }
+                        }
+                    } else null,
                     // Guide card for the playing channel (nowNext follows previewChannel = what's playing).
                     liveEpgCard = if (isLiveChannel) {
                         {
@@ -2025,6 +2046,9 @@ fun OwnTVShell(
     }
     }
 }
+
+/** Channel tiles in the player's control panel, after Guide and History. */
+private const val PANEL_CHANNELS = 10
 
 /** A goal toast stays this long. */
 private const val GOAL_TOAST_MS = 8_000L

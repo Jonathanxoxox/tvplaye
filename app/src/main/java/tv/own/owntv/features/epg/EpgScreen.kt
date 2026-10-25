@@ -594,7 +594,8 @@ fun EpgScreen(
                                     onShow = { p -> selected = channel to p },
                                     onStep = { delta ->
                                         val from = stepTarget ?: index
-                                        val to = from + delta
+                                        // A page (CH+/CH−, RW/FF) stops at the first or last row instead of leaving.
+                                        val to = (from + delta).let { if (kotlin.math.abs(delta) > 1) it.coerceIn(0, state.channels.size - 1) else it }
                                         when {
                                             to < 0 -> false // ▲ from the first row: up to the control line
                                             to >= state.channels.size -> true
@@ -603,6 +604,8 @@ fun EpgScreen(
                                     },
                                     onOk = { p -> if (previewNeeds(channel)) liveVm.onChannelFocused(channel) else onOk(channel, p) },
                                     onMenu = { p -> returnTo = null; if (p != null) menuFor = channel to p else channelMenuFor = channel },
+                                    onChannelMenu = { returnTo = null; channelMenuFor = channel },
+                                    onFavorite = { vm.toggleFavoriteChannel(channel) },
                                 )
                             }
                         }
@@ -789,6 +792,8 @@ private fun GuideRow(
     onStep: (Int) -> Boolean,
     onOk: (EpgProgrammeEntity?) -> Unit,
     onMenu: (EpgProgrammeEntity?) -> Unit,
+    onChannelMenu: () -> Unit,
+    onFavorite: () -> Unit,
 ) {
     // Cache peek first, so a row scrolled back into view draws at once; a miss reads this one channel.
     val cacheRevision by vm.cacheRevision.collectAsStateWithLifecycle()
@@ -821,10 +826,18 @@ private fun GuideRow(
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) okDown = true
                             else if (down && okDown) { okDown = false; onMenu(programmeAt(progs, cursorTime)) }
-                            else if (!down && okDown) { okDown = false; if (cellMode) onOk(programmeAt(progs, cursorTime)) else onEnterCell() }
+                            // OK watches the channel, as in the classic IPTV guide; in the programmes it acts on the one under the cursor.
+                            else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime else System.currentTimeMillis())) }
                             true
                         }
                         Key.Menu -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
+                        // The classic remote's guide keys: Info and Play show the programme, Red and Stop
+                        // toggle the favourite, Green the channel options, CH± and RW/FF scroll a page.
+                        Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
+                        Key.ProgramRed, Key.MediaStop -> { if (down) onFavorite(); true }
+                        Key.ProgramGreen -> { if (down) onChannelMenu(); true }
+                        Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS); true }
+                        Key.ChannelDown, Key.PageDown, Key.MediaFastForward -> { if (down) onStep(GUIDE_PAGE_ROWS); true }
                         // Physical by design: the timeline runs left to right in every language.
                         // Row stage: ◀ leaves for the menu, ▶ steps into the programmes.
                         Key.DirectionLeft -> if (!cellMode) false else {
@@ -903,3 +916,6 @@ private fun GuideKeyHints(cellMode: Boolean) {
     }
     tv.own.owntv.ui.stage.StageKeyHints(hints)
 }
+
+/** Rows a page key (CH±, RW/FF) moves the guide by. */
+private const val GUIDE_PAGE_ROWS = 7

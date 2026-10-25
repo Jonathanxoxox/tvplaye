@@ -21,6 +21,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -212,9 +213,16 @@ fun PlayerHud(
     // Now/next lines for the channel-change banner (the playing channel's guide). Null = name only.
     zapGuide: (@Composable () -> Unit)? = null,
     // The playing channel's guide for the info bar along the bottom after a channel change. Non-null
-    // switches the live player to the list-first remote: OK opens the channel list, long OK or Menu
-    // the options panel, and a channel change shows the bottom info bar instead of the corner card.
+    // switches the live player to the classic IPTV remote: OK shows the info bar with the control panel,
+    // Left the channel list, Right the channel before, Up/Down change channel (held: history / search),
+    // long OK or Menu the options panel, long Menu the guide.
     zapInfo: (@Composable () -> EpgNowNext?)? = null,
+    // The guide (long Menu, and the panel's first tile). Null = no guide.
+    onOpenGuide: (() -> Unit)? = null,
+    // Search (long Down). Null = no search.
+    onOpenSearch: (() -> Unit)? = null,
+    // The recently watched channels for the control panel's tiles. Read only while the panel is up.
+    panelChannels: (@Composable () -> List<PanelTile>)? = null,
     // The archive's own wall-clock instant while catch-up/rewind is playing; null means the picture is
     // the present, and only the real clock shows. Drives the second, framed clock at top centre.
     // Lambda for the same reason as [timeshiftOffsetSec]: this instant advances every second too.
@@ -300,6 +308,13 @@ fun PlayerHud(
     // The options panel ignores OK until the press that opened it has been released, or the
     // auto-repeat of a held OK would choose its first row.
     var optionsOpenedByOk by remember { mutableStateOf(false) }
+    // The info bar with the tile row under it (OK in the live player), and what keeps it up.
+    var showPanel by remember { mutableStateOf(false) }
+    var panelTick by remember { mutableIntStateOf(0) }
+    val panelFocus = remember { FocusRequester() }
+    // Menu, Up and Down wait for the release too: held, they open the guide, history or search.
+    var menuPending by remember { mutableStateOf(false) }
+    var verticalPending by remember { mutableStateOf<Key?>(null) }
     var showInfo by remember { mutableStateOf(false) } // stream technical-info overlay
     // Used only by "Report this stream", which writes the current readout into the playback log.
     val reportContext = androidx.compose.ui.platform.LocalContext.current
@@ -440,6 +455,13 @@ fun PlayerHud(
     }
     // Back cancels digit entry before it hides/exits controls.
     BackHandler(enabled = digitsActive) { digitBuffer = ""; tuneOsd = null }
+    BackHandler(enabled = showPanel && !digitsActive) { showPanel = false }
+    LaunchedEffect(showPanel, panelTick, inert, dialog, showOptions) {
+        if (showPanel && !inert && dialog == HudDialog.NONE && !showOptions) { delay(8000); showPanel = false }
+    }
+    LaunchedEffect(showPanel) {
+        if (showPanel) { withFrameNanos { }; runCatching { panelFocus.requestFocus() } }
+    }
 
     // Only for the "report this stream" button, whose readout is now gathered off the main thread.
     val hudScope = androidx.compose.runtime.rememberCoroutineScope()
@@ -455,10 +477,10 @@ fun PlayerHud(
         // Don't auto-hide under an overlay — hiding is what triggers the catch-all focus grab below.
         if (controlsVisible && !forceShow && !inert) { delay(4500); controlsVisible = false }
     }
-    LaunchedEffect(controlsVisible, error, dialog, inert, showNextCard, showOptions) {
+    LaunchedEffect(controlsVisible, error, dialog, inert, showNextCard, showOptions, showPanel) {
         // Never steal focus while a dialog is open (its rows own it) or while a shell overlay is up
         // (inert — the overlay owns the D-pad); when either closes this re-runs and hands focus back.
-        if (dialog != HudDialog.NONE || inert || showOptions) return@LaunchedEffect
+        if (dialog != HudDialog.NONE || inert || showOptions || showPanel) return@LaunchedEffect
         // The next-episode countdown card owns focus while it's up so Play now / Cancel are reachable.
         if (showNextCard) { runCatching { nextFocus.requestFocus() }; return@LaunchedEffect }
         if (controlsVisible) {
@@ -538,6 +560,11 @@ fun PlayerHud(
                 }
                 return@onPreviewKeyEvent true
             }
+            // The control panel's tiles own the D-pad while it is up; every press keeps it up.
+            if (showPanel) {
+                if (e.type == KeyEventType.KeyDown) panelTick++
+                return@onPreviewKeyEvent false
+            }
             // Configured player shortcuts run inside this original, stable preview handler. Direct
             // tune above has first priority, so number keys keep changing live channels fullscreen.
             if (remoteShortcuts.enabled && !inert && dialog == HudDialog.NONE && !digitsActive) {
@@ -573,7 +600,7 @@ fun PlayerHud(
                     }
                 }
             }
-            // ---- List-first OK: a short press opens the channel list, a long one the options ----
+            // ---- List-first OK: a short press shows the info bar and control panel, a long one the options ----
             val isOk = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
             if (listFirst && isOk && !controlsVisible && !inert && dialog == HudDialog.NONE && !showOptions &&
                 !showNextCard && error == null && onToastOk == null
@@ -590,13 +617,42 @@ fun PlayerHud(
                     }
                     KeyEventType.KeyUp -> if (okPressPending) {
                         okPressPending = false
-                        onOpenChannelList?.invoke()
+                        showPanel = true
                     }
                 }
                 return@onPreviewKeyEvent true
             }
             if (listFirst && e.key == Key.Menu && !inert && dialog == HudDialog.NONE && !showOptions) {
-                if (e.type == KeyEventType.KeyDown) { optionsOpenedByOk = false; showOptions = true }
+                when (e.type) {
+                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
+                        menuPending = true
+                    } else if (menuPending) {
+                        menuPending = false
+                        if (onOpenGuide != null) onOpenGuide() else { optionsOpenedByOk = false; showOptions = true }
+                    }
+                    KeyEventType.KeyUp -> if (menuPending) { menuPending = false; optionsOpenedByOk = false; showOptions = true }
+                }
+                return@onPreviewKeyEvent true
+            }
+            // Up/Down change channel on release; held, Up opens the history and Down the search.
+            val vertical = e.key == Key.DirectionUp || e.key == Key.DirectionDown
+            if (listFirst && vertical && canZap && isLive && !controlsVisible && !inert && dialog == HudDialog.NONE &&
+                !showOptions && !digitsActive
+            ) {
+                val up = e.key == Key.DirectionUp
+                when (e.type) {
+                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
+                        verticalPending = e.key
+                    } else if (verticalPending == e.key) {
+                        verticalPending = null
+                        val held = if (up) onOpenHistoryList else onOpenSearch
+                        if (held != null) held() else zap(if (up) 1 else -1)
+                    }
+                    KeyEventType.KeyUp -> if (verticalPending == e.key) {
+                        verticalPending = null
+                        zap(if (up) 1 else -1)
+                    }
+                }
                 return@onPreviewKeyEvent true
             }
             // ---- Existing key handling (unchanged, but skip for digit KeyUp already consumed above) ----
@@ -652,7 +708,7 @@ fun PlayerHud(
             }
         },
     ) {
-        if (!controlsVisible && !showNextCard) {
+        if (!controlsVisible && !showNextCard && !showPanel) {
             Box(
                 Modifier.fillMaxSize().focusRequester(catchFocus).focusable()
                     .onKeyEvent { e -> if (e.type == KeyEventType.KeyDown && e.key != Key.Back) { controlsVisible = true; true } else false },
@@ -694,7 +750,23 @@ fun PlayerHud(
         }
 
         // List-first: the channel change shows the info bar along the bottom instead of the corner card.
-        if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
+        if (listFirst && isLive && showPanel && zapInfo != null) {
+            val recent = panelChannels?.invoke().orEmpty()
+            val tiles = buildList {
+                onOpenGuide?.let { add(PanelTile("guide", stringResource(R.string.tvplayer_panel_guide), OwnTVIcon.EPG) { showPanel = false; it() }) }
+                onOpenHistoryList?.let { add(PanelTile("history", stringResource(R.string.tvplayer_panel_history), OwnTVIcon.HISTORY) { showPanel = false; it() }) }
+                recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { showPanel = false; ch.onClick() }) }
+            }
+            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
+                ZapInfoBar(player, zapInfo())
+                if (tiles.isNotEmpty()) {
+                    ControlPanelRow(
+                        tiles, panelFocus, onActivity = { panelTick++ },
+                        modifier = Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp),
+                    )
+                }
+            }
+        } else if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
             ZapInfoBar(player, zapInfo(), modifier = Modifier.align(Alignment.BottomCenter))
         }
 

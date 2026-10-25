@@ -1,0 +1,126 @@
+package tv.own.owntv.player
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.tv.material3.Text
+import coil3.compose.AsyncImage
+import tv.own.owntv.ui.components.OwnTVIcon
+import tv.own.owntv.ui.theme.stageText
+
+/** One tile of the player's control panel: a tool (icon) or a recent channel (logo plus what is on). */
+class PanelTile(
+    val key: Any,
+    val label: String,
+    val icon: OwnTVIcon? = null,
+    val logoUrl: String? = null,
+    val caption: String? = null,
+    val onClick: () -> Unit,
+)
+
+private val TileIdle = Color(0xFF178A8F)
+private val TileFocus = Color(0xFF43C3CE)
+
+/**
+ * The row of tiles under the info bar that OK brings up in the live player, as the classic IPTV player
+ * draws it: Guide and History first, then the channels watched last. Teal tiles, the focused one lighter
+ * and a touch larger. [onActivity] keeps the panel up while the user moves along it.
+ */
+@Composable
+internal fun ControlPanelRow(
+    tiles: List<PanelTile>,
+    firstFocus: FocusRequester,
+    onActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 48.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(tiles, key = { it.key }) { tile ->
+            val first = tile === tiles.first()
+            PanelTileView(tile, if (first) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
+        }
+    }
+}
+
+@Composable
+private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () -> Unit) {
+    var focused by remember { mutableStateOf(false) }
+    Box(
+        modifier
+            .size(width = 176.dp, height = 112.dp)
+            .scale(if (focused) 1.06f else 1f)
+            .clip(RoundedCornerShape(6.dp))
+            .background(if (focused) TileFocus else TileIdle)
+            .then(if (focused) Modifier.border(2.dp, Color.White.copy(alpha = 0.85f), RoundedCornerShape(6.dp)) else Modifier)
+            .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
+            .onKeyEvent { e ->
+                val ok = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
+                if (ok && e.type == KeyEventType.KeyUp) { tile.onClick(); true } else ok
+            }
+            .focusable(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(
+            Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            when {
+                tile.icon != null -> OwnTVIcon(tile.icon, Color.White, Modifier.size(40.dp))
+                else -> Box(
+                    Modifier.size(width = 76.dp, height = 48.dp).clip(RoundedCornerShape(4.dp)).background(Color.White),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (!tile.logoUrl.isNullOrBlank()) {
+                        AsyncImage(model = tile.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(5.dp))
+                    } else {
+                        Text(tile.label.take(3).uppercase(), style = stageText(20, 800), color = Color(0xFF26363A))
+                    }
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                tile.caption?.takeIf { it.isNotBlank() } ?: tile.label,
+                style = stageText(18, 500), color = Color.White, maxLines = 1,
+                overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
+            )
+        }
+    }
+}
