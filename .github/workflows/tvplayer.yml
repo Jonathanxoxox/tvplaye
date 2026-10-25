@@ -1,0 +1,63 @@
+name: TV Kanäle APK
+
+# Baut bei jedem Push auf den Arbeitszweig eine signierte Release-APK und legt sie unter einer
+# festen Adresse im Release "latest" ab, damit man sie am Fernseher direkt laden kann.
+on:
+  push:
+    branches: [ "claude/**" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tvplayer-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Build APK
+        env:
+          VERSION_NAME: 1.0.${{ github.run_number }}
+          # Fester Sideload-Schlüssel aus dem Repo: jede neue APK installiert sich über die alte.
+          KEYSTORE_FILE: ${{ github.workspace }}/app/sideload.keystore
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: sideload
+          KEY_PASSWORD: android
+        run: |
+          export VERSION_CODE=$((10000 + GITHUB_RUN_NUMBER))
+          chmod +x ./gradlew
+          ./gradlew assembleStandardRelease --stacktrace
+          mkdir -p dist
+          cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/TVKanaele.apk
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: TVKanaele
+          path: dist/TVKanaele.apk
+          if-no-files-found: error
+
+      - name: Publish "latest" release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: latest
+          name: Neueste Version
+          prerelease: true
+          make_latest: false
+          body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }} (Version 1.0.${{ github.run_number }})"
+          files: dist/TVKanaele.apk

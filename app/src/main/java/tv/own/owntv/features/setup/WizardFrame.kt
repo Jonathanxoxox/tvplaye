@@ -81,7 +81,7 @@ internal fun WizardFrame(
             Box(Modifier.size(44.mpx).background(LockupTile, RoundedCornerShape(12.mpx)), contentAlignment = Alignment.Center) {
                 OwnTVIcon(OwnTVIcon.PLAY, LockupMark, Modifier.size(22.mpx))
             }
-            Text(stringResource(R.string.app_name), style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(stringResource(R.string.tvplayer_app_name), style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
         StepDots(step, Modifier.align(Alignment.TopEnd).padding(end = 64.mpx, top = 66.mpx))
 

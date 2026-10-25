@@ -42,7 +42,7 @@
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/owntv_icon_eggshell"
-        android:label="@string/app_name"
+        android:label="@string/tvplayer_app_name"
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/owntv_icon_eggshell"
         android:supportsRtl="true"
