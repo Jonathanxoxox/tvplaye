@@ -25,10 +25,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v4
-        with:
-          packages: 'platform-tools'
-
+      # Das Android-SDK ist auf ubuntu-latest vorinstalliert; fehlende Plattformen lädt Gradle nach.
       - uses: gradle/actions/setup-gradle@v6
 
       - name: Build APK
