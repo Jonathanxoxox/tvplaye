@@ -1,3 +1,13 @@
+# TV Kanäle
+
+Private Variante von [OwnTV](https://github.com/ahXN00/OwnTV) (GPLv3) mit einer Bedienung nach Art klassischer IPTV-Player: OK öffnet im Vollbild die Senderliste mit Programm, OK halten oder Menü öffnet die Optionen, beim Umschalten erscheint unten eine Info-Leiste. Die App installiert sich als `io.github.jonathanxoxox.tvplayer` neben OwnTV.
+
+Die neueste APK baut GitHub Actions bei jedem Push: [TVKanaele.apk](https://github.com/Jonathanxoxox/tvplaye/releases/download/latest/TVKanaele.apk)
+
+Darunter folgt die unveränderte Beschreibung von OwnTV.
+
+---
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: light)" srcset="extras/brand/app-logos/logo_eggshell_light.png">
