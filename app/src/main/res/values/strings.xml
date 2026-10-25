@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="tvplayer_app_name" translatable="false">TV Kanäle</string>
+    <string name="tvplayer_app_name" translatable="false">TV Player</string>
     <string name="tvplayer_no_guide" translatable="false">Keine Programminfo</string>
     <string name="tvplayer_next_at" translatable="false">Danach %1$s</string>
     <string name="tvplayer_option_favorite" translatable="false">Zu Favoriten hinzufügen</string>
