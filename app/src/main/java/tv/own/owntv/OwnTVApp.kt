@@ -136,16 +136,19 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                 GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>().applyStageDefaults()
             }
         }
-        // Like a classic IPTV player, start on the last channel watched. Applied once, as soon as a profile
-        // exists (after setup); a later choice in Settings stays the user's.
+        // Like a classic IPTV player: start on the last channel watched, and keep the menu out of sight
+        // until Left calls it in (the floating rail). Applied once, as soon as a profile exists (after
+        // setup), after core's own Stage defaults; later choices in Settings stay the user's.
         appScope.launch {
             runCatching {
                 val prefs = getSharedPreferences("tvplayer", MODE_PRIVATE)
-                if (!prefs.getBoolean("startup_last_channel_applied", false)) {
+                if (!prefs.getBoolean("defaults_v1_applied", false)) {
                     val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
                     val profileId = settings.activeProfileId.first { it >= 0L }
+                    settings.applyStageDefaults()
+                    settings.setNavStyle(tv.own.owntv.core.settings.SettingsRepository.NavStyle.FLOATING)
                     settings.setStartupMode(profileId, tv.own.owntv.core.settings.StartupMode.LAST_CHANNEL)
-                    prefs.edit().putBoolean("startup_last_channel_applied", true).apply()
+                    prefs.edit().putBoolean("defaults_v1_applied", true).apply()
                 }
             }
         }

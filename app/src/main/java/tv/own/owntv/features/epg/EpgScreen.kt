@@ -305,7 +305,10 @@ fun EpgScreen(
     // Back from a channel tuned in the guide: its row again, once the reload has the grid on screen.
     LaunchedEffect(restoreFocus, state.loading, state.channels.size) {
         if (!restoreFocus || state.loading || state.channels.isEmpty()) return@LaunchedEffect
-        val idx = vm.lastTunedChannelId?.let { id -> state.channels.indexOfFirst { it.id == id } }?.takeIf { it >= 0 } ?: 0
+        // The channel that was just playing first: Back from full screen lands here from anywhere.
+        val idx = listOfNotNull(previewChannel?.id, vm.lastTunedChannelId)
+            .map { id -> state.channels.indexOfFirst { it.id == id } }
+            .firstOrNull { it >= 0 } ?: 0
         focusedRow = idx
         delay(80)
         focusGrid(idx)
@@ -441,15 +444,7 @@ fun EpgScreen(
         // Top (44 → 404): the video, and beside it the programme under the cursor.
         Row(Modifier.padding(start = fx(64), end = fx(64), top = 44.mpx).fillMaxWidth().height(360.mpx)) {
         val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
-        GuideVideo(
-            channel = videoChannel,
-            channelLine = videoChannel?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
-            nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
-            previewEngine = liveVm.previewEngine,
-            showVideo = effectivePreview && previewArmed,
-            modifier = Modifier.width(640.mpx),
-        )
-        // … and the programme under the cursor, with what it can do.
+        // The programme under the cursor, with what it can do, at the left; the video at the right.
         Box(Modifier.weight(1f).fillMaxHeight()) {
             if (topChannel != null) {
                 val chName = ProviderTags.parse(topChannel.name).name
@@ -458,13 +453,21 @@ fun EpgScreen(
                     title = shown?.title ?: chName,
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
-                    modifier = Modifier.padding(start = 46.mpx, top = 76.mpx).widthIn(max = 1080.mpx),
+                    modifier = Modifier.padding(end = 46.mpx, top = 20.mpx).widthIn(max = 1080.mpx),
                 )
             }
-            // The key hints at the bottom right of the top area, level with the video's bottom edge.
-            Box(Modifier.align(Alignment.BottomEnd)) { GuideKeyHints(cellMode = inCellMode && gridHasFocus) }
+            // The key hints at the bottom of the top area, level with the video's bottom edge.
+            Box(Modifier.align(Alignment.BottomStart)) { GuideKeyHints(cellMode = inCellMode && gridHasFocus) }
         }
 
+        GuideVideo(
+            channel = videoChannel,
+            channelLine = videoChannel?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
+            nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
+            previewEngine = liveVm.previewEngine,
+            showVideo = effectivePreview && previewArmed,
+            modifier = Modifier.width(640.mpx),
+        )
         }
 
         // The control line (452): one row with every guide header button.

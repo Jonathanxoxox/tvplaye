@@ -555,6 +555,13 @@ fun OwnTVShell(
         focusRail()
         Unit
     }
+    // Back out of a live channel lands in the TV Guide, with the channel carrying on in its preview, as
+    // classic IPTV players do. Films, series and a hidden Guide keep the plain exit.
+    val exitToGuide = {
+        val toGuide = zapSource == MainSection.LIVE_TV && MainSection.EPG in visibleSections
+        exitPlayer()
+        if (toGuide && selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG)
+    }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
     tv.own.owntv.features.downloads.DownloadWatchPrompt(onClosePlayer = { if (playerMode != PlayerMode.NONE) exitPlayer() })
     /**
@@ -860,7 +867,7 @@ fun OwnTVShell(
 
     BackHandler {
         when {
-            playerMode == PlayerMode.FULLSCREEN -> exitPlayer()
+            playerMode == PlayerMode.FULLSCREEN -> exitToGuide()
             showAvatarPicker -> showAvatarPicker = false
             showPlaylistPicker -> showPlaylistPicker = false
             showExit -> showExit = false
@@ -893,6 +900,18 @@ fun OwnTVShell(
     var shortcutLongFired by remember { mutableStateOf(false) }
     var shortcutHoldJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val longPressBackArmed = playerMode == PlayerMode.MINI && !showExit && !showAvatarPicker && !showPlaylistPicker
+    // Holding Back in the TV Guide goes straight back to the channel in its preview, full screen.
+    val guideBackChannel = previewChannel
+        ?.takeIf { playerMode == PlayerMode.NONE && selectedSection == MainSection.EPG && !showExit && !showAvatarPicker && !showPlaylistPicker }
+    val backToChannel: () -> Unit = {
+        guideBackChannel?.let { ch ->
+            restoreFocus = false
+            liveVm.watchFromGuide(ch)
+            zapSource = MainSection.LIVE_TV
+            homeVm.stopPreview()
+            if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
+        }
+    }
     // Media keys (the third way in) act on the docked window wherever focus is — but only if nothing nearer
     // claimed them first, which is why this is a bubbling handler: a focused browse list still gets its
     // CH+/CH− paging, and the full-screen HUD still owns zapping.
@@ -917,12 +936,13 @@ fun OwnTVShell(
                 if (e.key != Key.Back) return@onPreviewKeyEvent false
                 when (e.type) {
                     KeyEventType.KeyDown -> {
-                        if (longPressBackArmed && backHoldJob == null) {
+                        if ((longPressBackArmed || guideBackChannel != null) && backHoldJob == null) {
+                            val toChannel = !longPressBackArmed
                             backLongFired = false
                             backHoldJob = scope.launch {
                                 kotlinx.coroutines.delay(600)
                                 backLongFired = true
-                                toggleNowPlayingFocus()
+                                if (toChannel) backToChannel() else toggleNowPlayingFocus()
                             }
                         }
                         false
@@ -1615,7 +1635,7 @@ fun OwnTVShell(
                 }
                 PlayerHud(
                     player = if (liveOnExo) liveVm.previewEngine else mpvEngine, // HUD drives the active engine
-                    onBack = exitPlayer,
+                    onBack = exitToGuide,
                     onPip = dockPlayer, // PiP/dock works for live on either engine now
                     onAudioMode = toAudioMode,
                     // The channel-list overlay draws ABOVE the HUD; while it's open the HUD goes inert so
