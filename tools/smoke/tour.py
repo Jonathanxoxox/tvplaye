@@ -173,6 +173,12 @@ def setup():
     ]:
         goto(pattern)
         shot(name)
+    # Ohne Namen bleibt "Profil erstellen" gesperrt: Name-Zeile (erster Fokus) öffnen und tippen.
+    if goto(r"^Name$"):
+        time.sleep(1.2)
+        type_text("Jonathan")
+        key("ENTER", wait=1.2)
+        shot("profil-name")
     goto(r"^Profil erstellen")
     shot("profil")
     goto(r"^Hier eingeben")
@@ -192,8 +198,9 @@ def setup():
             key("BACK", wait=1.0)
     root = shot("formular-fertig")
     if not goto(r"^Importieren starten"):
-        key("DPAD_RIGHT")
-        key("DPAD_CENTER", wait=1.0)
+        key("DPAD_RIGHT", wait=1.0)
+        if find(dump(), r"^Importieren starten") is not None:
+            key("DPAD_CENTER", wait=1.0)
     for i in range(30):
         time.sleep(3)
         root = dump()
@@ -355,6 +362,10 @@ def guide_tour():
 
 def main():
     step("einrichtung", setup)
+    # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
+    if find(dump(), r"Los geht|Wer schaut gerade|Angenehm lesbar|Flutlicht einrichten|Playlist hinzufügen|Hier eingeben|Importieren starten") is not None:
+        print("[tour] Einrichtung nicht abgeschlossen, Tour endet hier", flush=True)
+        return
     step("menue", rail_tour)
     step("guide", guide_tour)
     step("player", player_tour)
