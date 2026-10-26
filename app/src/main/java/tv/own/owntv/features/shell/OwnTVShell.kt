@@ -1403,6 +1403,13 @@ fun OwnTVShell(
                 }
             }
           }
+            // Like TiviMate: with the menu and the groups open over the guide, the pushed guide runs to the
+            // right edge and the clock and playlist pill step aside instead of sitting on top of it.
+            val clusterLiveView by liveVm.liveView.collectAsStateWithLifecycle()
+            val clusterAside = railState == tv.own.owntv.features.shell.components.RailState.OPEN &&
+                (selectedSection == MainSection.EPG ||
+                    (selectedSection == MainSection.LIVE_TV && clusterLiveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE))
+            val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
                     val live = target.kind == tv.own.owntv.features.home.ContinueKind.LIVE
@@ -1426,13 +1433,13 @@ fun OwnTVShell(
                 playlistInteractive = playlists.size > 1,
                 onPlaylistClick = { showPlaylistPicker = true },
                 // Out of reach from deep in a list: from the rail or on Home only.
-                pillsFocusable = focusedLayer == ShellLayer.SIDEBAR || clusterFocused || selectedSection == MainSection.HOME,
+                pillsFocusable = !clusterAside && (focusedLayer == ShellLayer.SIDEBAR || clusterFocused || selectedSection == MainSection.HOME),
                 weatherInfo = weatherInfo,
                 weatherFahrenheit = weatherFahrenheit,
                 clockColors = clockColors,
                 playlistDownFocusRequester = homeFirstRowFocus.takeIf { selectedSection == MainSection.HOME },
                 onPlaylistPillBounds = { playlistPillBounds = it },
-                modifier = Modifier.align(Alignment.TopEnd).onFocusChanged { clusterFocused = it.hasFocus }.focusGroup(),
+                modifier = Modifier.align(Alignment.TopEnd).graphicsLayer { alpha = clusterAlpha }.onFocusChanged { clusterFocused = it.hasFocus }.focusGroup(),
             )
             tv.own.owntv.features.shell.components.StageRail(
                 state = railState,

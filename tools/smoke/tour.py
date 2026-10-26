@@ -111,18 +111,18 @@ def shot(name):
     return root
 
 
-def find(root, pattern, xmin=0):
+def find(root, pattern, xmin=0, xmax=99999):
     rx = re.compile(pattern, re.I)
-    hits = [n for n in root.iter("node") if label(n) and rx.search(label(n)) and bounds(n)[0] >= xmin]
+    hits = [n for n in root.iter("node") if label(n) and rx.search(label(n)) and xmin <= bounds(n)[0] <= xmax]
     return hits[0] if hits else None
 
 
-def goto(pattern, press=True, tries=24, xmin=0):
+def goto(pattern, press=True, tries=24, xmin=0, xmax=99999):
     """Fokus per Steuerkreuz auf das Element mit passendem Text bewegen und (optional) OK drücken."""
     last = None
     for _ in range(tries):
         root = dump()
-        target = find(root, pattern, xmin)
+        target = find(root, pattern, xmin, xmax)
         if target is None:
             print(f"[goto] {pattern!r} nicht gefunden; sichtbar: {[s for s, _ in texts(root)][:25]}", flush=True)
             return False
@@ -239,6 +239,8 @@ def setup():
 
 # ---------------------------------------------------------------- Menü und Bereiche
 RAIL = re.compile(r"^(Suche|Live-TV|Programmübersicht|Sport|Filme|Serien|Downloads|Startseite|Mehr)$")
+# Menüpunkte liegen ganz links; der Guide-Titel heißt ebenfalls „Live-TV“.
+RAIL_XMAX = 160
 SETTINGS_CARDS = [
     "Schnellzugriff", "Profil", "Quellen und Programm", "Darstellung", "Layout", "Inhalte und Metadaten",
     "Player", "Bild", "Ton und Untertitel", "Live-TV", "Wiedergabe und Aufnahme", "App",
@@ -282,7 +284,7 @@ def to_rail():
 def open_section(name):
     if not to_rail():
         return False
-    ok = goto("^" + re.escape(name) + "$")
+    ok = goto("^" + re.escape(name) + "$", xmax=RAIL_XMAX)
     time.sleep(2.5)
     return ok
 
@@ -334,7 +336,7 @@ def guide_tour():
     shot("guide-ok-lang")
     key("BACK", wait=1.0)
     # Das Menü über dem Guide: die Seite rückt zur Seite und wird dunkler
-    if to_rail() and goto(r"^Live-TV$", press=False):
+    if to_rail() and goto(r"^Live-TV$", press=False, xmax=RAIL_XMAX):
         shot("guide-menue-offen")
         key("DPAD_RIGHT", wait=1.2)
         shot("guide-gruppen")
