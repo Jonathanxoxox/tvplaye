@@ -95,10 +95,11 @@ def shot(name):
     counter[0] += 1
     fn = f"{counter[0]:03d}-{re.sub(r'[^A-Za-z0-9äöüÄÖÜß_-]+', '_', name)[:60]}"
     time.sleep(0.8)
-    root = dump()
+    # Erst das Bild, dann der UI-Baum: der Dump dauert Sekunden, kurze Einblendungen wären sonst weg.
     png = os.path.join(OUT, fn + ".png")
     with open(png, "wb") as f:
         f.write(subprocess.run(["adb", "exec-out", "screencap", "-p"], capture_output=True, timeout=60).stdout)
+    root = dump()
     t = texts(root)
     w, h = 1920, 1080
     off = [s for s, b in t if b[0] < 0 or b[1] < 0 or b[2] > w or b[3] > h]
@@ -212,9 +213,14 @@ def setup():
         if find(root, r"Jetzt synchronisieren|^Weiter$|Alles bereit|Fertig|fehlgeschlagen|failed"):
             break
     shot("import")
+    # Die EPG-Abfrage hat den Fokus schon auf "Jetzt synchronisieren".
+    if steps and steps[-1]["focus"].startswith("Jetzt synchronisieren"):
+        key("DPAD_CENTER", wait=8)
+        shot("epg-sync")
     # EPG-Abfrage, "Alles bereit" und Co. wegdrücken, bis die Startseite mit dem Menü steht.
     for _ in range(12):
         root = dump()
+        print(f"[setup] Dump: {len(list(root.iter('node')))} Knoten, Fokus {focused_text(root)!r}", flush=True)
         if find(root, r"Jetzt synchronisieren"):
             goto(r"Jetzt synchronisieren")
             time.sleep(8)
@@ -351,11 +357,11 @@ def player_tour():
     key("DPAD_CENTER", wait=1.5)
     shot("player-ok-infoleiste")
     key("BACK", wait=1.0)
-    key("DPAD_UP", wait=3)
+    key("DPAD_UP", wait=1.2)
     shot("player-hoch-zappen")
-    key("DPAD_DOWN", wait=3)
+    key("DPAD_DOWN", wait=1.2)
     shot("player-runter-zappen")
-    key("DPAD_RIGHT", wait=3)
+    key("DPAD_RIGHT", wait=1.2)
     shot("player-rechts-letzter-sender")
     key("DPAD_LEFT", wait=1.5)
     shot("player-links-senderliste")
@@ -400,6 +406,11 @@ def settings_tour():
             continue
         time.sleep(1.5)
         shot(f"einst-{slug(card)}")
+        key("DPAD_DOWN", n=6, wait=0.4)
+        shot(f"einst-{slug(card)}-mitte")
+        key("DPAD_DOWN", n=10, wait=0.4)
+        shot(f"einst-{slug(card)}-ende")
+        # Die Tastenbelegung ist die letzte Zeile von Layout
         if card == "Layout" and goto(r"^Fernbedienungs-Kurzbefehle"):
             time.sleep(1.5)
             shot("einst-tasten")
@@ -411,10 +422,6 @@ def settings_tour():
             key("DPAD_DOWN", n=12, wait=0.4)
             shot("einst-tasten-unten")
             key("BACK", wait=1.5)
-        key("DPAD_DOWN", n=6, wait=0.4)
-        shot(f"einst-{slug(card)}-mitte")
-        key("DPAD_DOWN", n=10, wait=0.4)
-        shot(f"einst-{slug(card)}-ende")
         key("BACK", wait=1.5)
         root = dump()
         if dismiss_exit(root) or find(root, r"^Alle Einstellungen durchsuchen") is None:

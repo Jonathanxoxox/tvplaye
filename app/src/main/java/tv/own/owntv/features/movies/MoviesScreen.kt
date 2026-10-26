@@ -564,7 +564,9 @@ fun MoviesScreen(
         fun fx(px: Int) = screenW * (px / 1920f)
         if (cinematic) {
             val heroH = if (panelShares != null) maxHeight * (cinematicDetailsPct / 100f) else 464.mpx
-            val toolTop = 122.mpx + heroH
+            // An empty list has no title for the hero: the toolbar moves up under the header instead of
+            // floating mid-screen over an empty hero.
+            val toolTop = 122.mpx + if (titleInfo == null && movies.itemCount == 0) 0.mpx else heroH
             Box(Modifier.fillMaxSize().then(if (categoriesOpen) Modifier.graphicsLayer { alpha = 0.36f } else Modifier)) {
                 VodCinematicBackdrop(titleInfo?.backdropUrl, series = false, Modifier.align(Alignment.TopEnd))
                 VodHeader(

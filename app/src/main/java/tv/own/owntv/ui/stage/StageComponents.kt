@@ -180,6 +180,8 @@ private fun StagePalette.onFocusBar(): StagePalette = copy(
     ink = fxText,
     segmentOn = fxText.copy(alpha = 0.16f),
     keycap = fxText.copy(alpha = 0.10f),
+    // An off switch keeps a visible knob on the light bar (white on white otherwise).
+    knobOff = fxLine,
 )
 
 /** The PRIMARY (1.04) and POSTER (1.08, from 50% 40%) lift; FX and FILLED stay put. An episode lifts 1.06 from 50% 30%. */

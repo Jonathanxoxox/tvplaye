@@ -2,6 +2,7 @@ package tv.own.owntv.features.shell.components
 
 import androidx.compose.ui.draw.clip
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
@@ -164,7 +165,20 @@ fun StageRail(
     }
     val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections }
 
+    // Opened over the page (Floating, or a widened Compact): dim what it covers, so the cut-off page
+    // reads as the background and the menu as the one thing in front.
+    val scrim by animateFloatAsState(if (state == RailState.OPEN) 1f else 0f, label = "railScrim")
     Box(modifier.fillMaxSize()) {
+        if (scrim > 0f) {
+            Box(
+                Modifier.fillMaxSize().graphicsLayer { alpha = scrim }.background(
+                    Brush.horizontalGradient(
+                        if (rtl) listOf(Color.Black.copy(alpha = 0.28f), Color.Black.copy(alpha = 0.62f))
+                        else listOf(Color.Black.copy(alpha = 0.62f), Color.Black.copy(alpha = 0.28f)),
+                    ),
+                ),
+            )
+        }
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
