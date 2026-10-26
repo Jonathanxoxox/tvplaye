@@ -1861,7 +1861,13 @@ fun OwnTVShell(
                         if (liveVm.ensurePlayingByIdAsync(r.channelId)) openFullscreen(MainSection.LIVE_TV)
                     }
                 }
-                val reminderText = dueReminder?.let { listOf(it.title, tv.own.owntv.features.epg.reminderEyebrow(it)).joinToString(" · ") }
+                // A match of the profile's teams: the remote goes to Jonathan.
+                val remoteContext = androidx.compose.ui.platform.LocalContext.current
+                val remoteWanted = stringResource(R.string.tvplayer_football_remote)
+                val remoteLine = remember(dueReminder?.id) {
+                    dueReminder?.takeIf { tv.own.owntv.launcher.FootballReminders.isTeamMatch(remoteContext, it.profileId, it.startMs, it.title) }?.let { remoteWanted }
+                }
+                val reminderText = dueReminder?.let { listOfNotNull(it.title, tv.own.owntv.features.epg.reminderEyebrow(it), remoteLine).joinToString(" · ") }
                 LaunchedEffect(dueReminder?.id, reminderMode) {
                     val r = dueReminder ?: return@LaunchedEffect
                     when (reminderMode) {
@@ -1876,6 +1882,7 @@ fun OwnTVShell(
                 if (dueReminder != null && reminderMode == tv.own.owntv.core.settings.SettingsRepository.ReminderMode.ASK) {
                     tv.own.owntv.features.epg.ReminderPrompt(
                         reminder = dueReminder,
+                        extra = remoteLine,
                         onWatch = { watchReminder(dueReminder) },
                         onDismiss = { scope.launch { reminderManager.dismiss(dueReminder.id) } },
                     )
