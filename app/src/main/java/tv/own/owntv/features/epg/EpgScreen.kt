@@ -39,6 +39,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -399,10 +400,17 @@ fun EpgScreen(
     val searchFocus = remember { FocusRequester() }
     val sheetFocus = remember { FocusRequester() }
     val catListState = rememberLazyListState()
+    // The groups column beside the open menu, and whether it holds focus (the menu then stays open).
+    val groupsFocus = remember { FocusRequester() }
+    val groupsListState = rememberLazyListState()
+    var groupsFocused by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailHold.held = false } }
 
     DisposableEffect(onEntryHook) {
         onEntryHook?.invoke {
-            state.channels.isNotEmpty() &&
+            // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player.
+            (tv.own.owntv.features.shell.components.StageRailOpen.open && runCatching { groupsFocus.requestFocus() }.getOrDefault(false)) ||
+                state.channels.isNotEmpty() &&
                 runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
         }
         onDispose { onEntryHook?.invoke(null) }
@@ -443,7 +451,11 @@ fun EpgScreen(
         }
         val shown = full ?: topProgramme
 
-        Column(Modifier.fillMaxSize()) {
+        // With the menu open the groups stand beside it and the guide moves over by their width.
+        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused
+        val groupsW = fx(400)
+        val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
+        Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (44 → 404): the video, and beside it the programme under the cursor.
         Row(Modifier.padding(start = fx(64), end = fx(64), top = 44.mpx).fillMaxWidth().height(360.mpx)) {
         val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
@@ -636,6 +648,38 @@ fun EpgScreen(
             }
         }
 
+        }
+
+        if (showGroups) {
+            val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
+            val (groupEntries, _) = liveCategoryEntries(railItems, railCounts)
+            LiveCategories(
+                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
+                onSearchQueryChange = vm::setCategoryQuery,
+                entries = groupEntries,
+                selectedIndex = railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0),
+                groupsHeading = groupsHeading,
+                sheet = false,
+                listState = groupsListState,
+                onSelect = { idx ->
+                    railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
+                    focusedRow = 0
+                    scope.launch { runCatching { rowListState.scrollToItem(0) } }
+                    focusGrid(0)
+                },
+                onLongSelect = {},
+                onNavigateRight = { focusGrid() },
+                focusRequester = groupsFocus,
+                modifier = Modifier
+                    .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
+                    .width(groupsW - fx(40))
+                    .fillMaxHeight()
+                    .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
+                    .onFocusChanged {
+                        groupsFocused = it.hasFocus
+                        tv.own.owntv.features.shell.components.StageRailHold.held = it.hasFocus
+                    },
+            )
         }
 
         // ◀ … Category ▾: Live TV's own list as the sheet, titled for the guide.

@@ -2,7 +2,6 @@ package tv.own.owntv.features.shell.components
 
 import androidx.compose.ui.draw.clip
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
@@ -165,20 +164,11 @@ fun StageRail(
     }
     val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections }
 
-    // Opened over the page (Floating, or a widened Compact): the page slides aside ([rememberRailPush])
-    // and dims, so the menu is the one thing in front.
-    val scrim by animateFloatAsState(if (state == RailState.OPEN) 1f else 0f)
+    // Opened over the page (Floating, or a widened Compact): the page slides aside ([rememberRailPush]),
+    // bright as before, as in the classic IPTV player. Pages that add a column beside the menu read it.
+    val openOverPage = state == RailState.OPEN
+    androidx.compose.runtime.SideEffect { StageRailOpen.open = openOverPage }
     Box(modifier.fillMaxSize()) {
-        if (scrim > 0f) {
-            Box(
-                Modifier.fillMaxSize().graphicsLayer { alpha = scrim }.background(
-                    Brush.horizontalGradient(
-                        if (rtl) listOf(Color.Black.copy(alpha = 0.5f), Color.Black.copy(alpha = 0.72f))
-                        else listOf(Color.Black.copy(alpha = 0.72f), Color.Black.copy(alpha = 0.5f)),
-                    ),
-                ),
-            )
-        }
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
@@ -269,6 +259,19 @@ private val StripWidth = 110.mpx
 
 /** What every screen leaves free at its left edge for the resting icon strip. */
 val StageRailStripWidth = StripWidth
+
+/** Whether the menu is open over the page right now, for a page that shows its own column beside it. */
+object StageRailOpen {
+    var open by mutableStateOf(false)
+}
+
+/**
+ * Set while a page's column that belongs to the open menu holds focus (the guide's groups beside the
+ * menu, as in the classic IPTV player): the menu stays open around it instead of folding away.
+ */
+object StageRailHold {
+    var held by mutableStateOf(false)
+}
 
 /**
  * How far the page slides aside while the menu is open over it, as in the classic IPTV player: the page

@@ -333,8 +333,14 @@ def guide_tour():
     shot("guide-ok-lang")
     key("BACK", wait=1.0)
     # Das Menü über dem Guide: die Seite rückt zur Seite und wird dunkler
-    if to_rail():
+    if to_rail() and goto(r"^Programmübersicht$", press=False):
         shot("guide-menue-offen")
+        key("DPAD_RIGHT", wait=1.2)
+        shot("guide-gruppen")
+        key("DPAD_DOWN", n=2, wait=0.6)
+        shot("guide-gruppen-runter")
+        key("DPAD_RIGHT", wait=1.2)
+        shot("guide-nach-gruppen")
 
 
 def in_fullscreen():

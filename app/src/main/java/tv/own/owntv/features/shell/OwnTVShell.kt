@@ -698,7 +698,7 @@ fun OwnTVShell(
     val railState = when {
         widenDocked -> tv.own.owntv.features.shell.components.RailState.OPEN
         navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED -> tv.own.owntv.features.shell.components.RailState.PINNED
-        railFocused -> tv.own.owntv.features.shell.components.RailState.OPEN
+        railFocused || tv.own.owntv.features.shell.components.StageRailHold.held -> tv.own.owntv.features.shell.components.RailState.OPEN
         railIdleHidden -> tv.own.owntv.features.shell.components.RailState.HIDDEN
         else -> tv.own.owntv.features.shell.components.RailState.CAPSULE
     }
