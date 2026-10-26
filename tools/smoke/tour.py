@@ -188,8 +188,10 @@ def setup():
     if goto(r"^Typ$", press=False):
         key("DPAD_RIGHT")
     shot("quelle-m3u")
-    if goto(r"^URL der Wiedergabeliste"):
-        time.sleep(1.2)
+    # Die Eingabezeilen tauchen im UI-Baum nicht mit Text auf: von "Typ" aus zwei nach unten (Name, URL).
+    key("DPAD_DOWN", n=2, wait=0.7)
+    if True:
+        key("DPAD_CENTER", wait=1.5)
         shot("tastatur")
         type_text("http://127.0.0.1:8080/playlist.m3u")
         key("ENTER", wait=1.0)
@@ -198,8 +200,10 @@ def setup():
         if find(root, r"127\.0\.0\.1") is None:
             key("BACK", wait=1.0)
     root = shot("formular-fertig")
+    # "Importieren starten" sitzt im Feld rechts und ist von jeder Zeile mit ▶ erreichbar.
     if not goto(r"^Importieren starten"):
         key("DPAD_RIGHT", wait=1.0)
+        shot("import-knopf")
         if find(dump(), r"^Importieren starten") is not None:
             key("DPAD_CENTER", wait=1.0)
     for i in range(30):
