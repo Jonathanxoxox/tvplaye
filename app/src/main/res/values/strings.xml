@@ -2,6 +2,7 @@
 <resources>
     <string name="tvplayer_panel_guide" translatable="false">EPG</string>
     <string name="tvplayer_panel_history" translatable="false">Verlauf</string>
+    <string name="tvplayer_about_based_on" translatable="false">Basiert auf OwnTV (GPLv3) · %1$s</string>
     <string name="tvplayer_app_name" translatable="false">Flutlicht</string>
     <string name="tvplayer_no_guide" translatable="false">Keine Programminfo</string>
     <string name="tvplayer_next_at" translatable="false">Danach %1$s</string>

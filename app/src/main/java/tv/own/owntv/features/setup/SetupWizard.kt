@@ -358,18 +358,6 @@ private fun DisplaySizeStep(onNext: () -> Unit, onBack: () -> Unit) {
             onClick = { vm.setFontSize(fontSize + UiFontScale.STEP) },
             onStep = { dir -> vm.setFontSize(fontSize + dir * UiFontScale.STEP) },
         )
-        // No restart prompt here: nothing is on the home screen yet, and the pick applies as soon as
-        // the app is next in the background.
-        val icons = AppIcon.entries
-        val at = icons.indexOf(appIcon).coerceAtLeast(0)
-        StageSettingRow(
-            icon = OwnTVIcon.SPARKLE,
-            title = stringResource(R.string.settings_app_icon),
-            desc = stringResource(R.string.setup_line_app_icon),
-            value = SettingValue.Custom { AppIconSwatches(icons, appIcon) },
-            onClick = { pickIcon = true },
-            onStep = { dir -> vm.setAppIcon(icons[(at + dir + icons.size) % icons.size]) },
-        )
         // The sample: a row's own type at the size it will really be.
         Row(
             Modifier
