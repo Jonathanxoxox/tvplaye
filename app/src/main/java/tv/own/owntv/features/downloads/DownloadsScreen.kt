@@ -45,7 +45,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -77,6 +76,7 @@ import tv.own.owntv.features.live.edgeScrollSpec
 import tv.own.owntv.features.recordings.RecordingsViewModel
 import tv.own.owntv.features.recordings.recordingItems
 import tv.own.owntv.features.shell.components.vodRuntime
+import tv.own.owntv.ui.components.glowRoom
 import tv.own.owntv.ui.components.BrowseMode
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.StorageBrowser
@@ -319,11 +319,7 @@ fun DownloadsScreen(
 
         // The list: 1110 wide from the content edge, laid out wider by the focused row's glow and padded back.
         val glowRoom = 24.mpx
-        val glowWide = Modifier.layout { measurable, constraints ->
-            val extra = glowRoom.roundToPx()
-            val placeable = measurable.measure(constraints.copy(minWidth = constraints.minWidth + extra * 2, maxWidth = constraints.maxWidth + extra * 2))
-            layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(-extra, 0) }
-        }
+        val glowWide = Modifier.glowRoom(glowRoom)
         Box(Modifier.padding(start = contentStart, top = 210.mpx + warnShift).width(fx(1260) - contentStart).fillMaxSize()) {
             if (listIds.isEmpty()) {
                 Text(
