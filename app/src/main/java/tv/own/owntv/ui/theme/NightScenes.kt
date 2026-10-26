@@ -107,19 +107,24 @@ fun rememberNightSceneSettings(): NightSceneSettings {
  */
 @Composable
 fun Modifier.nightScenes(scene: NightScene, stadium: Boolean, playerFree: Boolean): Modifier =
-    SCENE_ART.entries.fold(this.sceneLayer(playerFree && stadium, FlutlichtArt)) { m, (s, art) ->
-        m.sceneLayer(playerFree && !stadium && scene == s, art)
+    NightScene.entries.fold(this.sceneLayer(playerFree && stadium, FlutlichtArt)) { m, s ->
+        val art = artOf(s)
+        if (art == null) m else m.sceneLayer(playerFree && !stadium && scene == s, art)
     }
 
-/** The art of every theme, in the order of [NightScene]; the stadium is not one of them. */
-private val SCENE_ART: Map<NightScene, SceneArt> = linkedMapOf(
-    NightScene.NORDLICHT to NordlichtArt,
-    NightScene.MITTERNACHT to MitternachtArt,
-    NightScene.TIEFSEE to TiefseeArt,
-    NightScene.MONDWUESTE to MondwuesteArt,
-    NightScene.GLIMMWALD to GlimmwaldArt,
-    NightScene.HAFENLICHTER to HafenArt,
-)
+/**
+ * The art of every theme; the stadium is not one of them. A function, not a map: a top-level map would build
+ * the worlds while this file's own statics (SKY_STARS) are still null.
+ */
+private fun artOf(scene: NightScene): SceneArt? = when (scene) {
+    NightScene.NONE -> null
+    NightScene.NORDLICHT -> NordlichtArt
+    NightScene.MITTERNACHT -> MitternachtArt
+    NightScene.TIEFSEE -> TiefseeArt
+    NightScene.MONDWUESTE -> MondwuesteArt
+    NightScene.GLIMMWALD -> GlimmwaldArt
+    NightScene.HAFENLICHTER -> HafenArt
+}
 
 /** A small live picture of [scene] (the settings' help panel); the plain page colour for [NightScene.NONE]. */
 @Composable
