@@ -151,7 +151,7 @@ private fun openInstallPermissionSettings(context: android.content.Context): Boo
     if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) return false
     val intent = android.content.Intent(
         android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-        android.net.Uri.parse("package:${context.packageName}"),
+        android.net.Uri.fromParts("package", context.packageName, null),
     ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
     return runCatching { context.startActivity(intent) }.isSuccess
 }
