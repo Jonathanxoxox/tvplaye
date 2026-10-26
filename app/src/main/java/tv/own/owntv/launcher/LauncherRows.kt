@@ -171,10 +171,8 @@ internal class LauncherRows(private val context: Context) {
             .flatten().map { it.channel.id }.distinct().take(MAX_GROUP)
         runCatching { FootballGroup.update(context, profile.profileId, groupChannels) }
             .onFailure { android.util.Log.w(TAG, "football group not updated", it) }
-        val teamMatches = matches.map { it.first }.filter { it.hit.kind == FootballMatcher.Kind.TEAM }
-            .map { FootballReminders.Match(it.channel, it.programme) }
-        runCatching { FootballReminders.update(context, profile.profileId, teamMatches, sportsConfig.reminderLeadMinutes, now) }
-            .onFailure { android.util.Log.w(TAG, "football reminders not set", it) }
+        runCatching { FootballReminders.clear(context, profile.profileId) }
+            .onFailure { android.util.Log.w(TAG, "old football reminders not cleared", it) }
 
         val forYouTiles = forYou.map { (pick, alternatives) ->
             val p = pick.programme

@@ -89,6 +89,29 @@ class FootballMatcherTest {
     }
 
     @Test
+    fun talkShowsAndMagazinesAreNotMatches() {
+        // Das Erste, 26 Oct 2026: the reminder that asked for the remote.
+        assertNull(
+            hit(
+                "Hart aber fair - Pflege zu Hause: Lässt die Politik Angehörige allein?",
+                "Millionen Menschen in Deutschland pflegen Angehörige, in Hamburg wie in Bayern.",
+                sportsChannel = false,
+            ),
+        )
+        assertNull(hit("Maischberger - Deutschland am Limit", "Talk mit Gästen aus Politik und Wirtschaft", sportsChannel = false))
+        assertNull(hit("Tatort", "Ein Fall in Hamburg. Der Kommissar ist Fußball-Fan.", sportsChannel = false))
+        assertNull(hit("Sky Sport News - Das Magazin", "Alles zur Bundesliga"))
+        assertNull(hit("Die Simpsons", "Homer und Bart in Liverpool"))
+    }
+
+    @Test
+    fun matchesOnSportsChannels() {
+        assertEquals(FootballMatcher.Kind.COMPETITION, hit("Live LaLiga 26/27: FC Sevilla - CA Osasuna")?.kind)
+        assertEquals(FootballMatcher.Kind.FOOTBALL, hit("Live Ligue 1: Paris - Lyon")?.kind)
+        assertNull(hit("Paris - Lyon", sportsChannel = false))
+    }
+
+    @Test
     fun unfollowedTeamsOnlyCountAsFootball() {
         val h = hit("Fußball: 1860 München - Ingolstadt")
         assertEquals(FootballMatcher.Kind.FOOTBALL, h?.kind)
@@ -108,6 +131,9 @@ class FootballMatcherTest {
     @Test
     fun channelKinds() {
         assertTrue(FootballMatcher.isSportsChannel("DE: Sky Sport Bundesliga 1 FHD"))
+        assertTrue(FootballMatcher.isSportsChannel("DE: DAZN 2 HD"))
+        assertTrue(!FootballMatcher.isSportsChannel("DE: Sky Krimi HD"))
+        assertTrue(!FootballMatcher.isSportsChannel("DE: RTL ZWEI HD"))
         assertTrue(FootballMatcher.isNationalChannel("DE: Das Erste HD"))
         assertTrue(FootballMatcher.isNationalChannel("DK: TV2 Sport"))
         assertTrue(!FootballMatcher.isNationalChannel("DE: Standard Kanal"))

@@ -178,5 +178,9 @@ internal fun dayOf(ms: Long, locale: Locale, today: LocalDate = LocalDate.now())
 
 internal fun isToday(ms: Long): Boolean = Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate() == LocalDate.now()
 
+/** Calendar days from today to [ms] on the TV's clock: 0 today, 1 tomorrow. */
+internal fun daysFromToday(ms: Long): Int =
+    java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), Instant.ofEpochMilli(ms).atZone(ZoneId.systemDefault()).toLocalDate()).toInt()
+
 /** Postponed or cancelled: the match will not be played as listed. */
 internal val Match.off: Boolean get() = state == MatchState.POSTPONED || state == MatchState.CANCELLED

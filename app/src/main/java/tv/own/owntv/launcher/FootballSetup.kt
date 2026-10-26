@@ -44,15 +44,11 @@ internal object FootballSetup {
     private const val LEAGUES_DONE = "football_leagues_v1"
     private const val TEAMS_DONE = "football_teams_v1"
     const val GROUP_ON = "football_group_on"
-    const val REMINDERS_ON = "football_reminders_on"
 
     fun prefs(context: Context) = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     /** The football group in the channel list ("Fußball jetzt & heute"). On unless switched off. */
     fun groupOn(context: Context) = prefs(context).getBoolean(GROUP_ON, true)
-
-    /** Kick-off reminders for the profile's teams. On unless switched off. */
-    fun remindersOn(context: Context) = prefs(context).getBoolean(REMINDERS_ON, true)
 
     fun set(context: Context, key: String, on: Boolean) {
         prefs(context).edit().putBoolean(key, on).apply()

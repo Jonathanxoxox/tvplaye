@@ -902,7 +902,8 @@ class EpgViewModel(
         // Respect customizations: hidden channels stay out of the guide, renames show.
         val cust = customize.observe(pid, MediaType.LIVE).first()
         val q = _query.value.trim()
-        val rawChannels = if (settings.guideShowEmpty.first()) channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS)
+        val showAll = settings.guideShowEmpty.first()
+        val rawChannels = if (showAll) channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS)
             else channelDao.channelsWithGuide(ids, q, MAX_CHANNELS)
         val favoriteIds = favoriteDao.observeFavoriteIds(pid, MediaType.LIVE).first().toSet()
         val sortGuideMode = settings.sortGuide.first()
@@ -931,7 +932,7 @@ class EpgViewModel(
         }
         // Heavy work — filter hidden, apply renames + manual EPG matches, sort, category-filter — runs off
         // the main thread (#3/#5) so a 50k-channel playlist never freezes the UI building the guide list.
-        val channels = withContext(Dispatchers.Default) {
+        suspend fun shape(rawChannels: List<ChannelEntity>) = withContext(Dispatchers.Default) {
             val auto = rawChannels
                 .filter { CustomizeKeys.channel(it) !in cust.hiddenItems }
                 .filter {
@@ -961,6 +962,13 @@ class EpgViewModel(
                 }
             }
         }
+        // A category none of whose channels has a stored guide (the provider's own EPG only, as on Jonathan's
+        // playlist) still lists them all: each row reads the provider's programmes itself, as the channel list
+        // does. It said "No EPG added" instead.
+        val channels = shape(rawChannels).ifEmpty {
+            if (showAll) emptyList() else shape(channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS))
+        }
+
         val stored = epgDao.countForSources(ids)
 
 

@@ -104,7 +104,7 @@ internal fun GlassBackgroundPage(
     StageFullPage(
         parents = listOf(stringResource(R.string.settings_group_appearance)),
         title = stringResource(R.string.settings_glass_bg_title),
-        count = pluralStringResource(R.plurals.settings_setting_count, 11, 11),
+        count = pluralStringResource(R.plurals.settings_setting_count, 10, 10),
         onBack = onBack,
         modifier = modifier,
         rowsFocus = rowsFocus,
@@ -174,7 +174,7 @@ internal fun GlassBackgroundPage(
             help = SettingHelp(accentTitle, accentLine, hints = okHints, extra = preview),
         )
 
-        NightSceneRows(okHints, stepHints)
+        NightSceneRows(stepHints)
 
         StageSettingsHeading(stringResource(R.string.settings_glass_section), 2)
         val glassTitle = stringResource(R.string.settings_glass_section)
@@ -353,18 +353,17 @@ private fun GlassBackgroundPreview() {
     }
 }
 
-/** Mayo TV's night scenes: the theme behind every page, and the stadium while football is on. */
+/** Mayo TV's colour themes: calm colours for page, menu and panels, nothing animated. */
 @Composable
-private fun NightSceneRows(okHints: List<Pair<String, String>>, stepHints: List<Pair<String, String>>) {
+private fun NightSceneRows(stepHints: List<Pair<String, String>>) {
     val nights = tv.own.owntv.ui.theme.rememberNightSceneSettings()
     val scene by nights.scene.collectAsStateWithLifecycle()
-    val stadium by nights.stadium.collectAsStateWithLifecycle()
-    StageSettingsHeading(stringResource(R.string.tvplayer_scene_heading), 2)
+    StageSettingsHeading(stringResource(R.string.tvplayer_scene_heading), 1)
     val scenes = tv.own.owntv.ui.theme.NightScene.entries
     val sceneIndex = scenes.indexOf(scene)
     val sceneTitle = stringResource(R.string.tvplayer_scene_title)
     val sceneLabel = stringResource(scene.labelRes)
-    // Thirteen looks are too many side by side: the name with ◀ ▶, and a live picture of it in the panel.
+    // Seven looks side by side are too many: the name with ◀ ▶, and a sketch of it in the panel.
     StageSettingRow(
         icon = OwnTVIcon.SPARKLE,
         title = sceneTitle,
@@ -387,15 +386,5 @@ private fun NightSceneRows(okHints: List<Pair<String, String>>, stepHints: List<
                 )
             },
         ),
-    )
-    val stadiumTitle = stringResource(R.string.tvplayer_stadium_title)
-    val stadiumLine = stringResource(R.string.tvplayer_stadium_line)
-    StageSettingRow(
-        icon = OwnTVIcon.SUN,
-        title = stadiumTitle,
-        desc = stadiumLine,
-        value = SettingValue.Switch(stadium),
-        onClick = { nights.setStadium(!stadium) },
-        help = SettingHelp(stadiumTitle, stadiumLine, hints = okHints),
     )
 }

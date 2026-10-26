@@ -35,6 +35,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.focusProperties
@@ -608,6 +611,21 @@ fun LiveScreen(
         val listWidth = if (previewShown) listW else row - (listX - margin)
 
         if (separate) {
+            // The categories on a panel of their own, from under the title to the bottom, with an edge, as in
+            // TiviMate: on the bare page they ran into the channel list beside them.
+            val palette = tv.own.owntv.ui.theme.LocalStagePalette.current
+            val panelShape = androidx.compose.foundation.shape.RoundedCornerShape(topEnd = 28.mpx)
+            Box(
+                Modifier
+                    .padding(top = 112.mpx)
+                    .width(margin + colW + gapCat / 2)
+                    .fillMaxHeight()
+                    .background(palette.glassTint, panelShape)
+                    .drawBehind {
+                        val w = 2.mpx.toPx()
+                        drawRect(palette.ink.copy(alpha = 0.12f), Offset(size.width - w, 28.mpx.toPx()), Size(w, size.height))
+                    },
+            )
             LiveCategories(
                 entries = categoryEntries,
                 selectedIndex = selectedIndex,

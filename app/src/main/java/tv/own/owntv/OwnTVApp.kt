@@ -177,6 +177,22 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
                     prefs.edit().putBoolean("defaults_v4_applied", true).apply()
                 }
+                // After the first test on the TV (26 Oct 2026): the settings Jonathan had to change by hand, now the
+                // start. Live TV as the guide with every channel (TiviMate's "Keine Information" rows, also without an
+                // XMLTV feed), the floating compact menu, categories beside the channel list, the cinematic Movies &
+                // Series, and nothing that pops up by itself: no frame-rate suggestion, reminders only as a short note.
+                if (!prefs.getBoolean("defaults_v5_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    settings.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
+                    settings.setGuideShowEmpty(true)
+                    settings.setNavStyle(tv.own.owntv.core.settings.SettingsRepository.NavStyle.FLOATING)
+                    settings.setNavSize(tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
+                    settings.setLiveLayout(tv.own.owntv.core.settings.SettingsRepository.LiveLayout.SEPARATE)
+                    settings.setVodLayout(tv.own.owntv.core.settings.SettingsRepository.VodLayout.CINEMATIC)
+                    settings.setAutoFrameRatePrompted()
+                    settings.setReminderMode(tv.own.owntv.core.settings.SettingsRepository.ReminderMode.NOTIFY)
+                    prefs.edit().putBoolean("defaults_v5_applied", true).apply()
+                }
                 // Posters, backdrops, plot and cast for Movies & Series: the build's own TMDB key, once,
                 // and only when no key is set yet (the shared OwnTV service answers 403 to this build).
                 if (BuildConfig.FLUTLICHT_TMDB_KEY.isNotBlank() && !prefs.getBoolean("tmdb_key_v1_applied", false)) {
