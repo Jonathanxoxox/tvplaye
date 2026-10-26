@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.memory.MemoryCache
@@ -177,11 +178,15 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         tv.own.owntv.launcher.LauncherRowsWorker.schedule(this)
         tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this, delaySeconds = 20)
         appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
+        appScope.launch { runCatching { refreshLauncherRowsOnSportsChange() } }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
         // or older than the chosen hours). It reads one small file and touches no database.
         appScope.launch {
             kotlinx.coroutines.delay(SPORTS_START_DELAY_MS)
             runCatching { GlobalContext.get().get<tv.own.owntv.core.sports.SportsRepository>().appStarted() }
+            // Football for "Für dich", the football group and kick-off reminders: Jonathan's leagues and
+            // teams into Settings → Sports, once; afterwards whatever is chosen there.
+            runCatching { tv.own.owntv.launcher.FootballSetup.seed(this@OwnTVApp) }
         }
         // NOTE: cold start does ZERO heavy DB work. Index + ANALYZE maintenance is piggy-backed onto the
         // operation that actually changes the data — ImportFinalizer.finalize() for normal re-syncs, the
@@ -275,6 +280,15 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         settings.activeProfileId
             .filter { it >= 0L }
             .flatMapLatest { pid -> favorites.observeFavoriteIds(pid, tv.own.owntv.core.model.MediaType.LIVE) }
+            .distinctUntilChanged()
+            .drop(1)
+            .collect { tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
+    }
+
+    /** Teams and leagues picked in Settings → Sports reach "Für dich" and the football group at once. */
+    private suspend fun refreshLauncherRowsOnSportsChange() {
+        GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>().activeSportsConfig
+            .map { it.teams to it.leagues }
             .distinctUntilChanged()
             .drop(1)
             .collect { tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }

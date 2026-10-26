@@ -167,7 +167,7 @@ fun StageRail(
 
     // Opened over the page (Floating, or a widened Compact): dim what it covers, so the cut-off page
     // reads as the background and the menu as the one thing in front.
-    val scrim by animateFloatAsState(if (state == RailState.OPEN) 1f else 0f, label = "railScrim")
+    val scrim by animateFloatAsState(if (state == RailState.OPEN) 1f else 0f)
     Box(modifier.fillMaxSize()) {
         if (scrim > 0f) {
             Box(
@@ -288,8 +288,7 @@ private fun MenuLogo(expanded: Boolean) {
                 stringResource(R.string.tvplayer_app_name),
                 style = stageText(40, 800),
                 color = StageColors.Text,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 18.mpx),
             )
         }

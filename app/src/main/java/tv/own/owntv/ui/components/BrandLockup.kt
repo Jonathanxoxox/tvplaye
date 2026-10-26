@@ -86,7 +86,7 @@ private val PixelPower = Color(CorePixelMark.POWER)
  */
 @Composable
 fun Wordmark(width: Dp, modifier: Modifier = Modifier, tv: Color = stageAccent.accent, own: Color = WordmarkCream) {
-    // Flutlicht: "Flut" in white, "licht" in cyan, one picture of 903 × 180.
+    // Flutlicht: the cream wordmark whose i-dot is a glowing floodlight lamp, one picture of 903 × 180.
     Image(painterResource(R.drawable.flutlicht_wordmark), contentDescription = null, modifier = modifier.width(width).height(width * 180f / 903f))
 }
 
