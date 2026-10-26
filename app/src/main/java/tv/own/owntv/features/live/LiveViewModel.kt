@@ -50,7 +50,6 @@ import tv.own.owntv.features.customize.MoveTarget
 import tv.own.owntv.core.customize.CategoryRestorePlan
 import tv.own.owntv.core.customize.planCategoryRestore
 import tv.own.owntv.core.customize.restoreCategoryToDefault
-import tv.own.owntv.core.epg.CatchupUrl
 import tv.own.owntv.core.live.StreamGrant
 import tv.own.owntv.core.recording.RecordingSchedule
 import tv.own.owntv.core.customize.SectionCustomizations
@@ -74,13 +73,11 @@ import tv.own.owntv.core.database.entity.WatchHistoryEntity
 import tv.own.owntv.core.launcher.LauncherIntegrationRepository
 import tv.own.owntv.core.model.MediaType
 import tv.own.owntv.core.util.throttleLatest
-import tv.own.owntv.core.model.SourceType
 import tv.own.owntv.core.parser.XtEpgEntry
 import tv.own.owntv.core.parser.XtreamClient
 import tv.own.owntv.core.repository.activeProfileSources
 import tv.own.owntv.core.settings.SourceOverrides
 import tv.own.owntv.core.settings.SettingsRepository
-import tv.own.owntv.player.LiveExoWatchdog
 import tv.own.owntv.player.LiveProgramme
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.ui.components.OwnTVIcon
@@ -2150,26 +2147,6 @@ class LiveViewModel(
             // it deliberately is not.
             else defaultRail.dropLast(1) + LiveRailItem(LiveKey.Catchup, icon = OwnTVIcon.CATCHUP) + defaultRail.last()
         const val ZAP_WINDOW_HALF = 50 // channels loaded on each side of the tuned channel for CH+/-
-        /**
-         * How long a channel that HAS played may stay stalled before it goes to mpv — see
-         * [LiveExoWatchdog].
-         *
-         * DERIVED from the engine's own death verdict rather than chosen independently. The two numbers
-         * had drifted badly apart: this was a flat 30s while the engine calls a stalled feed dead at 12s
-         * and reconnects at 13.5s, so the handoff sat through two of the engine's own reconnect attempts
-         * — fifteen seconds of frozen picture spent waiting for a recovery that had already been tried
-         * and failed.
-         *
-         * The grace on top is one reconnect's worth: the engine's first retry gets a fair chance to
-         * actually open before the channel is offered to the other player. Sitting through a SECOND one
-         * is what this no longer does.
-         */
-
-        /** How long mpv gets to produce a picture before the channel moves to the next rung of the
-         *  ladder — see [watchMpvOutcome]. Looser than ExoPlayer's: mpv runs its own open watchdog
-         *  (10s) plus a retry and a format alternate underneath this one, and cutting in before that
-         *  finishes would throw away attempts that often succeed. */
-        const val MPV_OPEN_TIMEOUT_MS = 35_000L
 
         /** Resolved "now playing" titles kept at once. Big enough for a large category plus the
          *  overlays that share the map, small enough that it cannot grow with the catalogue. */

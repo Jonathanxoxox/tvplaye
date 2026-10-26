@@ -2,7 +2,6 @@ package tv.own.owntv.features.more
 
 import tv.own.owntv.ui.theme.stageTone
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusGroup
@@ -46,7 +45,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -70,7 +68,6 @@ import tv.own.owntv.features.home.OnNowCard
 import tv.own.owntv.features.home.timeLeftText
 import tv.own.owntv.features.shell.components.ClearHistoryDialog
 import tv.own.owntv.features.shell.components.GITHUB_REPO
-import tv.own.owntv.features.shell.components.TELEGRAM_LINK
 import tv.own.owntv.features.shell.components.playbackDisplayName
 import tv.own.owntv.features.update.UpdateDialog
 import tv.own.owntv.player.PlaybackErrorLog
@@ -78,7 +75,6 @@ import tv.own.owntv.player.displayText
 import tv.own.owntv.ui.components.BrandMark
 import tv.own.owntv.ui.components.MoveOrderOverlay
 import tv.own.owntv.ui.components.Wordmark
-import tv.own.owntv.ui.components.rememberAppliedIcon
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.OwnTVPopup
 import tv.own.owntv.ui.components.displayText
@@ -102,7 +98,6 @@ import tv.own.owntv.ui.theme.stageText
 import tv.own.owntv.ui.format.formatBestDateTime
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import tv.own.owntv.features.home.durationText
 
 // ---------------------------------------------------------------------------------------------
 // Shared parts
@@ -640,7 +635,7 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
     Column(Modifier.fillMaxSize().focusGroup()) {
         Row(horizontalArrangement = Arrangement.spacedBy(40.mpx), verticalAlignment = Alignment.CenterVertically) {
             // The app's own icon (150) and the wordmark (300).
-            BrandMark(rememberAppliedIcon(), 150.mpx)
+            BrandMark(150.mpx)
             Column {
                 Wordmark(300.mpx)
                 Row(Modifier.padding(top = 16.mpx), horizontalArrangement = Arrangement.spacedBy(14.mpx), verticalAlignment = Alignment.CenterVertically) {

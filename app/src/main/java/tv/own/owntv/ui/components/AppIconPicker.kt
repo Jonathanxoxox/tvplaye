@@ -64,7 +64,7 @@ fun AppIconPicker(
                         contentAlignment = Alignment.Center,
                     ) { focused ->
                         LaunchedEffect(focused) { if (focused) focusedIcon = icon }
-                        BrandMark(icon, 56.dp, followAccent = false)
+                        BrandMark(56.dp)
                     }
                 }
             }
@@ -134,7 +134,7 @@ private fun RestartContent(icon: AppIcon, onDismiss: () -> Unit) {
     val context = LocalContext.current
     val restartFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) { kotlinx.coroutines.delay(60); runCatching { restartFocus.requestFocus() } }
-    BrandMark(icon, 72.dp, followAccent = false)
+    BrandMark(72.dp)
     Text(
         stringResource(R.string.app_icon_restart_title), style = tv.own.owntv.ui.theme.stageText(34, 800), color = tv.own.owntv.ui.theme.StageColors.Text,
         textAlign = TextAlign.Center, modifier = Modifier.padding(top = 20.mpx),
