@@ -110,18 +110,18 @@ def shot(name):
     return root
 
 
-def find(root, pattern):
+def find(root, pattern, xmin=0):
     rx = re.compile(pattern, re.I)
-    hits = [n for n in root.iter("node") if label(n) and rx.search(label(n))]
+    hits = [n for n in root.iter("node") if label(n) and rx.search(label(n)) and bounds(n)[0] >= xmin]
     return hits[0] if hits else None
 
 
-def goto(pattern, press=True, tries=24):
+def goto(pattern, press=True, tries=24, xmin=0):
     """Fokus per Steuerkreuz auf das Element mit passendem Text bewegen und (optional) OK drücken."""
     last = None
     for _ in range(tries):
         root = dump()
-        target = find(root, pattern)
+        target = find(root, pattern, xmin)
         if target is None:
             print(f"[goto] {pattern!r} nicht gefunden; sichtbar: {[s for s, _ in texts(root)][:25]}", flush=True)
             return False
@@ -212,7 +212,8 @@ def setup():
         if find(root, r"Jetzt synchronisieren|^Weiter$|Alles bereit|Fertig|fehlgeschlagen|failed"):
             break
     shot("import")
-    for _ in range(6):
+    # EPG-Abfrage, "Alles bereit" und Co. wegdrücken, bis die Startseite mit dem Menü steht.
+    for _ in range(12):
         root = dump()
         if find(root, r"Jetzt synchronisieren"):
             goto(r"Jetzt synchronisieren")
@@ -221,8 +222,9 @@ def setup():
         elif find(root, r"^Fertig$"):
             goto(r"^Fertig$")
         elif find(root, r"^Weiter$"):
+            shot("fertig")
             goto(r"^Weiter$")
-        else:
+        elif find(root, r"^(Live-TV|Startseite)$") is not None:
             break
         time.sleep(2)
     time.sleep(4)
@@ -230,124 +232,85 @@ def setup():
 
 
 # ---------------------------------------------------------------- Menü und Bereiche
-def rail_tour():
-    key("BACK", wait=1.0)
-    key("DPAD_LEFT", n=4, wait=0.5)
-    root = shot("menue-offen")
-    seen = []
-    for i in range(14):
-        root = dump()
-        ft = focused_text(root)
-        if ft in seen:
-            break
-        seen.append(ft)
-        if ft and not DANGER.search(ft):
-            key("DPAD_CENTER", wait=2.5)
-            shot(f"bereich-{ft}")
-            # einmal in den Inhalt und zurück
-            key("DPAD_RIGHT", wait=1.0)
-            shot(f"bereich-{ft}-inhalt")
-            key("DPAD_LEFT", n=6, wait=0.4)
-            root = dump()
-            if focused_text(root) != ft:
-                goto(re.escape(ft) + "$", press=False)
-        key("DPAD_DOWN", wait=0.8)
-        shot(f"menue-{i}")
-    log.write(json.dumps({"rail": seen}, ensure_ascii=False) + "\n")
+RAIL = re.compile(r"^(Suche|Live-TV|Programmübersicht|Sport|Filme|Serien|Downloads|Startseite|Mehr)$")
+SETTINGS_CARDS = [
+    "Schnellzugriff", "Profil", "Quellen und Programm", "Darstellung", "Layout", "Inhalte und Metadaten",
+    "Player", "Bild", "Ton und Untertitel", "Live-TV", "Wiedergabe und Aufnahme", "App",
+]
 
 
-def settings_tour():
-    key("DPAD_LEFT", n=6, wait=0.4)
-    if not goto(r"^Einstellungen$"):
-        return
-    time.sleep(2)
-    shot("einstellungen")
-    key("DPAD_RIGHT", wait=0.8)
-    rows_seen = []
-    for i in range(40):
+def slug(text):
+    return re.sub(r"[^\wäöüÄÖÜß-]+", "_", text)[:40]
+
+
+def dismiss_exit(root):
+    """Zurück auf dem Menü fragt "Flutlicht beenden?": immer Abbrechen."""
+    if find(root, r"^Flutlicht beenden") is not None:
+        goto(r"^Abbrechen$")
+        return True
+    return False
+
+
+def to_rail():
+    """Fokus ins linke Menü: ◀, und wo ◀ nichts mehr bewegt, Zurück."""
+    for _ in range(10):
         root = dump()
-        ft = focused_text(root)
-        if not ft or ft in rows_seen:
-            key("DPAD_DOWN", wait=0.6)
-            root = dump()
-            ft = focused_text(root)
-            if not ft or ft in rows_seen:
-                break
-        rows_seen.append(ft)
-        if DANGER.search(ft):
-            key("DPAD_DOWN", wait=0.6)
+        if dismiss_exit(root):
             continue
-        key("DPAD_CENTER", wait=2.0)
-        shot(f"einst-{ft}")
-        # eine Ebene tiefer: die ersten Zeilen der Unterseite öffnen
-        sub_seen = []
-        for j in range(6):
-            r2 = dump()
-            st = focused_text(r2)
-            if not st or st in sub_seen or st == ft:
-                break
-            sub_seen.append(st)
-            if not DANGER.search(st):
-                key("DPAD_CENTER", wait=1.5)
-                shot(f"einst-{ft}-{st}")
-                key("BACK", wait=1.2)
-            key("DPAD_DOWN", wait=0.6)
-        key("BACK", wait=1.5)
-        r3 = dump()
-        if focused_text(r3) != ft:
-            goto(re.escape(ft[:40]), press=False)
-        key("DPAD_DOWN", wait=0.6)
-    log.write(json.dumps({"settings": rows_seen}, ensure_ascii=False) + "\n")
+        before = focused_text(root)
+        if RAIL.match(before or ""):
+            return True
+        key("DPAD_LEFT", wait=0.6)
+        root = dump()
+        if dismiss_exit(root):
+            continue
+        now = focused_text(root)
+        if RAIL.match(now or ""):
+            return True
+        if now == before:
+            key("BACK", wait=1.2)
+    print("[rail] Menü nicht erreicht", flush=True)
+    return False
 
 
-def player_tour():
-    key("DPAD_LEFT", n=6, wait=0.4)
-    goto(r"^(Live-?TV|TV)$")
-    time.sleep(2)
-    key("DPAD_RIGHT", wait=1.0)
-    goto(r"Sky Sport Bundesliga 1")
-    time.sleep(6)
-    shot("player")
-    key("DPAD_CENTER", wait=1.5)
-    shot("player-ok-infoleiste")
-    key("BACK", wait=1.0)
-    key("DPAD_UP", wait=2.5)
-    shot("player-hoch-zappen")
-    key("DPAD_DOWN", wait=2.5)
-    shot("player-runter-zappen")
-    key("DPAD_RIGHT", wait=2.5)
-    shot("player-rechts-letzter-sender")
-    key("DPAD_LEFT", wait=1.5)
-    shot("player-links-senderliste")
-    key("DPAD_LEFT", wait=1.5)
-    shot("player-links-gruppen")
-    key("BACK", wait=1.0)
-    key("BACK", wait=1.0)
-    key("DPAD_CENTER", long=True, wait=1.5)
-    shot("player-ok-lang-optionen")
-    key("DPAD_DOWN", n=3, wait=0.5)
-    shot("player-optionen-unten")
-    key("BACK", wait=1.0)
-    key("MENU", long=True, wait=1.5)
-    shot("player-menue-lang-epg")
-    key("BACK", wait=1.0)
-    key("DPAD_UP", long=True, wait=1.5)
-    shot("player-hoch-lang-verlauf")
-    key("BACK", wait=1.0)
-    key("DPAD_DOWN", long=True, wait=1.5)
-    shot("player-runter-lang-suche")
-    key("BACK", wait=1.0)
-    key("BACK", wait=2.0)
-    shot("player-zurueck")
-    key("BACK", wait=2.0)
-    shot("player-zurueck-2")
+def open_section(name):
+    if not to_rail():
+        return False
+    ok = goto("^" + re.escape(name) + "$")
+    time.sleep(2.5)
+    return ok
+
+
+def rail_tour():
+    to_rail()
+    shot("menue-offen")
+    for name in ["Startseite", "Suche", "Live-TV", "Sport", "Filme", "Serien", "Downloads"]:
+        if not open_section(name):
+            continue
+        shot(f"bereich-{slug(name)}")
+        key("DPAD_RIGHT", wait=1.0)
+        shot(f"bereich-{slug(name)}-inhalt")
+        key("DPAD_DOWN", n=3, wait=0.5)
+        shot(f"bereich-{slug(name)}-unten")
+
+
+def more_tour():
+    for item in ["Favoriten", "Wiedergabeverlauf", "Sicherung", "Lokale Synchronisierung", "Fehlerprotokoll", "Über"]:
+        if not open_section("Mehr"):
+            return
+        if item == "Favoriten":
+            shot("mehr")
+        key("DPAD_RIGHT", wait=0.8)
+        if goto("^" + re.escape(item)):
+            time.sleep(1.5)
+            shot(f"mehr-{slug(item)}")
+            key("BACK", wait=1.2)
 
 
 def guide_tour():
-    key("DPAD_LEFT", n=6, wait=0.4)
-    if not goto(r"^TV-Guide$"):
+    if not open_section("Programmübersicht"):
         return
-    time.sleep(3)
+    time.sleep(2)
     shot("guide")
     key("DPAD_RIGHT", n=2, wait=0.6)
     shot("guide-fokus")
@@ -355,7 +318,7 @@ def guide_tour():
     key("DPAD_RIGHT", n=3, wait=0.5)
     shot("guide-weiter")
     key("PROG_GREEN", wait=1.5)
-    shot("guide-gruen-senderoptionen")
+    shot("guide-gruen")
     key("BACK", wait=1.0)
     key("INFO", wait=1.5)
     shot("guide-info")
@@ -365,6 +328,99 @@ def guide_tour():
     key("BACK", wait=1.0)
 
 
+def in_fullscreen():
+    """Vollbild: kein Menü und keine Senderliste mit Fokus."""
+    root = dump()
+    return not RAIL.match(focused_text(root) or "") and find(root, r"^Fußball$") is None
+
+
+def player_tour():
+    if not open_section("Live-TV"):
+        return
+    shot("live")
+    key("DPAD_RIGHT", wait=1.0)
+    shot("live-liste")
+    if not goto(r"^Sky Sport Bundesliga 1"):
+        return
+    time.sleep(5)
+    shot("live-vorschau")
+    # Erstes OK spielt in der Vorschau, das zweite geht ins Vollbild
+    if not in_fullscreen():
+        key("DPAD_CENTER", wait=5)
+    shot("player")
+    key("DPAD_CENTER", wait=1.5)
+    shot("player-ok-infoleiste")
+    key("BACK", wait=1.0)
+    key("DPAD_UP", wait=3)
+    shot("player-hoch-zappen")
+    key("DPAD_DOWN", wait=3)
+    shot("player-runter-zappen")
+    key("DPAD_RIGHT", wait=3)
+    shot("player-rechts-letzter-sender")
+    key("DPAD_LEFT", wait=1.5)
+    shot("player-links-senderliste")
+    key("DPAD_LEFT", wait=1.5)
+    shot("player-links-gruppen")
+    key("BACK", wait=1.0)
+    key("BACK", wait=1.0)
+    shot("player-nach-liste")
+    for code, name in [
+        ("DPAD_CENTER", "ok-lang-optionen"), ("MENU", "menue"), ("MENU", "menue-lang-epg"),
+        ("DPAD_UP", "hoch-lang-verlauf"), ("DPAD_DOWN", "runter-lang-suche"), ("PROG_RED", "rot"),
+        ("PROG_BLUE", "blau"), ("INFO", "info"),
+    ]:
+        key(code, long=name.endswith(("lang-optionen", "lang-epg", "lang-verlauf", "lang-suche")), wait=1.8)
+        shot(f"player-{name}")
+        if name == "ok-lang-optionen":
+            key("DPAD_DOWN", n=3, wait=0.5)
+            shot("player-optionen-unten")
+        key("BACK", wait=1.2)
+        if dismiss_exit(dump()):
+            break
+    key("BACK", wait=1.5)
+    shot("player-zurueck")
+    key("BACK", wait=1.5)
+    shot("player-zurueck-2")
+
+
+def settings_tour():
+    if not open_section("Mehr"):
+        return
+    key("DPAD_RIGHT", wait=0.8)
+    if not goto(r"^Einstellungen$"):
+        return
+    time.sleep(2)
+    shot("einstellungen")
+    # Von der Leiste aus: ▶ landet in der Suchzeile, ▼ auf der ersten Kachel
+    key("DPAD_RIGHT", wait=0.8)
+    key("DPAD_DOWN", wait=0.8)
+    shot("einstellungen-raster")
+    for card in SETTINGS_CARDS:
+        if not goto("^" + re.escape(card) + "$", xmin=600):
+            continue
+        time.sleep(1.5)
+        shot(f"einst-{slug(card)}")
+        if card == "Layout" and goto(r"^Fernbedienungs-Kurzbefehle"):
+            time.sleep(1.5)
+            shot("einst-tasten")
+            key("DPAD_DOWN", wait=0.6)
+            shot("einst-tasten-zeile")
+            key("DPAD_CENTER", wait=1.5)
+            shot("einst-tasten-auswahl")
+            key("BACK", wait=1.0)
+            key("DPAD_DOWN", n=12, wait=0.4)
+            shot("einst-tasten-unten")
+            key("BACK", wait=1.5)
+        key("DPAD_DOWN", n=6, wait=0.4)
+        shot(f"einst-{slug(card)}-mitte")
+        key("DPAD_DOWN", n=10, wait=0.4)
+        shot(f"einst-{slug(card)}-ende")
+        key("BACK", wait=1.5)
+        root = dump()
+        if dismiss_exit(root) or find(root, r"^Alle Einstellungen durchsuchen") is None:
+            key("BACK", wait=1.5)
+
+
 def main():
     step("einrichtung", setup)
     # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
@@ -372,6 +428,7 @@ def main():
         print("[tour] Einrichtung nicht abgeschlossen, Tour endet hier", flush=True)
         return
     step("menue", rail_tour)
+    step("mehr-tour", more_tour)
     step("guide", guide_tour)
     step("player", player_tour)
     step("einstellungen-tour", settings_tour)

@@ -166,7 +166,7 @@ fun MoreScreen(
             item(MoreItem.HISTORY, OwnTVIcon.HISTORY, stringResource(R.string.content_category_history), history.total.toString(), false)
             GroupLabel(stringResource(R.string.more_group_keep_safe))
             item(
-                MoreItem.BACKUP, OwnTVIcon.DOWNLOADS, stringResource(R.string.settings_backup_restore),
+                MoreItem.BACKUP, OwnTVIcon.DOWNLOADS, stringResource(R.string.tvplayer_more_backup),
                 lastBackup?.let { relativeShort(it.at) } ?: stringResource(R.string.common_never), lastBackup == null,
             )
             item(MoreItem.LOCAL_SYNC, OwnTVIcon.PHONE, stringResource(R.string.local_sync_title), stringResource(if (sync.listening) R.string.common_on else R.string.common_off), false)

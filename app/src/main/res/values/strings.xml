@@ -29,6 +29,7 @@
     </plurals>
     <string name="tvplayer_nothing_now" translatable="false">Gerade kein Fußball</string>
     <string name="tvplayer_nothing_now_desc" translatable="false">Sobald Spiele von Real Madrid, Barça oder den großen Ligen laufen, erscheinen sie hier.</string>
+    <string name="tvplayer_more_backup" translatable="false">Sicherung</string>
     <string name="tvplayer_keys_heading" translatable="false">Tasten im Vollbild</string>
     <string name="tvplayer_keys_help" translatable="false">Was die Tasten der Fernbedienung beim Fernsehen im Vollbild tun. Kurz drücken und gedrückt halten lassen sich getrennt belegen. Ab Werk wie bei TiviMate.</string>
     <string name="tvplayer_keys_long" translatable="false">%1$s gedrückt halten</string>
