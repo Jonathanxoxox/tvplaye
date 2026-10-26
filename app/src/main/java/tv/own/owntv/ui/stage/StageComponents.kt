@@ -1143,5 +1143,4 @@ fun StageSwitch(on: Boolean) {
 /** The tile behind a channel logo or a missing picture (`#0f1518`); ink 6% on the light page. */
 val stageStillBack: Color
     @Composable
-    @androidx.compose.runtime.ReadOnlyComposable
-    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else Color(0xFF0F6266)
+    get() = if (LocalStagePalette.current.isLight) StageColors.Ink.copy(alpha = 0.06f) else tv.own.owntv.ui.theme.inScene(Color(0xFF0F6266))
