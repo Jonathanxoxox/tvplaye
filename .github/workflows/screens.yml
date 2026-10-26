@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       parts:
-        description: "Teile der Tour (all oder z. B. scenes,player)"
+        description: "Teile der Tour (all oder z. B. vod,scenes,player)"
         default: all
 
 permissions:
@@ -35,6 +35,7 @@ jobs:
 
       - name: Build x86_64 APK
         env:
+          FLUTLICHT_TMDB_KEY: ${{ secrets.TMDB_API_KEY }}
           KEYSTORE_PASSWORD: android
           KEY_ALIAS: sideload
           KEY_PASSWORD: android
@@ -51,13 +52,30 @@ jobs:
       - name: Test playlist, guide and stream
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q pillow
           python3 tools/smoke/fixtures.py fx
           mkdir -p fx/stream
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=25 -f lavfi -i sine=frequency=440 \
             -t 120 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -f hls -hls_time 4 \
             -hls_list_size 0 fx/stream/index.m3u8
           nohup python3 -m http.server 8080 --directory fx > http.log 2>&1 &
-          pip install -q pillow
+
+      - name: Metadaten-Dienst erreichbar?
+        continue-on-error: true
+        env:
+          TMDB_KEY: ${{ secrets.TMDB_API_KEY }}
+        run: |
+          mkdir -p tour
+          if [ -n "$TMDB_KEY" ]; then
+            echo "TMDB mit eigenem Schlüssel -> $(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "https://api.themoviedb.org/3/search/movie?query=Gladiator&api_key=$TMDB_KEY")" | tee -a tour/net.txt
+          else
+            echo "Kein Secret TMDB_API_KEY" | tee -a tour/net.txt
+          fi
+          mkdir -p tour
+          for u in "https://owntv-tmdb-meta.xiannero.workers.dev/3/search/movie?query=Gladiator&language=de-DE" \
+                   "https://tmdb.owntv.me/3/search/movie?query=Gladiator&language=de-DE"; do
+            echo "$u -> $(curl -s -o /tmp/body -w '%{http_code}' --max-time 20 "$u") $(head -c 200 /tmp/body)" | tee -a tour/net.txt
+          done
 
       - name: Enable KVM
         run: |
