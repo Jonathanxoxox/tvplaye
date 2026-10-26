@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -76,7 +77,7 @@ fun StageStatusCluster(
     onPlaylistPillBounds: (Rect) -> Unit = {},
 ) {
     Row(
-        modifier.padding(end = 64.mpx, top = 34.mpx),
+        modifier.padding(end = 64.mpx, top = 34.mpx).onGloballyPositioned { StageStatusBounds.rect = it.boundsInWindow() },
         horizontalArrangement = Arrangement.spacedBy(22.mpx),
         // The pills' top lines up with the top of the clock's digits, not with the block's middle.
         verticalAlignment = Alignment.Top,
@@ -110,6 +111,14 @@ fun StageStatusCluster(
         }
         StageClock(weatherInfo, weatherFahrenheit, clockColors)
     }
+}
+
+/**
+ * Where the top-right cluster sits in the window. A page whose top line runs under it (the guide's
+ * programme title) keeps that line short of it instead of drawing beneath the pills and the clock.
+ */
+object StageStatusBounds {
+    var rect by mutableStateOf(Rect.Zero)
 }
 
 /** The shell's weather and °F choice, for the clock preview on Settings › Date, time & weather. */

@@ -171,6 +171,12 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setCustomAccent("#2BC0DC")
                     prefs.edit().putBoolean("defaults_v3_applied", true).apply()
                 }
+                // Live TV opens as the guide, like TiviMate's "TV" (the separate guide section is gone).
+                if (!prefs.getBoolean("defaults_v4_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    settings.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
+                    prefs.edit().putBoolean("defaults_v4_applied", true).apply()
+                }
                 // Posters, backdrops, plot and cast for Movies & Series: the build's own TMDB key, once,
                 // and only when no key is set yet (the shared OwnTV service answers 403 to this build).
                 if (BuildConfig.FLUTLICHT_TMDB_KEY.isNotBlank() && !prefs.getBoolean("tmdb_key_v1_applied", false)) {

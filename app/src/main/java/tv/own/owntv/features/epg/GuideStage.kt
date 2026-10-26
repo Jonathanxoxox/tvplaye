@@ -180,11 +180,13 @@ internal fun GuideProgrammeBlock(
     details: String?,
     synopsis: String?,
     modifier: Modifier = Modifier,
+    /** Room the top two lines leave at their end for the top-right cluster (pills, clock) above them. */
+    topEndClear: Dp = 0.mpx,
 ) {
     val a = stageAccent
     Column(modifier) {
         if (eyebrow != null) {
-            Row(horizontalArrangement = Arrangement.spacedBy(10.mpx), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.padding(end = topEndClear), horizontalArrangement = Arrangement.spacedBy(10.mpx), verticalAlignment = Alignment.CenterVertically) {
                 OwnTVIcon(OwnTVIcon.CLOCK, a.accent, Modifier.size(18.mpx))
                 Text(eyebrow, style = stageText(18, 700, 0.02.em), color = a.accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
@@ -192,7 +194,7 @@ internal fun GuideProgrammeBlock(
         if (title != null) {
             Text(
                 title, style = stageText(60, 800, (-1.5).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 10.mpx, bottom = 6.mpx),
+                modifier = Modifier.padding(top = 10.mpx, bottom = 6.mpx, end = topEndClear),
             )
         }
         if (details != null) Text(details, style = stageText(19, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)

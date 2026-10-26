@@ -39,6 +39,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -399,11 +400,31 @@ fun EpgScreen(
     val searchFocus = remember { FocusRequester() }
     val sheetFocus = remember { FocusRequester() }
     val catListState = rememberLazyListState()
+    // The groups column beside the open menu, and whether it holds focus (the menu then stays open).
+    val groupsFocus = remember { FocusRequester() }
+    val groupsListState = rememberLazyListState()
+    var groupsFocused by remember { mutableStateOf(false) }
+    // Set by ▶ from the open menu: the groups list then focuses its selected group itself.
+    var groupsEnter by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailHold.held = false } }
 
     DisposableEffect(onEntryHook) {
-        onEntryHook?.invoke {
+        val focusRows = {
             state.channels.isNotEmpty() &&
                 runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
+        }
+        onEntryHook?.invoke {
+            // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player. The list
+            // hands focus on to its selected group a frame later, so look again before giving up on it.
+            if (tv.own.owntv.features.shell.components.StageRailOpen.open) {
+                groupsEnter = true
+                scope.launch {
+                    repeat(6) { if (!groupsFocused) withFrameNanos { } }
+                    groupsEnter = false
+                    if (!groupsFocused) focusRows()
+                }
+                true
+            } else focusRows()
         }
         onDispose { onEntryHook?.invoke(null) }
     }
@@ -419,10 +440,11 @@ fun EpgScreen(
             .fillMaxSize()
             // Entering from the rail lands in the grid, on the row focus was on. Not while the search field
             // is opening: the Search button it replaces held focus, so the field's own request enters from
-            // outside too, and redirecting it would send focus to the grid instead.
+            // outside too, and redirecting it would send focus to the grid instead. Nor when ▶ from the open
+            // menu heads for the groups beside it.
             .focusProperties {
                 onEnter = {
-                    if (state.channels.isNotEmpty() && !(searchOpen && !searchHadFocus)) {
+                    if (state.channels.isNotEmpty() && !(searchOpen && !searchHadFocus) && !groupsEnter) {
                         runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }
                     }
                 }
@@ -443,7 +465,11 @@ fun EpgScreen(
         }
         val shown = full ?: topProgramme
 
-        Column(Modifier.fillMaxSize()) {
+        // With the menu open the groups stand beside it and the guide moves over by their width.
+        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused
+        val groupsW = fx(400)
+        val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
+        Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (44 → 404): the video, and beside it the programme under the cursor.
         Row(Modifier.padding(start = fx(64), end = fx(64), top = 44.mpx).fillMaxWidth().height(360.mpx)) {
         val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
@@ -456,6 +482,10 @@ fun EpgScreen(
             showVideo = effectivePreview && previewArmed,
             modifier = Modifier.width(640.mpx),
         )
+        // The programme title runs level with the shell's pills and clock: it stops short of them.
+        val statusRect = tv.own.owntv.features.shell.components.StageStatusBounds.rect
+        val windowW = androidx.compose.ui.platform.LocalView.current.width
+        val statusClear = if (statusRect.width <= 0f) 0.mpx else with(density) { (windowW - statusRect.left).toDp() } - fx(64) + 28.mpx
         Box(Modifier.weight(1f).fillMaxHeight()) {
             if (topChannel != null) {
                 val chName = ProviderTags.parse(topChannel.name).name
@@ -465,6 +495,7 @@ fun EpgScreen(
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
                     modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
+                    topEndClear = statusClear.coerceAtLeast(0.mpx),
                 )
             }
             // The key hints at the bottom of the top area, level with the video's bottom edge.
@@ -631,6 +662,39 @@ fun EpgScreen(
             }
         }
 
+        }
+
+        if (showGroups) {
+            val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
+            val (groupEntries, _) = liveCategoryEntries(railItems, railCounts)
+            LiveCategories(
+                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
+                onSearchQueryChange = vm::setCategoryQuery,
+                entries = groupEntries,
+                selectedIndex = railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0),
+                groupsHeading = groupsHeading,
+                sheet = false,
+                listState = groupsListState,
+                onSelect = { idx ->
+                    railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
+                    focusedRow = 0
+                    scope.launch { runCatching { rowListState.scrollToItem(0) } }
+                    focusGrid(0)
+                },
+                onLongSelect = {},
+                onNavigateRight = { focusGrid() },
+                focusRequester = groupsFocus,
+                focusRowIndex = if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
+                modifier = Modifier
+                    .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
+                    .width(groupsW - fx(40))
+                    .fillMaxHeight()
+                    .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
+                    .onFocusChanged {
+                        groupsFocused = it.hasFocus
+                        tv.own.owntv.features.shell.components.StageRailHold.held = it.hasFocus
+                    },
+            )
         }
 
         // ◀ … Category ▾: Live TV's own list as the sheet, titled for the guide.

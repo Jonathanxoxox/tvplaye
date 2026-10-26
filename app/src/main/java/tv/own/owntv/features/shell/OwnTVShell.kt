@@ -41,6 +41,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import tv.own.owntv.core.epg.displayLogoUrl
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -510,6 +511,15 @@ fun OwnTVShell(
         }
     }
 
+    // No separate TV Guide section any more: like TiviMate's "TV", Live TV is the guide. Whatever still
+    // asks for the guide (a shortcut, the player, the start screen) lands on Live TV in its Guide view.
+    LaunchedEffect(selectedSection) {
+        if (selectedSection == MainSection.EPG) {
+            liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
+            onSelectSection(MainSection.LIVE_TV)
+        }
+    }
+
     // Movies/Series/Live load on first open via their reactive Paging flows — their indexed first page is
     // cheap, so they need NO preloading (a Live-TV-only user pays nothing for them). The TV Guide is the ONE
     // exception: load() pulls every guide channel + a programme window, which is heavy enough that doing it on
@@ -697,10 +707,11 @@ fun OwnTVShell(
     val railState = when {
         widenDocked -> tv.own.owntv.features.shell.components.RailState.OPEN
         navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED -> tv.own.owntv.features.shell.components.RailState.PINNED
-        railFocused -> tv.own.owntv.features.shell.components.RailState.OPEN
+        railFocused || tv.own.owntv.features.shell.components.StageRailHold.held -> tv.own.owntv.features.shell.components.RailState.OPEN
         railIdleHidden -> tv.own.owntv.features.shell.components.RailState.HIDDEN
         else -> tv.own.owntv.features.shell.components.RailState.CAPSULE
     }
+    val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -1141,6 +1152,8 @@ fun OwnTVShell(
                                         tv.own.owntv.features.shell.components.railDockedReserve(navSize)
                                     } else tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
+                                // The open menu pushes the page aside instead of covering its left edge.
+                                .graphicsLayer { translationX = railPush.value.toPx() * if (contentLtr) 1f else -1f }
                                 // ◀ with nothing further left in the content goes back to the rail, however the
                                 // content was entered. The D-pad search alone missed it whenever the open rail
                                 // overlapped the content's left edge, which left Back as the only way out.
@@ -1390,6 +1403,13 @@ fun OwnTVShell(
                 }
             }
           }
+            // Like TiviMate: with the menu and the groups open over the guide, the pushed guide runs to the
+            // right edge and the clock and playlist pill step aside instead of sitting on top of it.
+            val clusterLiveView by liveVm.liveView.collectAsStateWithLifecycle()
+            val clusterAside = railState == tv.own.owntv.features.shell.components.RailState.OPEN &&
+                (selectedSection == MainSection.EPG ||
+                    (selectedSection == MainSection.LIVE_TV && clusterLiveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE))
+            val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
                     val live = target.kind == tv.own.owntv.features.home.ContinueKind.LIVE
@@ -1413,13 +1433,13 @@ fun OwnTVShell(
                 playlistInteractive = playlists.size > 1,
                 onPlaylistClick = { showPlaylistPicker = true },
                 // Out of reach from deep in a list: from the rail or on Home only.
-                pillsFocusable = focusedLayer == ShellLayer.SIDEBAR || clusterFocused || selectedSection == MainSection.HOME,
+                pillsFocusable = !clusterAside && (focusedLayer == ShellLayer.SIDEBAR || clusterFocused || selectedSection == MainSection.HOME),
                 weatherInfo = weatherInfo,
                 weatherFahrenheit = weatherFahrenheit,
                 clockColors = clockColors,
                 playlistDownFocusRequester = homeFirstRowFocus.takeIf { selectedSection == MainSection.HOME },
                 onPlaylistPillBounds = { playlistPillBounds = it },
-                modifier = Modifier.align(Alignment.TopEnd).onFocusChanged { clusterFocused = it.hasFocus }.focusGroup(),
+                modifier = Modifier.align(Alignment.TopEnd).graphicsLayer { alpha = clusterAlpha }.onFocusChanged { clusterFocused = it.hasFocus }.focusGroup(),
             )
             tv.own.owntv.features.shell.components.StageRail(
                 state = railState,
@@ -1751,8 +1771,8 @@ fun OwnTVShell(
                     } else null,
                     remote = tv.own.owntv.player.LiveRemoteActions(
                         // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
-                        onOpenGuide = if (isLiveChannel && MainSection.EPG in visibleSections) {
-                            { exitPlayer(); if (selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG) }
+                        onOpenGuide = if (isLiveChannel && MainSection.LIVE_TV in visibleSections) {
+                            { exitPlayer(); liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE); onSelectSection(MainSection.LIVE_TV) }
                         } else null,
                         // Long Down: search, the channel carrying on in the preview.
                         onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
