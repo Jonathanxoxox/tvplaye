@@ -303,10 +303,10 @@ private fun ChannelMiniGuide(channelName: String?, guide: EpgNowNext?, modifier:
         }
         if (now != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.mpx)) {
-                Text(stringResource(R.string.content_live_now).uppercase(), style = stageText(16, 800), color = accent, maxLines = 1)
+                Text(stringResource(R.string.content_live_now).uppercase(), style = stageText(16, 800), color = accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)),
-                    style = stageText(16, 700), color = StageColors.Muted, maxLines = 1,
+                    style = stageText(16, 700), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 )
             }
             Text(now.title, style = stageText(26, 700), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis)
@@ -326,7 +326,7 @@ private fun ChannelMiniGuide(channelName: String?, guide: EpgNowNext?, modifier:
             Box(Modifier.padding(vertical = 6.mpx).fillMaxWidth().height(1.mpx).background(StageColors.Ink.copy(alpha = 0.10f)))
             later.forEach { entry ->
                 Row(horizontalArrangement = Arrangement.spacedBy(16.mpx), verticalAlignment = Alignment.CenterVertically) {
-                    Text(formatTime(entry.startMs), style = stageText(18, 700), color = StageColors.Dim, maxLines = 1, modifier = Modifier.width(80.mpx))
+                    Text(formatTime(entry.startMs), style = stageText(18, 700), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(80.mpx))
                     Text(entry.title, style = stageText(19, 600), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }

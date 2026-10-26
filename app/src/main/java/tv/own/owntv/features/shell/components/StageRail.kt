@@ -274,7 +274,7 @@ private fun MenuLogo(expanded: Boolean) {
                 stringResource(R.string.tvplayer_app_name),
                 style = stageText(40, 800),
                 color = StageColors.Text,
-                maxLines = 1,
+                maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 18.mpx),
             )
         }
@@ -336,7 +336,7 @@ private fun RailItem(
                 modifier = Modifier.weight(1f),
             )
             if (trailing != null) {
-                Text(trailing, style = stageText(18, 500), color = if (focused) a.onAccent else StageColors.Muted, maxLines = 1)
+                Text(trailing, style = stageText(18, 500), color = if (focused) a.onAccent else StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
     }
