@@ -175,7 +175,7 @@ internal fun WizardCards(cards: List<WizardCard>, firstFocus: FocusRequester? = 
                     .heightIn(min = 170.mpx)
                     .then(if (i == 0 && firstFocus != null) Modifier.focusRequester(firstFocus) else Modifier),
             ) { focused ->
-                Column(Modifier.fillMaxWidth().padding(24.mpx)) {
+                Column(Modifier.fillMaxSize().padding(24.mpx)) {
                     OwnTVIcon(card.icon, if (focused) StageColors.Text else StageColors.Muted, Modifier.size(30.mpx))
                     Text(card.title, style = stageText(23, 800), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 18.mpx))
                     Text(card.line, style = stageText(16, 500).copy(lineHeight = 23.mpxLine()), color = StageColors.Muted, modifier = Modifier.padding(top = 6.mpx))
