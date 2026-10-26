@@ -84,7 +84,7 @@ internal fun ZapInfoBar(
                     if (now != null) {
                         Text(
                             stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)),
-                            style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1,
+                            style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                         val span = (now.stopMs - now.startMs).toFloat()
                         if (span > 0f) {
@@ -93,10 +93,10 @@ internal fun ZapInfoBar(
                                 Box(Modifier.fillMaxWidth(progress).height(4.dp).background(Color.White))
                             }
                             val left = ((now.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000
-                            Text(stringResource(R.string.player_duration_minutes, left.toInt()), style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1)
+                            Text(stringResource(R.string.player_duration_minutes, left.toInt()), style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                     } else {
-                        Text(stringResource(R.string.tvplayer_no_guide), style = stageText(24, 500), color = Color.White.copy(alpha = 0.7f), maxLines = 1)
+                        Text(stringResource(R.string.tvplayer_no_guide), style = stageText(24, 500), color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     if (now != null) {
                         subtitle?.takeIf { it.isNotBlank() }?.let {
@@ -110,7 +110,7 @@ internal fun ZapInfoBar(
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         Text(
                             stringResource(R.string.content_live_time_range, formatTime(next.startMs), formatTime(next.stopMs)),
-                            style = stageText(24, 500), color = Color.White.copy(alpha = 0.75f), maxLines = 1,
+                            style = stageText(24, 500), color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         )
                         Text(next.title, style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
