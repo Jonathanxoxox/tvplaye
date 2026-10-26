@@ -96,7 +96,6 @@ import tv.own.owntv.core.theme.ThemeMode
 import tv.own.owntv.core.live.LiveKey
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import tv.own.owntv.ui.theme.nightScenes
 
 /** Which layer currently holds focus (drives Back navigation). */
 private enum class ShellLayer { SIDEBAR, CONTENT }
@@ -303,18 +302,6 @@ fun OwnTVShell(
     val timeshiftOffsetState = liveVm.timeshiftOffsetSec.collectAsStateWithLifecycle()
     val watchingWallState = liveVm.watchingWallMs.collectAsStateWithLifecycle()
     val onLocalCopy by liveVm.onLocalCopy.collectAsStateWithLifecycle()
-    // Night scenes (Glass & background): the chosen theme behind every page, and Flutlichtnacht — the night
-    // stadium — behind Live TV and the TV Guide while the focused channel shows football.
-    val nightSettings = tv.own.owntv.ui.theme.rememberNightSceneSettings()
-    val nightScene by nightSettings.scene.collectAsStateWithLifecycle()
-    val nightStadiumOn by nightSettings.stadium.collectAsStateWithLifecycle()
-    val nightChannel by liveVm.previewChannel.collectAsStateWithLifecycle()
-    val nightNowNext by liveVm.nowNext.collectAsStateWithLifecycle()
-    val nightGroup by liveVm.previewCategoryName.collectAsStateWithLifecycle()
-    val nightNow = nightNowNext?.now
-    val footballFocused = remember(nightChannel?.name, nightNow?.title, nightNow?.description, nightGroup) {
-        tv.own.owntv.launcher.FootballMatcher.isFootballFocus(nightNow?.title, nightNow?.description, nightChannel?.name, nightGroup)
-    }
     val timeshifted by remember(liveVm) {
         liveVm.timeshiftOffsetSec.map { it != null }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(false)
@@ -1114,13 +1101,7 @@ fun OwnTVShell(
                     .background(shellBase)
                     // The Stage page, across the whole width — under a docked rail's reserve too.
                     // Over a picture it draws only the Accent light; the picture shows through.
-                    .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent)
-                    .nightScenes(
-                        scene = nightScene,
-                        stadium = nightStadiumOn && footballFocused &&
-                            (selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG),
-                        playerFree = playerMode == PlayerMode.NONE,
-                    ),
+                    .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent),
             ) {
                 // Live TV's view (List / Guide), and how a guide — the TV Guide or Live TV's Guide view —
                 // starts a channel or an archive programme: through LiveViewModel, the one live path.
@@ -1881,13 +1862,7 @@ fun OwnTVShell(
                         if (liveVm.ensurePlayingByIdAsync(r.channelId)) openFullscreen(MainSection.LIVE_TV)
                     }
                 }
-                // A match of the profile's teams: the remote goes to Jonathan.
-                val remoteContext = androidx.compose.ui.platform.LocalContext.current
-                val remoteWanted = stringResource(R.string.tvplayer_football_remote)
-                val remoteLine = remember(dueReminder?.id) {
-                    dueReminder?.takeIf { tv.own.owntv.launcher.FootballReminders.isTeamMatch(remoteContext, it.profileId, it.startMs, it.title) }?.let { remoteWanted }
-                }
-                val reminderText = dueReminder?.let { listOfNotNull(it.title, tv.own.owntv.features.epg.reminderEyebrow(it), remoteLine).joinToString(" · ") }
+                val reminderText = dueReminder?.let { listOfNotNull(it.title, tv.own.owntv.features.epg.reminderEyebrow(it)).joinToString(" · ") }
                 LaunchedEffect(dueReminder?.id, reminderMode) {
                     val r = dueReminder ?: return@LaunchedEffect
                     when (reminderMode) {
@@ -1902,7 +1877,6 @@ fun OwnTVShell(
                 if (dueReminder != null && reminderMode == tv.own.owntv.core.settings.SettingsRepository.ReminderMode.ASK) {
                     tv.own.owntv.features.epg.ReminderPrompt(
                         reminder = dueReminder,
-                        extra = remoteLine,
                         onWatch = { watchReminder(dueReminder) },
                         onDismiss = { scope.launch { reminderManager.dismiss(dueReminder.id) } },
                     )

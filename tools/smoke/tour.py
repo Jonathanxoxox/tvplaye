@@ -511,11 +511,11 @@ def settings_tour():
             key("BACK", wait=1.5)
 
 
-SCENES = ["Graphit", "Schiefer", "Königsblau", "Rasengrün", "Bordeaux", "Espresso", "Tiefsee", "Mondwüste", "Glimmwald", "Hafenlichter"]
+SCENES = ["Graphit", "Schiefer", "Königsblau", "Rasengrün", "Bordeaux", "Espresso"]
 
 
 def open_scene_row():
-    """Mehr › Einstellungen › Darstellung › Glas & Hintergrund, Fokus auf die Zeile „Szene“."""
+    """Mehr › Einstellungen › Darstellung › Glas & Hintergrund, Fokus auf die Zeile „Farbthema“."""
     if not open_section("Mehr"):
         return False
     key("DPAD_RIGHT", wait=0.8)
@@ -530,11 +530,11 @@ def open_scene_row():
     if not goto(r"^Glas & Hintergrund$"):
         return False
     time.sleep(1.5)
-    return goto(r"^Szene$", press=False)
+    return goto(r"^Farbthema$", press=False)
 
 
 def scenes_tour():
-    """Jede neue Nachtszene einstellen (Vorschau im Feld rechts), dann Startseite und Live-TV davor."""
+    """Jedes Farbthema einstellen (Vorschau im Feld rechts), dann Startseite und Live-TV davor."""
     for name in SCENES:
         if not open_scene_row():
             shot(f"szene-{slug(name)}-zeile-fehlt")

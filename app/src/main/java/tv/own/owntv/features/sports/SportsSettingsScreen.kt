@@ -130,8 +130,8 @@ private fun Row(icon: OwnTVIcon, title: String, desc: String?, value: SettingVal
     )
 }
 
-/** Rows on the main page (the "N settings" beside its title): 2 + 5 + 6 + 3 + 2 + 4. */
-private const val MAIN_ROWS = 22
+/** Rows on the main page (the "N settings" beside its title): 1 + 5 + 6 + 3 + 2 + 4. */
+private const val MAIN_ROWS = 21
 
 /** The main page: What to show · Watching · While watching · Channels · Data. */
 @Composable
@@ -140,18 +140,13 @@ private fun MainRows(vm: SportsSettingsViewModel, c: SportsConfig, shown: Boolea
     val leagues = c.leagues
     val sports = SportsCatalog.sports.filter { s -> leagues.any { SportsCatalog.league(it)?.sport == s } }
 
-    // Mayo TV's own football: the channel group and the kick-off reminders ("Für dich" needs no switch).
+    // Mayo TV's own football: the channel group ("Für dich" needs no switch). No kick-off reminders: no pop-ups.
     val context = androidx.compose.ui.platform.LocalContext.current
     var groupOn by remember { mutableStateOf(tv.own.owntv.launcher.FootballSetup.groupOn(context)) }
-    var remindersOn by remember { mutableStateOf(tv.own.owntv.launcher.FootballSetup.remindersOn(context)) }
-    StageSettingsHeading(stringResource(R.string.tvplayer_football_heading), 2, first = true)
+    StageSettingsHeading(stringResource(R.string.tvplayer_football_heading), 1, first = true)
     Row(OwnTVIcon.LIVE_TV, stringResource(R.string.tvplayer_football_group_setting), stringResource(R.string.tvplayer_football_group_desc), SettingValue.Switch(groupOn)) {
         groupOn = !groupOn
         tv.own.owntv.launcher.FootballSetup.set(context, tv.own.owntv.launcher.FootballSetup.GROUP_ON, groupOn)
-    }
-    Row(OwnTVIcon.BELL, stringResource(R.string.tvplayer_football_reminders_setting), stringResource(R.string.tvplayer_football_reminders_desc), SettingValue.Switch(remindersOn)) {
-        remindersOn = !remindersOn
-        tv.own.owntv.launcher.FootballSetup.set(context, tv.own.owntv.launcher.FootballSetup.REMINDERS_ON, remindersOn)
     }
 
     StageSettingsHeading(stringResource(R.string.sports_settings_what), 5)

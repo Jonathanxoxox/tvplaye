@@ -29,28 +29,34 @@ internal class FootballMatcher(
     }
 
     /**
-     * [title]'s place in "Für dich", or null. On a channel that is not a sports channel ([sportsChannel]
-     * false: ARD, ZDF, TV 2 …) only a programme that reads as football counts, so "Deutschland sucht
-     * den Superstar" is not a Germany match.
+     * [title]'s place in "Für dich" and the football group, or null when it is not football.
+     *
+     * The title has to say football by itself: a football word ("Fußball", "Spieltag"), one of the
+     * profile's competitions, or a pairing ("HSV – Werder") that names one of its teams — or, on a sports
+     * channel ([sportsChannel]), any pairing. A description never makes a programme football on its own:
+     * "Hart aber fair - Pflege zu Hause" with "Deutschland" in its text is not a Germany match. Once the
+     * title is football, the description may still name the team ("Bundesliga" with "HSV – Werder" below).
+     * Off sports channels a pairing with a team also needs football in its description.
      */
     fun match(title: String, description: String?, sportsChannel: Boolean = true): Hit? {
         val t = TeamNames.tokens(title).toSet()
         if (t.any { it in OTHER_SPORTS }) return null
-        val d = TeamNames.tokens(description.orEmpty()).toSet()
-        if (!sportsChannel && !readsAsFootball(title, description, t, d)) return null
-        teams.forEachIndexed { i, team -> if (team.foundIn(t)) return Hit(100 + rankBonus(i, 9), team.name, Kind.TEAM) }
-        teams.forEachIndexed { i, team -> if (team.foundIn(d)) return Hit(70 + rankBonus(i, 9), team.name, Kind.TEAM) }
-        competitions.forEachIndexed { i, c -> if (c.foundIn(t)) return Hit(45 + rankBonus(i, 5), c.name, Kind.COMPETITION) }
-        competitions.forEachIndexed { i, c -> if (c.foundIn(d)) return Hit(30 + rankBonus(i, 5), c.name, Kind.COMPETITION) }
         val ft = fold(title)
-        val fd = fold(description.orEmpty())
-        if (FOOTBALL.any { containsPhrase(ft, it) || containsPhrase(fd, it) }) return Hit(15, "football", Kind.FOOTBALL)
-        return null
+        val pairing = isPairing(title)
+        val team = teams.indexOfFirst { it.foundIn(t) }
+        val competition = competitions.indexOfFirst { it.foundIn(t) }
+        val d = TeamNames.tokens(description.orEmpty()).toSet()
+        // A pairing on ARD or ZDF still needs its text to say football: "Maischberger - Deutschland am Limit".
+        val textSaysFootball = { fold(description.orEmpty()).let { fd -> FOOTBALL.any { containsPhrase(fd, it) } } || competitions.any { it.foundIn(d) } }
+        val football = FOOTBALL.any { containsPhrase(ft, it) } || competition >= 0 ||
+            (pairing && (sportsChannel || (team >= 0 && textSaysFootball())))
+        if (!football) return null
+        if (team >= 0) return Hit(100 + rankBonus(team, 9), teams[team].name, Kind.TEAM)
+        teams.forEachIndexed { i, it -> if (it.foundIn(d)) return Hit(70 + rankBonus(i, 9), it.name, Kind.TEAM) }
+        if (competition >= 0) return Hit(45 + rankBonus(competition, 5), competitions[competition].name, Kind.COMPETITION)
+        competitions.forEachIndexed { i, c -> if (c.foundIn(d)) return Hit(30 + rankBonus(i, 5), c.name, Kind.COMPETITION) }
+        return Hit(15, "football", Kind.FOOTBALL)
     }
-
-    private fun readsAsFootball(title: String, description: String?, t: Set<String>, d: Set<String>): Boolean =
-        MATCH_PATTERN.containsMatchIn(title) || competitions.any { it.foundIn(t) || it.foundIn(d) } ||
-            fold(title + " " + description.orEmpty()).let { all -> FOOTBALL.any { containsPhrase(all, it) } }
 
     private fun rankBonus(index: Int, max: Int) = (max - index).coerceAtLeast(0)
 
@@ -127,42 +133,48 @@ internal class FootballMatcher(
                 "handball", "basketball", "basket", "eishockey", "hockey", "volleyball", "tennis", "golf", "formel",
                 "motogp", "radsport", "darts", "snooker", "nfl", "nba", "nhl", "boxen", "boxing", "ufc", "biathlon",
                 "skispringen", "leichtathletik", "rugby", "cricket", "futsal", "esports", "efootball",
+                "motorsport", "dtm", "nascar", "indycar", "wrestling", "wwe", "mma", "kampfsport", "poker",
+                "ski", "schwimmen", "turnen", "reiten", "segeln", "badminton", "tischtennis", "squash",
             ).flatMapTo(HashSet()) { TeamNames.tokens(it) }
         }
 
         /** "HSV – Werder", "Liverpool vs. Arsenal", "Deutschland gegen Dänemark". */
-        private val MATCH_PATTERN = Regex("\\S\\s+(-|–|—|vs\\.?|v|gegen)\\s+\\S", RegexOption.IGNORE_CASE)
+        private val MATCH_PATTERN = Regex("\\s+(?:-|–|—|vs\\.?|v|gegen)\\s+", RegexOption.IGNORE_CASE)
+
+        /** Words that make "A - B" a show rather than a match ("Sky Sport News - Das Magazin"). */
+        private val SHOW_WORDS = setOf(
+            "magazin", "news", "talk", "doku", "dokumentation", "studio", "folge", "staffel", "teil", "film",
+            "serie", "show", "nachrichten", "wetter", "reportage", "spezial", "special", "best", "classics",
+        )
+
+        /**
+         * Whether [title] pairs two sides like a match: after the last colon ("Live LaLiga 26/27: FC Sevilla -
+         * CA Osasuna"), exactly two sides of one to four words each, none of them a show word.
+         */
+        fun isPairing(title: String): Boolean {
+            val sides = title.substringAfterLast(':').split(MATCH_PATTERN)
+            if (sides.size != 2) return false
+            return sides.all { side ->
+                val words = fold(side).split(' ').filter { it.isNotEmpty() }
+                words.size in 1..4 && words.none { it in SHOW_WORDS }
+            }
+        }
 
         private val FOOTBALL = listOf(
             "futbol", "fussball", "football", "soccer", "jornada", "spieltag", "matchday",
         )
 
-        /** Words in a channel name or group that mark a sports channel worth reading the guide of. */
+        /**
+         * Words in a channel name that mark a sports channel worth reading the guide of. Only sports words:
+         * "Sky", "Canal", "Magenta" or "TNT" alone also name film and series channels ("Sky Krimi").
+         */
         private val SPORTS_CHANNEL = listOf(
-            "sport", "sports", "dazn", "laliga", "liga", "bein", "espn", "eleven", "movistar", "futbol",
-            "football", "champions", "gol", "tnt", "eurosport", "arena", "sky", "canal", "real madrid",
-            "barca", "rmtv", "uefa", "magenta", "fussball", "viaplay", "lfctv", "mutv",
+            "sport", "dazn", "liga", "bein", "espn", "eleven", "futbol", "football", "fussball", "champions",
+            "uefa", "real madrid", "rmtv", "barca", "lfctv", "mutv",
         )
 
         /** Free channels that show national-team matches; whole words only ("ard" is in "standard"). */
         private val NATIONAL_CHANNEL = listOf("ard", "das erste", "zdf", "rtl", "tv2", "tv 2", "dr1", "dr 1", "orf", "srf")
-
-        /** Default teams and competitions, enough to tell whether something is football at all. */
-        private val ANY_FOOTBALL: FootballMatcher by lazy { from(SportsConfig(), defaultTeams = true) }
-
-        /**
-         * Whether the focused channel shows football right now, for the Flutlichtnacht scene: a football
-         * group decides first, then the running programme when the guide has one, otherwise the channel's
-         * name ("LaLiga TV", "LFC TV").
-         */
-        fun isFootballFocus(title: String?, description: String?, channelName: String?, groupName: String?): Boolean {
-            if (groupName != null && fold(groupName).let { g -> FOOTBALL.any { containsPhrase(g, it) } }) return true
-            if (!title.isNullOrBlank()) {
-                val sports = listOfNotNull(channelName, groupName).any(::isSportsChannel)
-                return ANY_FOOTBALL.match(title, description, sportsChannel = sports) != null
-            }
-            return channelName != null && ANY_FOOTBALL.match(channelName, null) != null
-        }
 
         fun isSportsChannel(name: String): Boolean = isSportsChannelFolded(fold(name))
 

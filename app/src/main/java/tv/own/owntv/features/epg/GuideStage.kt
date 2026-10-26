@@ -833,7 +833,6 @@ internal fun ReminderPrompt(
     reminder: tv.own.owntv.core.database.entity.ReminderEntity,
     onWatch: () -> Unit,
     onDismiss: () -> Unit,
-    extra: String? = null,
 ) {
     val a = stageAccent
     val focus = remember { FocusRequester() }
@@ -856,14 +855,8 @@ internal fun ReminderPrompt(
                 }
                 Text(
                     reminder.title, style = stageText(38, 800), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(top = 8.mpx, bottom = if (extra != null) 8.mpx else 24.mpx),
+                    modifier = Modifier.padding(top = 8.mpx, bottom = 24.mpx),
                 )
-                if (extra != null) {
-                    Text(
-                        extra, style = stageText(22, 700), color = a.accent, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(bottom = 24.mpx),
-                    )
-                }
                 Row(horizontalArrangement = Arrangement.spacedBy(12.mpx)) {
                     StageButton(
                         stringResource(R.string.content_epg_watch_channel), onClick = onWatch, icon = OwnTVIcon.LIVE_TV,

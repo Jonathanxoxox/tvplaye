@@ -162,8 +162,13 @@ fun SportsHubScreen(
     val today = state.board.today.values.flatten().distinctBy { it.key }.filter { it.isLive || isToday(it.startMs) }
     val live = today.filter { it.isLive && it.passes() }
         .sortedWith(compareBy<Match>({ config.rankOf(it.sport, it.feed).first }, { config.rankOf(it.sport, it.feed).second }, { !it.isMine() }, { it.startMs }))
-    val soon = state.board.matches.filter { it.state == MatchState.PRE && it.startMs > now && it.passes() }
-        .sortedWith(compareBy<Match>({ config.rankOf(it.sport, it.feed).first }, { config.rankOf(it.sport, it.feed).second }, { it.startMs })).take(12)
+    // Coming up, by day: "Heute noch", "Morgen", then the rest. Within a day by kick-off, so the row reads
+    // like a schedule; a row headed "Gleich geht's los" showed tomorrow's matches.
+    val soonByDay = state.board.matches.filter { it.state == MatchState.PRE && it.startMs > now && it.passes() }
+        .sortedWith(compareBy<Match>({ it.startMs }, { config.rankOf(it.sport, it.feed).first }, { config.rankOf(it.sport, it.feed).second }))
+        .groupBy { daysFromToday(it.startMs).coerceAtMost(2) }
+        .mapValues { it.value.take(12) }
+    val soon = soonByDay.values.flatten()
     val onNow = state.onNow.values.flatten().take(6)
     val followedSports = remember(config) { vm.followedSports(config) }
 
@@ -283,11 +288,16 @@ fun SportsHubScreen(
                 }
             }
 
-            if (soon.isNotEmpty()) {
-                item(key = "soon") {
+            for ((day, matches) in soonByDay.toSortedMap()) {
+                item(key = "soon$day") {
                     val context = LocalContext.current
                     Column {
-                        RowHeader(contentStart, stringResource(R.string.sports_starting_soon), null)
+                        val title = when (day) {
+                            0 -> R.string.tvplayer_sports_later_today
+                            1 -> R.string.content_epg_tomorrow
+                            else -> R.string.tvplayer_sports_coming_up
+                        }
+                        RowHeader(contentStart, stringResource(title), null)
                         // A new filter starts the row at its first card, not where the old list was scrolled.
                         val soonState = androidx.compose.foundation.lazy.rememberLazyListState()
                         androidx.compose.runtime.LaunchedEffect(chips, leagues) { soonState.scrollToItem(0) }
@@ -297,7 +307,7 @@ fun SportsHubScreen(
                             contentPadding = PaddingValues(start = contentStart, end = 64.mpx, top = 6.mpx, bottom = 6.mpx),
                             horizontalArrangement = Arrangement.spacedBy(18.mpx),
                         ) {
-                            items(soon, key = { it.key }) { m ->
+                            items(matches, key = { it.key }) { m ->
                                 MatchCard(
                                     m, featured = false, config = config, now = now,
                                     reminded = SportsViewModel.reminderKey(m.startMs, MatchNotifications.pair(context, m)) in state.reminders,
