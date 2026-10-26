@@ -17,7 +17,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.annotation.StringRes
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -46,6 +48,7 @@ import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import tv.own.owntv.R
 
 /**
  * Flutlicht's night scenes, in the layered style of Jonas Laterne (super7): animated landscapes behind
@@ -63,7 +66,48 @@ import kotlin.math.sin
  *
  * Each scene is designed on a 1280×720 board and scaled to cover the area like `xMidYMid slice`.
  */
-enum class NightScene { NONE, NORDLICHT, MITTERNACHT, TIEFSEE, MONDWUESTE, GLIMMWALD, HAFENLICHTER }
+enum class NightScene {
+    NONE,
+    // Plain colour themes: no picture, only page, panels and greys in their colour (see [tintOf]).
+    GRAPHIT, SCHIEFER, KOENIGSBLAU, RASENGRUEN, BORDEAUX, ESPRESSO,
+    NORDLICHT, MITTERNACHT, TIEFSEE, MONDWUESTE, GLIMMWALD, HAFENLICHTER,
+}
+
+/** The name in the settings' stepper. */
+val NightScene.labelRes: Int
+    @StringRes get() = when (this) {
+        NightScene.NONE -> R.string.tvplayer_scene_off
+        NightScene.GRAPHIT -> R.string.tvplayer_color_graphit
+        NightScene.SCHIEFER -> R.string.tvplayer_color_schiefer
+        NightScene.KOENIGSBLAU -> R.string.tvplayer_color_koenigsblau
+        NightScene.RASENGRUEN -> R.string.tvplayer_color_rasengruen
+        NightScene.BORDEAUX -> R.string.tvplayer_color_bordeaux
+        NightScene.ESPRESSO -> R.string.tvplayer_color_espresso
+        NightScene.NORDLICHT -> R.string.tvplayer_scene_nordlicht
+        NightScene.MITTERNACHT -> R.string.tvplayer_scene_mitternacht
+        NightScene.TIEFSEE -> R.string.tvplayer_scene_tiefsee
+        NightScene.MONDWUESTE -> R.string.tvplayer_scene_mondwueste
+        NightScene.GLIMMWALD -> R.string.tvplayer_scene_glimmwald
+        NightScene.HAFENLICHTER -> R.string.tvplayer_scene_hafenlichter
+    }
+
+/** What the help panel says about it. */
+val NightScene.descRes: Int
+    @StringRes get() = when (this) {
+        NightScene.NONE -> R.string.tvplayer_scene_off_desc
+        NightScene.GRAPHIT -> R.string.tvplayer_color_graphit_desc
+        NightScene.SCHIEFER -> R.string.tvplayer_color_schiefer_desc
+        NightScene.KOENIGSBLAU -> R.string.tvplayer_color_koenigsblau_desc
+        NightScene.RASENGRUEN -> R.string.tvplayer_color_rasengruen_desc
+        NightScene.BORDEAUX -> R.string.tvplayer_color_bordeaux_desc
+        NightScene.ESPRESSO -> R.string.tvplayer_color_espresso_desc
+        NightScene.NORDLICHT -> R.string.tvplayer_scene_nordlicht_desc
+        NightScene.MITTERNACHT -> R.string.tvplayer_scene_mitternacht_desc
+        NightScene.TIEFSEE -> R.string.tvplayer_scene_tiefsee_desc
+        NightScene.MONDWUESTE -> R.string.tvplayer_scene_mondwueste_desc
+        NightScene.GLIMMWALD -> R.string.tvplayer_scene_glimmwald_desc
+        NightScene.HAFENLICHTER -> R.string.tvplayer_scene_hafenlichter_desc
+    }
 
 /** The chosen scene and the football switch, kept in the app's own preferences (the core is not changed). */
 object NightSceneSettings {
@@ -119,7 +163,8 @@ fun Modifier.nightScenes(scene: NightScene, stadium: Boolean, playerFree: Boolea
  * the worlds while this file's own statics (SKY_STARS) are still null.
  */
 private fun artOf(scene: NightScene): SceneArt? = when (scene) {
-    NightScene.NONE -> null
+    NightScene.NONE, NightScene.GRAPHIT, NightScene.SCHIEFER, NightScene.KOENIGSBLAU,
+    NightScene.RASENGRUEN, NightScene.BORDEAUX, NightScene.ESPRESSO -> null
     NightScene.NORDLICHT -> NordlichtArt
     NightScene.MITTERNACHT -> MitternachtArt
     NightScene.TIEFSEE -> TiefseeArt
@@ -128,30 +173,43 @@ private fun artOf(scene: NightScene): SceneArt? = when (scene) {
     NightScene.HAFENLICHTER -> HafenArt
 }
 
-/** A small live picture of [scene] (the settings' help panel); the plain page colour for [NightScene.NONE]. */
+/**
+ * A small live picture of [scene] (the settings' help panel). A colour theme has no picture, so it shows a
+ * sketch of the shell in its colours instead: the menu strip, a panel and the focus bar.
+ */
 @Composable
 fun NightScenePreview(scene: NightScene, modifier: Modifier = Modifier) {
+    val palette = LocalStagePalette.current
+    val sketch = if (artOf(scene) == null) Modifier.drawBehind {
+        val u = size.height / 9f
+        drawRect(palette.glassTint, Offset.Zero, Size(u * 1.1f, size.height))
+        for (i in 0..3) drawCircle(palette.muted.copy(alpha = 0.7f), u * 0.18f, Offset(u * 0.55f, u * (1.1f + i * 0.9f)))
+        drawRoundRect(palette.text, Offset(u * 1.8f, u * 0.8f), Size(u * 4f, u * 0.45f), CornerRadius(u * 0.1f))
+        drawRoundRect(palette.muted, Offset(u * 1.8f, u * 1.5f), Size(u * 2.6f, u * 0.3f), CornerRadius(u * 0.1f))
+        drawRoundRect(palette.glassTint, Offset(u * 1.8f, u * 2.4f), Size(size.width - u * 2.6f, u * 5.6f), CornerRadius(u * 0.4f))
+        for (i in 0..3) {
+            val y = u * (2.85f + i * 1.25f)
+            if (i == 1) drawRoundRect(palette.text, Offset(u * 2.1f, y - u * 0.25f), Size(size.width - u * 3.2f, u * 1f), CornerRadius(u * 0.2f))
+            drawRoundRect(if (i == 1) palette.fxText else palette.body.copy(alpha = 0.8f), Offset(u * 2.5f, y + u * 0.1f), Size(u * (3.4f - (i % 2) * 0.8f), u * 0.3f), CornerRadius(u * 0.1f))
+            drawRoundRect(if (i == 1) palette.fxLine else palette.dim, Offset(size.width - u * 3.6f, y + u * 0.1f), Size(u * 2.2f, u * 0.3f), CornerRadius(u * 0.1f))
+        }
+    } else Modifier
     Box(
         modifier
-            .background(LocalStagePalette.current.page)
+            .background(palette.page)
+            .then(sketch)
             .nightScenes(scene, stadium = false, playerFree = true),
     )
 }
 
 /**
- * The panels of a world: page, glass and the cool greys tinted to the scene, so the rail and the sheets sit in
- * the picture instead of on it. Text, focus bar and switches stay as they are, and so does their contrast.
+ * The panels of a world or colour theme: page, glass and the cool greys tinted to it, so the rail and the sheets
+ * sit in the picture instead of on it. Text, focus bar and switches stay as they are, and so does their contrast.
  * Nordlicht and Mitternacht keep Cyan Blau, as before.
  */
 fun StagePalette.forScene(scene: NightScene): StagePalette {
     if (isLight) return this
-    val t = when (scene) {
-        NightScene.TIEFSEE -> SceneTint(0xFF0A2F4A, 0xFF114A6E, 0xFFA9CBE0, 0xFF7FA8C2, 0xFFC3DBEA, 0xFFD3E4EF)
-        NightScene.MONDWUESTE -> SceneTint(0xFF2A1D45, 0xFF3C2A5E, 0xFFCDBFE0, 0xFFA595C2, 0xFFD6CBE8, 0xFFE3DAEF)
-        NightScene.GLIMMWALD -> SceneTint(0xFF0D3A30, 0xFF145244, 0xFFB4D8C8, 0xFF88B8A4, 0xFFC6E2D4, 0xFFD5EAE0)
-        NightScene.HAFENLICHTER -> SceneTint(0xFF14223A, 0xFF1F3354, 0xFFBCC8DC, 0xFF8E9DB8, 0xFFCBD5E6, 0xFFDCE3EE)
-        else -> return this
-    }
+    val t = tintOf(scene) ?: return this
     val page = Color(t.page)
     return copy(
         page = page,
@@ -168,14 +226,26 @@ fun StagePalette.forScene(scene: NightScene): StagePalette {
 
 private class SceneTint(val page: Long, val glass: Long, val muted: Long, val dim: Long, val tag: Long, val body: Long)
 
-/** The world's page colour, or null when the scene keeps Cyan Blau. */
-private fun scenePage(scene: NightScene): Color? = when (scene) {
-    NightScene.TIEFSEE -> Color(0xFF0A2F4A)
-    NightScene.MONDWUESTE -> Color(0xFF2A1D45)
-    NightScene.GLIMMWALD -> Color(0xFF0D3A30)
-    NightScene.HAFENLICHTER -> Color(0xFF14223A)
-    else -> null
+/**
+ * Page, glass, muted, dim, tag and body of each tinted theme, or null when it keeps Cyan Blau. The colour themes'
+ * greys are Cyan Blau's moved into their hue at the same lightness, so text keeps at least 4.5 : 1 on every panel.
+ */
+private fun tintOf(scene: NightScene): SceneTint? = when (scene) {
+    NightScene.GRAPHIT -> SceneTint(0xFF1C2024, 0xFF25292E, 0xFFC2C4C7, 0xFF9BA0A4, 0xFFD5D8DA, 0xFFDEE0E1)
+    NightScene.SCHIEFER -> SceneTint(0xFF2A3540, 0xFF384552, 0xFFC0C4C9, 0xFF99A0A6, 0xFFD4D8DB, 0xFFDDE0E2)
+    NightScene.KOENIGSBLAU -> SceneTint(0xFF1A2E6C, 0xFF263E88, 0xFFB7BDD2, 0xFF8B95B4, 0xFFCED2E1, 0xFFD8DCE7)
+    NightScene.RASENGRUEN -> SceneTint(0xFF0F3C1E, 0xFF164C28, 0xFFB7D2C0, 0xFF8CB399, 0xFFCEE1D4, 0xFFD8E7DD)
+    NightScene.BORDEAUX -> SceneTint(0xFF3A1622, 0xFF491E2D, 0xFFCFBAC1, 0xFFAE919B, 0xFFDFD0D5, 0xFFE5DADE)
+    NightScene.ESPRESSO -> SceneTint(0xFF33241C, 0xFF412F25, 0xFFCBC3BE, 0xFFA99D96, 0xFFDCD6D3, 0xFFE3DEDC)
+    NightScene.TIEFSEE -> SceneTint(0xFF0A2F4A, 0xFF114A6E, 0xFFA9CBE0, 0xFF7FA8C2, 0xFFC3DBEA, 0xFFD3E4EF)
+    NightScene.MONDWUESTE -> SceneTint(0xFF2A1D45, 0xFF3C2A5E, 0xFFCDBFE0, 0xFFA595C2, 0xFFD6CBE8, 0xFFE3DAEF)
+    NightScene.GLIMMWALD -> SceneTint(0xFF0D3A30, 0xFF145244, 0xFFB4D8C8, 0xFF88B8A4, 0xFFC6E2D4, 0xFFD5EAE0)
+    NightScene.HAFENLICHTER -> SceneTint(0xFF14223A, 0xFF1F3354, 0xFFBCC8DC, 0xFF8E9DB8, 0xFFCBD5E6, 0xFFDCE3EE)
+    NightScene.NONE, NightScene.NORDLICHT, NightScene.MITTERNACHT -> null
 }
+
+/** The theme's page colour, or null when it keeps Cyan Blau. */
+private fun scenePage(scene: NightScene): Color? = tintOf(scene)?.let { Color(it.page) }
 
 /**
  * The dark surface tiers (rail, cards, outlines) moved into the world's hue: each keeps its brightness and
