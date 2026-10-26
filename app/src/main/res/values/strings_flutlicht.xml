@@ -67,6 +67,5 @@
     <string name="sports_alerts_when_closed">Alerts when Flutlicht is closed</string>
     <string name="sports_no_playlist_body">Scores, tables and alerts work without one. With a playlist, Flutlicht finds every channel showing this match.</string>
     <string name="sports_sport_buttons_description">My sports: only what you chose. All sports: every league Flutlicht knows, which takes longer to load.</string>
-    <string name="tvplayer_about_based_on" translatable="false">Basiert auf Flutlicht (GPLv3) · %1$s</string>
     <string name="update_ready">Flutlicht v<xliff:g id="available">%1$s</xliff:g> is ready (you have v<xliff:g id="current">%2$s</xliff:g>).</string>
 </resources>
