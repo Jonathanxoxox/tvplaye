@@ -178,6 +178,14 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     if (settings.currentTmdbApiKey().isBlank()) settings.setTmdbApiKey(BuildConfig.FLUTLICHT_TMDB_KEY)
                     prefs.edit().putBoolean("tmdb_key_v1_applied", true).apply()
                 }
+                // Plot and titles from TMDB in the TV's language (German), not TMDB's English default.
+                if (!prefs.getBoolean("tmdb_lang_v1_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    if (settings.metadataLanguage.first().isBlank()) {
+                        settings.setMetadataLanguage(tv.own.owntv.core.metadata.MetadataConfig.LANGUAGE_AUTO)
+                    }
+                    prefs.edit().putBoolean("tmdb_lang_v1_applied", true).apply()
+                }
             }
         }
         // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and
