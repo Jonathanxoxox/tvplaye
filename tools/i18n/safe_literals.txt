@@ -612,7 +612,7 @@
 2	technical	app/src/main/java/tv/own/owntv/features/shell/components/ChannelListOverlay.kt	·
 2	technical	app/src/main/java/tv/own/owntv/features/shell/components/ChannelListOverlay.kt	▶
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/ChannelListOverlay.kt	◀
-1	technical	app/src/main/java/tv/own/owntv/features/shell/components/GlassEffectPage.kt	$l — $d
+2	technical	app/src/main/java/tv/own/owntv/features/shell/components/GlassEffectPage.kt	$l — $d
 2	technical	app/src/main/java/tv/own/owntv/features/shell/components/GlassEffectPage.kt	—
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/GlassEffectPage.kt	◀ ▶
 1	empty	app/src/main/java/tv/own/owntv/features/shell/components/MediaDetailsScreen.kt	\0
@@ -1567,5 +1567,8 @@
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StageComponents.kt	−
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StagePopup.kt	$value ›
 1	technical	app/src/main/java/tv/own/owntv/ui/theme/Glass.kt	glassPosition
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	flutlicht_scenes
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	scene
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	stadium
 2	empty	app/src/main/java/tv/own/owntv/ui/theme/OwnTVColors.kt	\0
 2	empty	app/src/main/java/tv/own/owntv/ui/theme/Theme.kt	\0

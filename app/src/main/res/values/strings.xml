@@ -35,4 +35,16 @@
     <string name="tvplayer_football_group_desc" translatable="false">Eine Gruppe ganz oben in der Senderliste und im TV-Guide mit allen Sendern, die heute Fußball deiner Teams und Ligen zeigen. Laufende Spiele stehen vorn.</string>
     <string name="tvplayer_football_reminders_setting" translatable="false">An Spiele meiner Teams erinnern</string>
     <string name="tvplayer_football_reminders_desc" translatable="false">Spiele deiner Teams im TV-Guide bekommen automatisch eine Erinnerung vor Anpfiff (Vorlauf: Spielerinnerungen weiter unten).</string>
+    <string name="tvplayer_scene_heading" translatable="false">Nachtszenen</string>
+    <string name="tvplayer_scene_title" translatable="false">Szene</string>
+    <string name="tvplayer_scene_line" translatable="false">Animierte Landschaft hinter allen Seiten, im Stil von Jonas Laterne</string>
+    <string name="tvplayer_scene_help" translatable="false">Eine bewegte Nachtszene hinter Menüs, Senderliste und Guide. Im Player ist sie aus. Mit Animationen aus steht sie still.</string>
+    <string name="tvplayer_scene_off" translatable="false">Aus</string>
+    <string name="tvplayer_scene_nordlicht" translatable="false">Nordlicht</string>
+    <string name="tvplayer_scene_mitternacht" translatable="false">Mitternacht</string>
+    <string name="tvplayer_scene_off_desc" translatable="false">Cyan Blau, ruhig, ohne Animation</string>
+    <string name="tvplayer_scene_nordlicht_desc" translatable="false">Polarlicht über Bergen und See, in der Ferne leuchtet ein Stadion</string>
+    <string name="tvplayer_scene_mitternacht_desc" translatable="false">Mond, lila Hügel und Glühwürmchen</string>
+    <string name="tvplayer_stadium_title" translatable="false">Flutlicht bei Fußball</string>
+    <string name="tvplayer_stadium_line" translatable="false">Stadion bei Nacht in Live-TV und Guide, wenn Fußball läuft</string>
 </resources>

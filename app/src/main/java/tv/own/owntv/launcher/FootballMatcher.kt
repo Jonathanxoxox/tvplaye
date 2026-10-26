@@ -147,6 +147,23 @@ internal class FootballMatcher(
         /** Free channels that show national-team matches; whole words only ("ard" is in "standard"). */
         private val NATIONAL_CHANNEL = listOf("ard", "das erste", "zdf", "rtl", "tv2", "tv 2", "dr1", "dr 1", "orf", "srf")
 
+        /** Default teams and competitions, enough to tell whether something is football at all. */
+        private val ANY_FOOTBALL: FootballMatcher by lazy { from(SportsConfig(), defaultTeams = true) }
+
+        /**
+         * Whether the focused channel shows football right now, for the Flutlichtnacht scene: a football
+         * group decides first, then the running programme when the guide has one, otherwise the channel's
+         * name ("LaLiga TV", "LFC TV").
+         */
+        fun isFootballFocus(title: String?, description: String?, channelName: String?, groupName: String?): Boolean {
+            if (groupName != null && fold(groupName).let { g -> FOOTBALL.any { containsPhrase(g, it) } }) return true
+            if (!title.isNullOrBlank()) {
+                val sports = listOfNotNull(channelName, groupName).any(::isSportsChannel)
+                return ANY_FOOTBALL.match(title, description, sportsChannel = sports) != null
+            }
+            return channelName != null && ANY_FOOTBALL.match(channelName, null) != null
+        }
+
         fun isSportsChannel(name: String): Boolean {
             val folded = fold(name)
             return SPORTS_CHANNEL.any { containsPhrase(folded, fold(it)) || folded.contains(it) }

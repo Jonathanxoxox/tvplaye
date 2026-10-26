@@ -103,7 +103,7 @@ internal fun GlassBackgroundPage(
     StageFullPage(
         parents = listOf(stringResource(R.string.settings_group_appearance)),
         title = stringResource(R.string.settings_glass_bg_title),
-        count = pluralStringResource(R.plurals.settings_setting_count, 9, 9),
+        count = pluralStringResource(R.plurals.settings_setting_count, 11, 11),
         onBack = onBack,
         modifier = modifier,
         rowsFocus = rowsFocus,
@@ -172,6 +172,8 @@ internal fun GlassBackgroundPage(
             onClick = { onSetAccentLight(!background.accentLight) },
             help = SettingHelp(accentTitle, accentLine, hints = okHints, extra = preview),
         )
+
+        NightSceneRows(okHints, stepHints)
 
         StageSettingsHeading(stringResource(R.string.settings_glass_section), 2)
         val glassTitle = stringResource(R.string.settings_glass_section)
@@ -348,4 +350,43 @@ private fun GlassBackgroundPreview() {
             modifier = Modifier.padding(top = 10.mpx),
         )
     }
+}
+
+/** Flutlicht's night scenes: the theme behind every page, and the stadium while football is on. */
+@Composable
+private fun NightSceneRows(okHints: List<Pair<String, String>>, stepHints: List<Pair<String, String>>) {
+    val nights = tv.own.owntv.ui.theme.rememberNightSceneSettings()
+    val scene by nights.scene.collectAsStateWithLifecycle()
+    val stadium by nights.stadium.collectAsStateWithLifecycle()
+    StageSettingsHeading(stringResource(R.string.tvplayer_scene_heading), 2)
+    val scenes = tv.own.owntv.ui.theme.NightScene.entries
+    val sceneLabels = listOf(stringResource(R.string.tvplayer_scene_off), stringResource(R.string.tvplayer_scene_nordlicht), stringResource(R.string.tvplayer_scene_mitternacht))
+    val sceneDescs = listOf(stringResource(R.string.tvplayer_scene_off_desc), stringResource(R.string.tvplayer_scene_nordlicht_desc), stringResource(R.string.tvplayer_scene_mitternacht_desc))
+    val sceneIndex = scenes.indexOf(scene)
+    val sceneTitle = stringResource(R.string.tvplayer_scene_title)
+    StageSettingRow(
+        icon = OwnTVIcon.SPARKLE,
+        title = sceneTitle,
+        desc = stringResource(R.string.tvplayer_scene_line),
+        value = SettingValue.Segmented(sceneLabels, sceneIndex),
+        onClick = { nights.setScene(scenes[(sceneIndex + 1) % scenes.size]) },
+        onStep = { d -> nights.setScene(scenes[(sceneIndex + d).coerceIn(0, scenes.lastIndex)]) },
+        help = SettingHelp(
+            sceneTitle,
+            stringResource(R.string.tvplayer_scene_help),
+            sceneLabels.zip(sceneDescs) { l, d -> "$l — $d" },
+            chosen = sceneIndex,
+            hints = stepHints,
+        ),
+    )
+    val stadiumTitle = stringResource(R.string.tvplayer_stadium_title)
+    val stadiumLine = stringResource(R.string.tvplayer_stadium_line)
+    StageSettingRow(
+        icon = OwnTVIcon.SUN,
+        title = stadiumTitle,
+        desc = stadiumLine,
+        value = SettingValue.Switch(stadium),
+        onClick = { nights.setStadium(!stadium) },
+        help = SettingHelp(stadiumTitle, stadiumLine, hints = okHints),
+    )
 }
