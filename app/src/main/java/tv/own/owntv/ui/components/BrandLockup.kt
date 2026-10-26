@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
@@ -18,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import tv.own.owntv.R
 import tv.own.owntv.core.brand.AppIcon
 import tv.own.owntv.core.brand.AppIconSwitcher
+import tv.own.owntv.ui.theme.StageColors
 
 /**
  * The icon colour the launcher shows right now. The in-app logo follows it, not the saved choice, so
@@ -29,16 +32,34 @@ fun rememberAppliedIcon(): AppIcon {
     return remember(context) { AppIconSwitcher.applied(context) }
 }
 
-/** The app's mark at [size]: the floodlight. Flutlicht has one mark, whatever icon colour core keeps on record. */
+/**
+ * The app's mark at [size]: the floodlight. Flutlicht has one mark, whatever icon colour core keeps on record.
+ * [subtle] draws it in the theme's muted ink instead of its own colours, so it sits in the page rather than on it.
+ */
 @Composable
-fun BrandMark(size: Dp, modifier: Modifier = Modifier) {
-    Image(painterResource(R.drawable.flutlicht_mark), contentDescription = null, modifier = modifier.size(size))
+fun BrandMark(size: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) {
+    if (subtle) {
+        Image(
+            painterResource(R.drawable.flutlicht_mark_mono), contentDescription = null, modifier = modifier.size(size),
+            alpha = 0.9f, colorFilter = ColorFilter.tint(StageColors.Muted, BlendMode.SrcIn),
+        )
+    } else {
+        Image(painterResource(R.drawable.flutlicht_mark), contentDescription = null, modifier = modifier.size(size))
+    }
 }
 
-/** The wordmark at [width]: the cream "Flutlicht" whose i-dot is a glowing floodlight lamp, one picture of 903 × 180. */
+/** The wordmark at [width]: the cream "Flutlicht" whose i-dot is a glowing floodlight lamp, one picture of 903 × 180. [subtle] as for [BrandMark]. */
 @Composable
-fun Wordmark(width: Dp, modifier: Modifier = Modifier) {
-    Image(painterResource(R.drawable.flutlicht_wordmark), contentDescription = null, modifier = modifier.width(width).height(width * 180f / 903f))
+fun Wordmark(width: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) {
+    val size = modifier.width(width).height(width * 180f / 903f)
+    if (subtle) {
+        Image(
+            painterResource(R.drawable.flutlicht_wordmark_mono), contentDescription = null, modifier = size,
+            alpha = 0.6f, colorFilter = ColorFilter.tint(StageColors.Muted, BlendMode.SrcIn),
+        )
+    } else {
+        Image(painterResource(R.drawable.flutlicht_wordmark), contentDescription = null, modifier = size)
+    }
 }
 
 /**
@@ -51,10 +72,11 @@ fun BrandLockup(
     modifier: Modifier = Modifier,
     markSize: Int = 36,
     stacked: Boolean = false,
+    subtle: Boolean = true,
 ) {
     val parts = @Composable {
-        BrandMark(markSize.dp)
-        Wordmark((markSize * 2.75f).dp)
+        BrandMark(markSize.dp, subtle = subtle)
+        Wordmark((markSize * 2.75f).dp, subtle = subtle)
     }
     if (stacked) {
         Column(
