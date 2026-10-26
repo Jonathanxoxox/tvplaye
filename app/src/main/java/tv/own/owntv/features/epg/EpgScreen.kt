@@ -5,6 +5,10 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -170,7 +174,6 @@ fun EpgScreen(
     /** False while the full-screen or mini player owns the video surface. */
     previewEnabled: Boolean = true,
     liveMode: Boolean = false,
-    onListView: () -> Unit = {},
     /** How ▶ from the rail enters the guide: at the grid row focus was on (the rail's entry hook, as Home's). */
     onEntryHook: (((() -> Boolean)?) -> Unit)? = null,
     /** Holding ☰ in the grid: search. Blue: settings. */
@@ -328,8 +331,6 @@ fun EpgScreen(
     var offsetChannel by remember { mutableStateOf<ChannelEntity?>(null) }
     var orderOpen by remember { mutableStateOf(false) }
     var dayOpen by remember { mutableStateOf(false) }
-    var sheetOpen by remember { mutableStateOf(false) }
-    var sheetHadFocus by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
     // The field reports "not focused" when it first attaches; it only closes after it has had focus (playbook 10).
     var searchHadFocus by remember { mutableStateOf(false) }
@@ -398,43 +399,42 @@ fun EpgScreen(
     val categoryTool = remember { FocusRequester() }
     val orderTool = remember { FocusRequester() }
     val searchFocus = remember { FocusRequester() }
-    val sheetFocus = remember { FocusRequester() }
-    val catListState = rememberLazyListState()
-    // The groups column beside the open menu, and whether it holds focus (the menu then stays open).
+    // The second of the three levels (menu · groups · guide): the groups column, shown beside the open menu
+    // and while it holds focus. ◀ from the guide lands on it, ◀ again on the menu, ▶ goes the other way.
     val groupsFocus = remember { FocusRequester() }
     // The empty guide's one button ("Add EPG"): ▶ from the rail lands on it, there is nothing else to reach.
     val emptyAction = remember { FocusRequester() }
     val groupsListState = rememberLazyListState()
     var groupsFocused by remember { mutableStateOf(false) }
-    // Set by ▶ from the open menu: the groups list then focuses its selected group itself.
+    // Set while the groups are being entered (▶ from the menu, ◀ from the guide): the list then focuses
+    // its selected group itself.
     var groupsEnter by remember { mutableStateOf(false) }
-    DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailHold.held = false } }
+    val focusRows = {
+        if (state.channels.isEmpty()) runCatching { emptyAction.requestFocus() }.getOrDefault(false)
+        else runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
+    }
+    // The list hands focus on to its selected group a frame later, so look again before giving up on it.
+    val enterGroups = {
+        groupsEnter = true
+        scope.launch {
+            repeat(8) { if (!groupsFocused) withFrameNanos { } }
+            groupsEnter = false
+            if (!groupsFocused) focusRows()
+        }
+        Unit
+    }
 
     DisposableEffect(onEntryHook) {
-        val focusRows = {
-            if (state.channels.isEmpty()) runCatching { emptyAction.requestFocus() }.getOrDefault(false)
-            else runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
-        }
+        // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player.
         onEntryHook?.invoke {
-            // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player. The list
-            // hands focus on to its selected group a frame later, so look again before giving up on it.
-            if (tv.own.owntv.features.shell.components.StageRailOpen.open) {
-                groupsEnter = true
-                scope.launch {
-                    repeat(6) { if (!groupsFocused) withFrameNanos { } }
-                    groupsEnter = false
-                    if (!groupsFocused) focusRows()
-                }
-                true
-            } else focusRows()
+            if (tv.own.owntv.features.shell.components.StageRailOpen.open) { enterGroups(); true } else focusRows()
         }
         onDispose { onEntryHook?.invoke(null) }
     }
 
-    BackHandler(enabled = sheetOpen) { sheetOpen = false; runCatching { categoryTool.requestFocus() } }
-    LaunchedEffect(sheetOpen) {
-        if (sheetOpen) { withFrameNanos { }; runCatching { sheetFocus.requestFocus() } } else sheetHadFocus = false
-    }
+    // Back goes one level out, like ◀: from a channel row to the groups (from the groups the shell takes it on
+    // to the menu). Inside the programmes it first leaves them for the row (the handler above).
+    BackHandler(enabled = gridHasFocus && !inCellMode && !groupsFocused) { enterGroups() }
     LaunchedEffect(searchOpen) { if (searchOpen) { withFrameNanos { }; runCatching { searchFocus.requestFocus() } } }
 
     BoxWithConstraints(
@@ -467,8 +467,8 @@ fun EpgScreen(
         }
         val shown = full ?: topProgramme
 
-        // With the menu open the groups stand beside it and the guide moves over by their width.
-        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused
+        // With the menu open, or the groups in use, they stand at the left and the guide moves over by their width.
+        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter
         val groupsW = fx(400)
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
@@ -527,7 +527,7 @@ fun EpgScreen(
             StageTool(text = stringResource(R.string.content_epg_now_short), icon = OwnTVIcon.NOW, onClick = { showTime(System.currentTimeMillis()); cursorTime = System.currentTimeMillis() })
             StageTool(
                 text = null, icon = OwnTVIcon.LIST, value = categoryLabel, valueAccent = true, trailingIcon = OwnTVIcon.CHEVRON_DOWN,
-                onClick = { sheetOpen = true },
+                onClick = enterGroups,
                 modifier = Modifier.focusRequester(categoryTool).widthIn(max = 380.mpx),
             )
             StageTool(
@@ -548,7 +548,6 @@ fun EpgScreen(
             } else {
                 StageTool(text = null, icon = OwnTVIcon.SEARCH, onClick = { searchOpen = true })
             }
-            if (liveMode) StageTool(text = stringResource(R.string.content_live_list_view), icon = OwnTVIcon.LIST, onClick = onListView)
             Spacer(Modifier.weight(1f))
             matchSummary?.takeIf { review.isEmpty() }?.let {
                 Text(
@@ -645,7 +644,7 @@ fun EpgScreen(
                                     onMenu = { p -> returnTo = null; if (p != null) menuFor = channel to p else channelMenuFor = channel },
                                     onChannelMenu = { returnTo = null; channelMenuFor = channel },
                                     onFavorite = { vm.toggleFavoriteChannel(channel) },
-                                    onGroups = { sheetOpen = true },
+                                    onGroups = enterGroups,
                                     onSearch = onOpenSearch,
                                     onSettings = onOpenSettings,
                                 )
@@ -672,6 +671,20 @@ fun EpgScreen(
         if (showGroups) {
             val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
             val (groupEntries, _) = liveCategoryEntries(railItems, railCounts)
+            // The groups on their own panel, a shade apart from the guide with a line at its edge, so the two
+            // columns do not run into each other.
+            val palette = tv.own.owntv.ui.theme.LocalStagePalette.current
+            Box(
+                Modifier
+                    .width(groupsW)
+                    .fillMaxHeight()
+                    .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
+                    .background(palette.glassTint)
+                    .drawBehind {
+                        val line = 2.mpx.toPx()
+                        drawRect(palette.ink.copy(alpha = 0.12f), Offset(size.width - line, 0f), Size(line, size.height))
+                    },
+            )
             LiveCategories(
                 searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
                 onSearchQueryChange = vm::setCategoryQuery,
@@ -695,47 +708,10 @@ fun EpgScreen(
                     .width(groupsW - fx(40))
                     .fillMaxHeight()
                     .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
-                    .onFocusChanged {
-                        groupsFocused = it.hasFocus
-                        tv.own.owntv.features.shell.components.StageRailHold.held = it.hasFocus
-                    },
+                    .onFocusChanged { groupsFocused = it.hasFocus },
             )
         }
 
-        // ◀ … Category ▾: Live TV's own list as the sheet, titled for the guide.
-        if (sheetOpen) {
-            val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
-            val (sheetEntries, _) = liveCategoryEntries(railItems, railCounts)
-            LiveCategories(
-                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                onSearchQueryChange = vm::setCategoryQuery,
-                entries = sheetEntries,
-                selectedIndex = railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0),
-                groupsHeading = groupsHeading,
-                sheet = true,
-                listState = catListState,
-                onSelect = { idx ->
-                    railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
-                    sheetOpen = false
-                    focusedRow = 0
-                    scope.launch { runCatching { rowListState.scrollToItem(0) } }
-                    focusGrid(0)
-                },
-                onLongSelect = {},
-                onNavigateRight = { sheetOpen = false; focusGrid() },
-                focusRequester = sheetFocus,
-                sheetTitle = stringResource(R.string.content_epg_guide_category),
-                sheetHint = stringResource(R.string.content_epg_category_hint),
-                modifier = Modifier
-                    .padding(start = fx(24), top = 24.mpx, bottom = 24.mpx)
-                    .width(fx(450))
-                    .fillMaxHeight()
-                    .onFocusChanged {
-                        // Closes when focus leaves it — not on the "unfocused" report every node gets when it attaches.
-                        if (it.hasFocus) sheetHadFocus = true else if (sheetHadFocus && sheetOpen) sheetOpen = false
-                    },
-            )
-        }
     }
 
     menuFor?.let { (ch, p) ->

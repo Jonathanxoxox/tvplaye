@@ -67,4 +67,6 @@
     <string name="sports_no_playlist_body">Ergebnisse, Tabellen und Benachrichtigungen gehen auch ohne. Mit einer Playlist findet Mayo TV jeden Sender, der dieses Spiel zeigt.</string>
     <string name="sports_sport_buttons_description">Meine Sportarten: nur deine Auswahl. Alle Sportarten: jede Liga, die Mayo TV kennt – das Laden dauert länger.</string>
     <string name="update_ready">Mayo TV v<xliff:g id="available">%1$s</xliff:g> ist bereit (du verwendest v<xliff:g id="current">%2$s</xliff:g>).</string>
+    <string name="settings_navigation_description">Was das Menü links zeigt</string>
+    <string name="settings_help_navigation">Das Menü ruht als schmale Symbolleiste am linken Rand und öffnet sich mit Namen, wenn du nach links gehst. Die Größe bestimmt, wie viel es zeigt; Menüpunkte, welche Bereiche es listet.</string>
 </resources>

@@ -97,18 +97,6 @@ private val StageRailOrder = listOf(
     MainSection.MOVIES, MainSection.SERIES, MainSection.DOWNLOADS, MainSection.HOME,
 )
 
-/** The rail's width with names: Normal 280 · Wide 340 · Extra wide 400; Compact is the 84 capsule. */
-private val NavSize.openWidth get() = when (this) {
-    NavSize.COMPACT -> 84
-    NavSize.NORMAL -> 280
-    NavSize.WIDE -> 340
-    NavSize.EXTRA_WIDE -> 400
-}
-
-/** The space a docked rail takes from the content, from the screen edge: 28 + 84 capsule, 24 + width with names. */
-fun railDockedReserve(size: NavSize) =
-    if (size == NavSize.COMPACT) (28 + 84 + 16).mpx else (24 + size.openWidth + 16).mpx
-
 /**
  * Where content starts below the top-right cluster (34 + its 68 height + a gap) on screens that have not
  * been redrawn for Stage yet. Each screen's own phase takes this away as it gets the full canvas.
@@ -263,14 +251,6 @@ val StageRailStripWidth = StripWidth
 /** Whether the menu is open over the page right now, for a page that shows its own column beside it. */
 object StageRailOpen {
     var open by mutableStateOf(false)
-}
-
-/**
- * Set while a page's column that belongs to the open menu holds focus (the guide's groups beside the
- * menu, as in the classic IPTV player): the menu stays open around it instead of folding away.
- */
-object StageRailHold {
-    var held by mutableStateOf(false)
 }
 
 /**
