@@ -217,12 +217,9 @@ fun PlayerHud(
     // Left the channel list, Right the channel before, Up/Down change channel (held: history / search),
     // long OK or Menu the options panel, long Menu the guide.
     zapInfo: (@Composable () -> EpgNowNext?)? = null,
-    // The guide (long Menu, and the panel's first tile). Null = no guide.
-    onOpenGuide: (() -> Unit)? = null,
-    // Search (long Down). Null = no search.
-    onOpenSearch: (() -> Unit)? = null,
-    // The recently watched channels for the control panel's tiles. Read only while the panel is up.
-    panelChannels: (@Composable () -> List<PanelTile>)? = null,
+    // The classic remote's extra targets (guide, search, the control panel's channel tiles). Grouped in
+    // one value: one more parameter each pushed this function past what the release build verifies.
+    remote: LiveRemoteActions? = null,
     // The archive's own wall-clock instant while catch-up/rewind is playing; null means the picture is
     // the present, and only the real clock shows. Drives the second, framed clock at top centre.
     // Lambda for the same reason as [timeshiftOffsetSec]: this instant advances every second too.
@@ -247,6 +244,8 @@ fun PlayerHud(
     // the whole HUD once a second for a position nobody could see. The offset, the archive clock and the
     // position are handed down as lambdas and read by the piece that draws them.
     val timeshiftOffset: () -> Int? = { timeshiftOffsetSec?.invoke() }
+    val onOpenGuide = remote?.onOpenGuide
+    val onOpenSearch = remote?.onOpenSearch
     val layoutDirection = LocalLayoutDirection.current
     val isPlaying by player.isPlaying.collectAsStateWithLifecycle()
     val position = player.position.collectAsStateWithLifecycle()
@@ -785,21 +784,11 @@ fun PlayerHud(
 
         // List-first: the channel change shows the info bar along the bottom instead of the corner card.
         if (listFirst && isLive && showPanel && zapInfo != null) {
-            val recent = panelChannels?.invoke().orEmpty()
-            val tiles = buildList {
-                onOpenGuide?.let { add(PanelTile("guide", stringResource(R.string.tvplayer_panel_guide), OwnTVIcon.EPG) { showPanel = false; it() }) }
-                onOpenHistoryList?.let { add(PanelTile("history", stringResource(R.string.tvplayer_panel_history), OwnTVIcon.HISTORY) { showPanel = false; it() }) }
-                recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { showPanel = false; ch.onClick() }) }
-            }
-            Column(Modifier.align(Alignment.BottomCenter).fillMaxWidth()) {
-                ZapInfoBar(player, zapInfo())
-                if (tiles.isNotEmpty()) {
-                    ControlPanelRow(
-                        tiles, panelFocus, onActivity = { panelTick++ },
-                        modifier = Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp),
-                    )
-                }
-            }
+            HudControlPanel(
+                player, zapInfo(), remote, onOpenHistoryList, panelFocus,
+                onClose = { showPanel = false }, onActivity = { panelTick++ },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
         } else if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
             ZapInfoBar(player, zapInfo(), modifier = Modifier.align(Alignment.BottomCenter))
         }
@@ -1160,5 +1149,47 @@ fun PlayerHud(
             }
         }
         HudDialog.NONE -> Unit
+    }
+}
+
+/** What the live player's classic remote reaches beyond the HUD itself; see [PlayerHud]'s `remote`. */
+@androidx.compose.runtime.Immutable
+class LiveRemoteActions(
+    /** The guide (long Menu, Guide/Red/Green, the panel's first tile). */
+    val onOpenGuide: (() -> Unit)?,
+    /** Search (long Down). */
+    val onOpenSearch: (() -> Unit)?,
+    /** The recently watched channels for the control panel's tiles, read only while the panel is up. */
+    val panelChannels: (@Composable () -> List<PanelTile>)?,
+)
+
+/** The info bar with the tile row under it: Guide and History first, then the channels watched last. */
+@Composable
+private fun HudControlPanel(
+    player: PlaybackEngine,
+    guide: EpgNowNext?,
+    remote: LiveRemoteActions?,
+    onOpenHistoryList: (() -> Unit)?,
+    focus: FocusRequester,
+    onClose: () -> Unit,
+    onActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val recent = remote?.panelChannels?.invoke().orEmpty()
+    val guideLabel = stringResource(R.string.tvplayer_panel_guide)
+    val historyLabel = stringResource(R.string.tvplayer_panel_history)
+    val tiles = buildList {
+        remote?.onOpenGuide?.let { add(PanelTile("guide", guideLabel, OwnTVIcon.EPG) { onClose(); it() }) }
+        onOpenHistoryList?.let { add(PanelTile("history", historyLabel, OwnTVIcon.HISTORY) { onClose(); it() }) }
+        recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { onClose(); ch.onClick() }) }
+    }
+    Column(modifier.fillMaxWidth()) {
+        ZapInfoBar(player, guide)
+        if (tiles.isNotEmpty()) {
+            ControlPanelRow(
+                tiles, focus, onActivity = onActivity,
+                modifier = Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp),
+            )
+        }
     }
 }

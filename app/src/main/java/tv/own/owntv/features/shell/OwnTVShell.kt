@@ -1730,27 +1730,29 @@ fun OwnTVShell(
                     zapInfo = if (isLiveChannel) {
                         { liveVm.zapGuide.collectAsStateWithLifecycle().value }
                     } else null,
-                    // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
-                    onOpenGuide = if (isLiveChannel && MainSection.EPG in visibleSections) {
-                        { exitPlayer(); if (selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG) }
-                    } else null,
-                    // Long Down: search, the channel carrying on in the preview.
-                    onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
-                    // The control panel's channel tiles: the channels watched last, with what is on now.
-                    panelChannels = if (isTunedLive) {
-                        {
-                            val playingId = previewChannel?.id
-                            val recent by produceState(emptyList<tv.own.owntv.core.database.entity.ChannelEntity>(), playingId) {
-                                value = runCatching { liveVm.historyChannels(PANEL_CHANNELS + 1) }.getOrDefault(emptyList())
-                                    .map { it.channel }.filter { it.id != playingId }.take(PANEL_CHANNELS)
+                    remote = tv.own.owntv.player.LiveRemoteActions(
+                        // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
+                        onOpenGuide = if (isLiveChannel && MainSection.EPG in visibleSections) {
+                            { exitPlayer(); if (selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG) }
+                        } else null,
+                        // Long Down: search, the channel carrying on in the preview.
+                        onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
+                        // The control panel's channel tiles: the channels watched last, with what is on now.
+                        panelChannels = if (isTunedLive) {
+                            {
+                                val playingId = previewChannel?.id
+                                val recent by produceState(emptyList<tv.own.owntv.core.database.entity.ChannelEntity>(), playingId) {
+                                    value = runCatching { liveVm.historyChannels(PANEL_CHANNELS + 1) }.getOrDefault(emptyList())
+                                        .map { it.channel }.filter { it.id != playingId }.take(PANEL_CHANNELS)
+                                }
+                                LaunchedEffect(recent) { liveVm.ensureNowPlaying(recent) }
+                                val now by liveVm.nowPlaying.collectAsStateWithLifecycle()
+                                recent.map { ch ->
+                                    tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.ensurePlaying(ch) }
+                                }
                             }
-                            LaunchedEffect(recent) { liveVm.ensureNowPlaying(recent) }
-                            val now by liveVm.nowPlaying.collectAsStateWithLifecycle()
-                            recent.map { ch ->
-                                tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.ensurePlaying(ch) }
-                            }
-                        }
-                    } else null,
+                        } else null,
+                    ),
                     // Guide card for the playing channel (nowNext follows previewChannel = what's playing).
                     liveEpgCard = if (isLiveChannel) {
                         {
