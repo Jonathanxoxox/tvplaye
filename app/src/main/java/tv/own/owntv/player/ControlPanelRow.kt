@@ -1,7 +1,6 @@
 package tv.own.owntv.player
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,10 +35,13 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.tv.material3.Text
 import coil3.compose.AsyncImage
 import tv.own.owntv.ui.components.OwnTVIcon
+import tv.own.owntv.ui.theme.LocalStagePalette
+import tv.own.owntv.ui.theme.StageFocusFill
+import tv.own.owntv.ui.theme.StageOnFocus
+import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.stageText
 
 /** One tile of the player's control panel: a tool (icon) or a recent channel (logo plus what is on). */
@@ -52,8 +54,6 @@ class PanelTile(
     val onClick: () -> Unit,
 )
 
-private val TileIdle = Color(0xFF178A8F)
-private val TileFocus = Color(0xFF43C3CE)
 
 /**
  * The row of tiles under the info bar that OK brings up in the live player, as the classic IPTV player
@@ -69,8 +69,8 @@ internal fun ControlPanelRow(
 ) {
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 48.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(horizontal = 86.mpx, vertical = 18.mpx),
+        horizontalArrangement = Arrangement.spacedBy(22.mpx),
     ) {
         items(tiles, key = { it.key }) { tile ->
             val first = tile === tiles.first()
@@ -84,11 +84,11 @@ private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () ->
     var focused by remember { mutableStateOf(false) }
     Box(
         modifier
-            .size(width = 176.dp, height = 112.dp)
-            .scale(if (focused) 1.06f else 1f)
-            .clip(RoundedCornerShape(6.dp))
-            .background(if (focused) TileFocus else TileIdle)
-            .then(if (focused) Modifier.border(2.dp, Color.White.copy(alpha = 0.85f), RoundedCornerShape(6.dp)) else Modifier)
+            .size(width = 317.mpx, height = 202.mpx)
+            .scale(if (focused) 1.04f else 1f)
+            .clip(RoundedCornerShape(11.mpx))
+            // The app's focus language: the near-white bar with dark ink, idle tiles in the theme's glass.
+            .background(if (focused) StageFocusFill else LocalStagePalette.current.glassTint)
             .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
             .onKeyEvent { e ->
                 val ok = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
@@ -98,27 +98,27 @@ private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () ->
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 10.dp),
+            Modifier.fillMaxSize().padding(horizontal = 14.mpx, vertical = 18.mpx),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             when {
-                tile.icon != null -> OwnTVIcon(tile.icon, Color.White, Modifier.size(40.dp))
+                tile.icon != null -> OwnTVIcon(tile.icon, if (focused) StageOnFocus else Color.White, Modifier.size(72.mpx))
                 else -> Box(
-                    Modifier.size(width = 76.dp, height = 48.dp).clip(RoundedCornerShape(4.dp)).background(Color.White),
+                    Modifier.size(width = 137.mpx, height = 86.mpx).clip(RoundedCornerShape(7.mpx)).background(Color.White),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (!tile.logoUrl.isNullOrBlank()) {
-                        AsyncImage(model = tile.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(5.dp))
+                        AsyncImage(model = tile.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(9.mpx))
                     } else {
                         Text(tile.label.take(3).uppercase(), style = stageText(20, 800), color = Color(0xFF26363A))
                     }
                 }
             }
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(14.mpx))
             Text(
                 tile.caption?.takeIf { it.isNotBlank() } ?: tile.label,
-                style = stageText(18, 500), color = Color.White, maxLines = 1,
+                style = stageText(18, 600), color = if (focused) StageOnFocus else Color.White, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
         }
