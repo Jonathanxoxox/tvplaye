@@ -2,8 +2,9 @@ name: Flutlicht APK
 
 # Baut bei jedem Push auf main oder einen Arbeitszweig eine signierte Release-APK. Sie landet zweimal
 # in den Releases: unter der festen Adresse im Release "latest" (zum Laden am Fernseher) und als
-# Release v1.0.<Lauf>, das der Updater in der App findet (er fragt GitHubs neuestes Release ab und
-# vergleicht dessen Tag mit der installierten Version).
+# Release v1.0.<Lauf>. Der Updater in der App fragt GitHubs neuestes Release ab und vergleicht dessen
+# Tag mit der installierten Version. Als "neuestes" gilt nur ein Bau von main; Arbeitszweige legen ihr
+# Release als Vorabversion an, die der Updater nicht anbietet.
 on:
   push:
     branches: [ "main", "claude/**" ]
@@ -11,6 +12,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 concurrency:
   group: tvplayer-${{ github.ref }}
@@ -21,6 +23,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-java@v6
         with:
@@ -82,12 +86,37 @@ jobs:
           body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }} (Version 1.0.${{ github.run_number }})"
           files: dist/Flutlicht.apk
 
+      # Der Text des Releases erscheint in der App unter "Neuerungen": die Commits seit dem letzten
+      # erfolgreichen Bau dieses Zweigs, ohne Merges und ohne reine Tour-/CI-Pflege.
+      - name: Release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PREV=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow tvplayer.yml --branch "$GITHUB_REF_NAME" \
+            --status success --limit 1 --json headSha --jq '.[0].headSha // empty' 2>/dev/null || true)
+          if [ -n "$PREV" ] && git cat-file -e "$PREV^{commit}" 2>/dev/null && [ "$PREV" != "$GITHUB_SHA" ]; then
+            RANGE="$PREV..$GITHUB_SHA"
+          else
+            RANGE="-n 10 $GITHUB_SHA"
+          fi
+          {
+            echo "### Neu in Version 1.0.${GITHUB_RUN_NUMBER}"
+            git log --no-merges --format='%s' $RANGE \
+              | grep -viE '^(Tour|CI|Screens?|Starttest|README)\b|hereingemergt|^Merge ' \
+              | head -n 15 | sed 's/^/- /'
+            echo
+            echo "Gebaut aus ${GITHUB_REF_NAME} @ ${GITHUB_SHA::7}"
+          } > dist/notes.md
+          cat dist/notes.md
+
       - name: Publish versioned release for the in-app updater
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           name: Flutlicht 1.0.${{ github.run_number }}
-          make_latest: true
-          body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }}"
+          # Nur main ist ein Update für den Fernseher; Arbeitszweige bleiben Vorabversionen.
+          prerelease: ${{ github.ref_name != 'main' }}
+          make_latest: ${{ github.ref_name == 'main' }}
+          body_path: dist/notes.md
           files: dist/Flutlicht-v1.0.${{ github.run_number }}.apk

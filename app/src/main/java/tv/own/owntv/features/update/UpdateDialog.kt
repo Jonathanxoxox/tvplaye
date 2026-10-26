@@ -37,7 +37,12 @@ import tv.own.owntv.ui.components.OwnTVSpinner
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LifecycleEventEffect
 
 /**
  * The in-app update dialog (used both from Settings → Check for updates and the automatic prompt).
@@ -49,6 +54,22 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
     val manager: UpdateManager = koinInject()
     val state by manager.state.collectAsStateWithLifecycle()
     val focus = remember { FocusRequester() }
+    val context = LocalContext.current
+    // Flutlicht kommt per Sideload auf die Box und darf anfangs keine Apps installieren. Statt erst
+    // 50 MB zu laden und dann an der Sperre zu scheitern, öffnet „Jetzt aktualisieren“ zuerst die
+    // Freigabe; kommt man mit erteilter Erlaubnis zurück, startet der Download von selbst.
+    var waitingForInstallPermission by remember { mutableStateOf(false) }
+    val startUpdate: () -> Unit = {
+        if (canInstallPackages(context)) manager.downloadAndInstall()
+        else if (openInstallPermissionSettings(context)) waitingForInstallPermission = true
+        else manager.downloadAndInstall() // keine Einstellungsseite: der Installer fragt dann selbst
+    }
+    LifecycleEventEffect(Lifecycle.Event.ON_RESUME) {
+        if (waitingForInstallPermission && canInstallPackages(context)) {
+            waitingForInstallPermission = false
+            manager.downloadAndInstall()
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (checkOnOpen) manager.check()
@@ -70,7 +91,7 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
                     StageButton(stringResource(R.string.settings_close), onClick = onDismiss, height = 56.mpx, textSize = 19, tinted = true, modifier = Modifier.focusRequester(focus))
                 is UpdateManager.State.Available -> {
                     StageButton(stringResource(R.string.update_later), onClick = onDismiss, height = 56.mpx, textSize = 19)
-                    StageButton(stringResource(R.string.update_now), onClick = { manager.downloadAndInstall() }, icon = OwnTVIcon.DOWNLOADS, height = 56.mpx, textSize = 19, tinted = true, modifier = Modifier.focusRequester(focus))
+                    StageButton(stringResource(R.string.update_now), onClick = startUpdate, icon = OwnTVIcon.DOWNLOADS, height = 56.mpx, textSize = 19, tinted = true, modifier = Modifier.focusRequester(focus))
                 }
                 is UpdateManager.State.Failed -> {
                     StageButton(stringResource(R.string.settings_close), onClick = onDismiss, height = 56.mpx, textSize = 19)
@@ -90,6 +111,9 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
             UpdateManager.State.UpToDate -> Text(stringResource(R.string.update_latest, manager.currentVersion), style = body, color = StageColors.Muted)
             is UpdateManager.State.Available -> {
                 Text(stringResource(R.string.update_available_version, s.info.version, manager.currentVersion), style = stageText(19, 600), color = StageColors.Text)
+                if (waitingForInstallPermission) {
+                    Text(stringResource(R.string.tvplayer_update_allow_install), style = body, color = StageColors.Muted, modifier = Modifier.padding(top = 10.mpx))
+                }
                 if (s.info.notes.isNotBlank()) {
                     Text(
                         stringResource(R.string.update_whats_new).uppercase(),
@@ -116,6 +140,20 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
             is UpdateManager.State.Failed -> Text(updateFailureText(s.failure), style = body, color = StageColors.Muted)
         }
     }
+}
+
+/** Ob Flutlicht Pakete installieren darf (ab Android 8 eine Freigabe pro App). */
+private fun canInstallPackages(context: android.content.Context): Boolean =
+    android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()
+
+/** Öffnet „Unbekannte Apps installieren“ für Flutlicht; false, wenn die Box diese Seite nicht hat. */
+private fun openInstallPermissionSettings(context: android.content.Context): Boolean {
+    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) return false
+    val intent = android.content.Intent(
+        android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+        android.net.Uri.fromParts("package", context.packageName, null),
+    ).addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    return runCatching { context.startActivity(intent) }.isSuccess
 }
 
 /**
