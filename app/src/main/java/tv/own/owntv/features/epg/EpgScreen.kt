@@ -404,6 +404,8 @@ fun EpgScreen(
     val groupsFocus = remember { FocusRequester() }
     val groupsListState = rememberLazyListState()
     var groupsFocused by remember { mutableStateOf(false) }
+    // Set by ▶ from the open menu: the groups list then focuses its selected group itself.
+    var groupsEnter by remember { mutableStateOf(false) }
     DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailHold.held = false } }
 
     DisposableEffect(onEntryHook) {
@@ -415,10 +417,11 @@ fun EpgScreen(
             // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player. The list
             // hands focus on to its selected group a frame later, so look again before giving up on it.
             if (tv.own.owntv.features.shell.components.StageRailOpen.open) {
+                groupsEnter = true
                 scope.launch {
-                    runCatching { groupsFocus.requestFocus() }
-                    repeat(3) { if (!groupsFocused) withFrameNanos { } }
-                    if (!groupsFocused && !runCatching { groupsFocus.requestFocus() }.getOrDefault(false)) focusRows()
+                    repeat(6) { if (!groupsFocused) withFrameNanos { } }
+                    groupsEnter = false
+                    if (!groupsFocused) focusRows()
                 }
                 true
             } else focusRows()
@@ -680,6 +683,7 @@ fun EpgScreen(
                 onLongSelect = {},
                 onNavigateRight = { focusGrid() },
                 focusRequester = groupsFocus,
+                focusRowIndex = if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
                 modifier = Modifier
                     .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
                     .width(groupsW - fx(40))
