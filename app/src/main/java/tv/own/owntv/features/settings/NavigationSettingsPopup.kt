@@ -12,42 +12,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.tv.material3.Text
 import tv.own.owntv.R
 import tv.own.owntv.core.nav.MainSection
-import tv.own.owntv.core.settings.SettingsRepository.NavHideAfter
 import tv.own.owntv.core.settings.SettingsRepository.NavLength
 import tv.own.owntv.core.settings.SettingsRepository.NavMenuMode
 import tv.own.owntv.core.settings.SettingsRepository.NavSize
-import tv.own.owntv.core.settings.SettingsRepository.NavStyle
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.stage.StagePopup
-import tv.own.owntv.ui.stage.StagePopupDivider
 import tv.own.owntv.ui.stage.StagePopupOption
-import tv.own.owntv.ui.stage.StagePopupRadio
 import tv.own.owntv.ui.stage.StagePill
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.mpx
 
 /**
- * Settings › Layout › Navigation: Floating or Docked as radio rows, then the rail's
- * Size and Length (Docked + Compact adds Widen on focus), Menu items (Dynamic / Static; Static lists the sections as toggles) and, for Floating
- * only, the hide delay. OK on a value row steps to its next choice.
+ * Settings › Layout › Navigation: the rail's Size and Length and its Menu items (Dynamic / Static; Static lists
+ * the sections as toggles). Mayo TV has one rail, the icon strip that opens with names on focus, so there is no
+ * Floating / Docked choice. OK on a value row steps to its next choice.
  */
 @Composable
 fun NavigationSettingsPopup(
-    style: NavStyle,
-    onStyle: (NavStyle) -> Unit,
     size: NavSize,
     onSize: (NavSize) -> Unit,
     length: NavLength,
     onLength: (NavLength) -> Unit,
-    widen: NavSize?,
-    onWiden: (NavSize?) -> Unit,
-    hideAfterMs: Int,
-    onHideAfterMs: (Int) -> Unit,
     menuMode: NavMenuMode,
     onMenuMode: (NavMenuMode) -> Unit,
     hiddenSections: Set<MainSection>,
@@ -63,27 +52,14 @@ fun NavigationSettingsPopup(
         stringResource(R.string.settings_title),
         stringResource(R.string.settings_group_layout),
     ).uppercase(locale)
-    val styles = listOf(
-        NavStyle.FLOATING to (R.string.settings_nav_floating to R.string.settings_nav_floating_desc),
-        NavStyle.DOCKED to (R.string.settings_nav_docked to R.string.settings_nav_docked_desc),
-    )
 
     StagePopup(onDismiss = onDismiss, title = stringResource(R.string.settings_navigation), eyebrow = eyebrow) {
-        styles.forEachIndexed { i, (value, text) ->
-            StagePopupOption(
-                title = stringResource(text.first),
-                subtitle = stringResource(text.second),
-                onClick = { onStyle(value) },
-                modifier = if (i == 0) Modifier.focusRequester(first) else Modifier,
-                leading = { focused -> StagePopupRadio(on = value == style, focused = focused) },
-            )
-        }
-        StagePopupDivider()
         StagePopupOption(
             title = stringResource(R.string.settings_size),
             subtitle = stringResource(R.string.settings_nav_size_desc),
             value = stringResource(size.labelRes),
             onClick = { onSize(NavSize.entries[(size.ordinal + 1) % NavSize.entries.size]) },
+            modifier = Modifier.focusRequester(first),
             leading = { OwnTVIcon(OwnTVIcon.EXPAND, StageColors.Text, Modifier.size(21.mpx)) },
         )
         StagePopupOption(
@@ -93,17 +69,6 @@ fun NavigationSettingsPopup(
             onClick = { onLength(if (length == NavLength.FIT) NavLength.FULL else NavLength.FIT) },
             leading = { OwnTVIcon(OwnTVIcon.SORT, StageColors.Text, Modifier.size(21.mpx)) },
         )
-        // Docked + Compact: the size the rail opens to, over the content, while it has focus.
-        if (style == NavStyle.DOCKED && size == NavSize.COMPACT) {
-            val widths = listOf(null, NavSize.NORMAL, NavSize.WIDE, NavSize.EXTRA_WIDE)
-            StagePopupOption(
-                title = stringResource(R.string.settings_nav_widen),
-                subtitle = stringResource(R.string.settings_nav_widen_desc),
-                value = widen?.let { stringResource(it.labelRes) } ?: stringResource(R.string.common_off),
-                onClick = { onWiden(widths[(widths.indexOf(widen) + 1) % widths.size]) },
-                leading = { OwnTVIcon(OwnTVIcon.EXPAND, StageColors.Text, Modifier.size(21.mpx)) },
-            )
-        }
         val static = menuMode == NavMenuMode.STATIC
         StagePopupOption(
             title = stringResource(R.string.settings_nav_menu_items),
@@ -130,22 +95,6 @@ fun NavigationSettingsPopup(
                     )
                 }
             }
-        }
-        if (style == NavStyle.FLOATING) {
-            StagePopupOption(
-                title = stringResource(R.string.settings_nav_hide_after),
-                subtitle = stringResource(R.string.settings_nav_hide_after_desc),
-                value = if (hideAfterMs < 1000) {
-                    stringResource(R.string.settings_nav_hide_after_half)
-                } else {
-                    pluralStringResource(R.plurals.settings_nav_hide_after_seconds, hideAfterMs / 1000, hideAfterMs / 1000)
-                },
-                onClick = {
-                    val choices = NavHideAfter.CHOICES_MS
-                    onHideAfterMs(choices[(choices.indexOf(hideAfterMs) + 1) % choices.size])
-                },
-                leading = { OwnTVIcon(OwnTVIcon.CLOCK, StageColors.Text, Modifier.size(21.mpx)) },
-            )
         }
     }
 }

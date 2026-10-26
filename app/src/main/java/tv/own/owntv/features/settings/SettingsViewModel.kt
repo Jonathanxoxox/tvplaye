@@ -835,12 +835,7 @@ class SettingsViewModel(
         viewModelScope.launch { settings.setNavMenuMode(mode) }
     }
 
-    // --- Stage navigation (the rail's style, size, length, hide delay) ---
-    val navStyle: StateFlow<tv.own.owntv.core.settings.SettingsRepository.NavStyle> =
-        settings.navStyle.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED)
-    fun setNavStyle(style: tv.own.owntv.core.settings.SettingsRepository.NavStyle) {
-        viewModelScope.launch { settings.setNavStyle(style) }
-    }
+    // --- Stage navigation (the rail's size and length; one rail, no style or hide delay) ---
     val navSize: StateFlow<tv.own.owntv.core.settings.SettingsRepository.NavSize> =
         settings.navSize.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
     fun setNavSize(size: tv.own.owntv.core.settings.SettingsRepository.NavSize) {
@@ -850,15 +845,6 @@ class SettingsViewModel(
         settings.navLength.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavLength.FIT)
     fun setNavLength(length: tv.own.owntv.core.settings.SettingsRepository.NavLength) {
         viewModelScope.launch { settings.setNavLength(length) }
-    }
-    val navWiden: StateFlow<tv.own.owntv.core.settings.SettingsRepository.NavSize?> =
-        settings.navWiden.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    fun setNavWiden(size: tv.own.owntv.core.settings.SettingsRepository.NavSize?) { viewModelScope.launch { settings.setNavWiden(size) } }
-
-    val navHideAfterMs: StateFlow<Int> =
-        settings.navHideAfterMs.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavHideAfter.DEFAULT_MS)
-    fun setNavHideAfterMs(ms: Int) {
-        viewModelScope.launch { settings.setNavHideAfterMs(ms) }
     }
 
     /** Browse sections the user has hidden (STATIC mode only). */
@@ -973,9 +959,6 @@ class SettingsViewModel(
     val liveLayout: StateFlow<tv.own.owntv.core.settings.SettingsRepository.LiveLayout> =
         settings.liveLayout.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.LiveLayout.STAGE)
     fun setLiveLayout(layout: tv.own.owntv.core.settings.SettingsRepository.LiveLayout) { viewModelScope.launch { settings.setLiveLayout(layout) } }
-    val liveView: StateFlow<tv.own.owntv.core.settings.SettingsRepository.LiveView> =
-        settings.liveView.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.LiveView.LIST)
-    fun setLiveView(view: tv.own.owntv.core.settings.SettingsRepository.LiveView) { viewModelScope.launch { settings.setLiveView(view) } }
     val reminderMode: StateFlow<tv.own.owntv.core.settings.SettingsRepository.ReminderMode> =
         settings.reminderMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.ReminderMode.ASK)
     fun setReminderMode(mode: tv.own.owntv.core.settings.SettingsRepository.ReminderMode) { viewModelScope.launch { settings.setReminderMode(mode) } }

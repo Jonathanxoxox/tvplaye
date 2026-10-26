@@ -294,9 +294,9 @@ private fun SeriesGrid(
     // CH+- key paging (grid + category rail). gridPaneFocused/railPaneFocused gate which pane acts.
     val scope = rememberCoroutineScope()
     val settingsVm: tv.own.owntv.features.settings.SettingsViewModel = koinViewModel()
-    val vodLayout by settingsVm.vodLayout.collectAsStateWithLifecycle()
-    // Cinematic is the browse section's; More → Favourites / History pin the plain Separate list.
-    val cinematic = vodLayout == SettingsRepository.VodLayout.CINEMATIC && lockedKey == null
+    // Cinematic is the browse section's, always (Mayo TV has no layout choice); More → Favourites / History
+    // pin the plain Separate list.
+    val cinematic = lockedKey == null
     val cinematicDetailsPct by settingsVm.cinematicDetailsHeight(PanelSection.SERIES).collectAsStateWithLifecycle()
     // Cinematic is grid-only. The stored choice is deliberately not rewritten, so switching back to
     // Separate restores the user's List.

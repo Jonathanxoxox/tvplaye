@@ -785,18 +785,6 @@ class LiveViewModel(
         return guideCandidates.forPicker(channelName, query)
     }
 
-    /** List view or Guide view: what Live TV shows, and so what it opens in next time. */
-    val liveView: StateFlow<SettingsRepository.LiveView> = settings.liveView
-        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.LiveView.LIST)
-
-    fun setLiveView(view: SettingsRepository.LiveView) {
-        viewModelScope.launch { settings.setLiveView(view) }
-    }
-
-    /** Live TV layout: the categories as a sheet on Left (Stage), or a column always on screen. */
-    val liveLayout: StateFlow<SettingsRepository.LiveLayout> = settings.liveLayout
-        .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.LiveLayout.STAGE)
-
     /**
      * The channel count beside every category in the sheet or column: each fixed entry and custom
      * category by the same query as the header's count, and every provider folder from one grouped

@@ -63,7 +63,6 @@ import tv.own.owntv.features.downloads.DownloadsScreen
 import tv.own.owntv.features.epg.EpgScreen
 import tv.own.owntv.features.home.HomeScreen
 import tv.own.owntv.features.home.HomeViewModel
-import tv.own.owntv.features.live.LiveScreen
 import tv.own.owntv.features.live.LiveViewModel
 import tv.own.owntv.features.movies.MoviesScreen
 import tv.own.owntv.features.movies.MovieViewModel
@@ -201,14 +200,10 @@ fun OwnTVShell(
     // The browse UI is one focus group with a restorer, so handing focus back to it after the mini
     // player returns to the exact control the user left rather than to the top of the screen.
     val shellContentFocus = remember { FocusRequester() }
-    // Stage navigation: where the rail sits, what it shows, its length, the floating hide delay.
-    val navStyle by settingsRepo.navStyle.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED)
+    // Stage navigation: what the rail shows and its length. Mayo TV has one rail (26 Oct 2026): the icon strip
+    // always at the left edge, opening with names while it holds focus. No floating or docked variants.
     val navSize by settingsRepo.navSize.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
-    val navWiden by settingsRepo.navWiden.collectAsStateWithLifecycle(initialValue = null)
     val navLength by settingsRepo.navLength.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavLength.FIT)
-    val navHideAfterMs by settingsRepo.navHideAfterMs.collectAsStateWithLifecycle(
-        initialValue = tv.own.owntv.core.settings.SettingsRepository.NavHideAfter.DEFAULT_MS,
-    )
     val railVm = org.koin.androidx.compose.koinViewModel<RailCountsViewModel>()
     val railCounts by railVm.counts.collectAsStateWithLifecycle()
     val railDetails by railVm.details.collectAsStateWithLifecycle()
@@ -499,12 +494,9 @@ fun OwnTVShell(
     }
 
     // No separate TV Guide section any more: like TiviMate's "TV", Live TV is the guide. Whatever still
-    // asks for the guide (a shortcut, the player, the start screen) lands on Live TV in its Guide view.
+    // asks for the guide (a shortcut, the player, the start screen) lands on Live TV.
     LaunchedEffect(selectedSection) {
-        if (selectedSection == MainSection.EPG) {
-            liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
-            onSelectSection(MainSection.LIVE_TV)
-        }
+        if (selectedSection == MainSection.EPG) onSelectSection(MainSection.LIVE_TV)
     }
 
     // Movies/Series/Live load on first open via their reactive Paging flows — their indexed first page is
@@ -662,8 +654,6 @@ fun OwnTVShell(
         )
         else -> null
     }
-    // Auto-hide: once focus has been in the content for the chosen delay, the capsule slides away.
-    var railIdleHidden by remember { mutableStateOf(false) }
     // Focus on a top-right pill (reached from the rail) is not "in the rail": the rail closes, so its
     // scrim never covers the pill that holds focus.
     var clusterFocused by remember { mutableStateOf(false) }
@@ -678,26 +668,8 @@ fun OwnTVShell(
     LaunchedEffect(railHasFocus, railKeyAt) {
         railFocused = railHasFocus && android.os.SystemClock.uptimeMillis() - railKeyAt <= RAIL_KEY_WINDOW_MS
     }
-    LaunchedEffect(railFocused, navStyle, navHideAfterMs) {
-        railIdleHidden = false
-        if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.FLOATING && !railFocused) {
-            kotlinx.coroutines.delay(navHideAfterMs.toLong())
-            railIdleHidden = true
-        }
-    }
-    // Docked always shows its Size; Floating rests as the capsule, opens at its Size while it holds
-    // focus and hides once focus has been in the content for the delay. Compact stays the capsule —
-    // except Docked + Compact with Widen on focus, which opens at that size over the content (the content
-    // keeps the compact room, so nothing behind it moves).
-    val widenDocked = navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED && navSize == tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT && navWiden != null && railFocused
-    val railSize = if (widenDocked) navWiden ?: navSize else navSize
-    val railState = when {
-        widenDocked -> tv.own.owntv.features.shell.components.RailState.OPEN
-        navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED -> tv.own.owntv.features.shell.components.RailState.PINNED
-        railFocused || tv.own.owntv.features.shell.components.StageRailHold.held -> tv.own.owntv.features.shell.components.RailState.OPEN
-        railIdleHidden -> tv.own.owntv.features.shell.components.RailState.HIDDEN
-        else -> tv.own.owntv.features.shell.components.RailState.CAPSULE
-    }
+    // The strip at rest, the menu with names while it holds focus.
+    val railState = if (railFocused) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
@@ -1103,9 +1075,8 @@ fun OwnTVShell(
                     // Over a picture it draws only the Accent light; the picture shows through.
                     .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent),
             ) {
-                // Live TV's view (List / Guide), and how a guide — the TV Guide or Live TV's Guide view —
-                // starts a channel or an archive programme: through LiveViewModel, the one live path.
-                val liveView by liveVm.liveView.collectAsStateWithLifecycle()
+                // How the guide (Live TV) starts a channel or an archive programme: through LiveViewModel,
+                // the one live path.
                 val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = { ch, _ ->
                     restoreFocus = false
                     liveVm.watchFromGuide(ch)
@@ -1129,9 +1100,7 @@ fun OwnTVShell(
                             // the strip never lies over text. Only the open menu covers the content.
                             Modifier
                                 .padding(
-                                    start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) {
-                                        tv.own.owntv.features.shell.components.railDockedReserve(navSize)
-                                    } else tv.own.owntv.features.shell.components.StageRailStripWidth,
+                                    start = tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
                                 // The open menu pushes the page aside instead of covering its left edge.
                                 .graphicsLayer { translationX = railPush.value.toPx() * if (contentLtr) 1f else -1f }
@@ -1254,7 +1223,7 @@ fun OwnTVShell(
                                 sportsMatchRequests.pendingMatch.value = m to null
                                 onSelectSection(MainSection.SPORTS)
                             },
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
+                            contentStart = 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1272,9 +1241,6 @@ fun OwnTVShell(
                             },
                             onGoToChannel = { ch ->
                                 restoreFocus = false
-                                if (liveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE) {
-                                    liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.LIST)
-                                }
                                 liveVm.revealChannel(ch)
                                 searchReturn = MainSection.LIVE_TV
                                 onSelectSection(MainSection.LIVE_TV)
@@ -1296,7 +1262,8 @@ fun OwnTVShell(
                             modifier = Modifier.fillMaxSize(),
                         )
 
-                        selectedSection == MainSection.LIVE_TV && liveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE -> EpgScreen(
+                        // Live TV is always the guide (26 Oct 2026): no List view and no layout variants.
+                        selectedSection == MainSection.LIVE_TV -> EpgScreen(
                             onPlayChannel = guidePlayChannel,
                             onPlayCatchup = guidePlayCatchup,
                             onOpenSearch = { onSelectSection(MainSection.SEARCH) },
@@ -1305,23 +1272,12 @@ fun OwnTVShell(
                             previewEnabled = playerMode == PlayerMode.NONE,
                             liveMode = true,
                             onEntryHook = { guideEntry = it },
-                            onListView = { liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.LIST) },
                             restoreFocus = restoreFocus,
                             onRestored = { restoreFocus = false },
                             modifier = Modifier
                                 .fillMaxSize()
                                 .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
                                 .focusGroup(),
-                        )
-
-                        selectedSection == MainSection.LIVE_TV -> LiveScreen(
-                            onFullscreen = { openFullscreen() },
-                            onOpenGuide = { liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE) },
-                            onChildFocused = { focusedLayer = ShellLayer.CONTENT },
-                            previewEnabled = playerMode == PlayerMode.NONE,
-                            restoreFocus = restoreFocus,
-                            onRestored = { restoreFocus = false },
-                            modifier = Modifier.fillMaxSize(),
                         )
 
                         selectedSection == MainSection.MOVIES -> MoviesScreen(
@@ -1349,7 +1305,7 @@ fun OwnTVShell(
                             restoreFocus = restoreFocus,
                             onRestored = { restoreFocus = false },
                             onEntryHook = { downloadsEntry = it },
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
+                            contentStart = 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1359,7 +1315,7 @@ fun OwnTVShell(
                             onChildFocused = { focusedLayer = ShellLayer.CONTENT },
                             onEntryHook = { sportsEntry = it },
                             active = playerMode == PlayerMode.NONE,
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
+                            contentStart = 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1386,10 +1342,8 @@ fun OwnTVShell(
           }
             // Like TiviMate: with the menu and the groups open over the guide, the pushed guide runs to the
             // right edge and the clock and playlist pill step aside instead of sitting on top of it.
-            val clusterLiveView by liveVm.liveView.collectAsStateWithLifecycle()
             val clusterAside = railState == tv.own.owntv.features.shell.components.RailState.OPEN &&
-                (selectedSection == MainSection.EPG ||
-                    (selectedSection == MainSection.LIVE_TV && clusterLiveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE))
+                (selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV)
             val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
@@ -1424,7 +1378,7 @@ fun OwnTVShell(
             )
             tv.own.owntv.features.shell.components.StageRail(
                 state = railState,
-                size = railSize,
+                size = navSize,
                 length = navLength,
                 selected = selectedSection,
                 visibleSections = visibleSections,
@@ -1753,7 +1707,7 @@ fun OwnTVShell(
                     remote = tv.own.owntv.player.LiveRemoteActions(
                         // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
                         onOpenGuide = if (isLiveChannel && MainSection.LIVE_TV in visibleSections) {
-                            { exitPlayer(); liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE); onSelectSection(MainSection.LIVE_TV) }
+                            { exitPlayer(); onSelectSection(MainSection.LIVE_TV) }
                         } else null,
                         // Long Down: search, the channel carrying on in the preview.
                         onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
@@ -2002,10 +1956,8 @@ fun OwnTVShell(
     // because this layer is on screen everywhere, the player included. Not on the Guide itself:
     // there the line beside the button, or the review window, already says it.
     val epgMatchToast = tv.own.owntv.ui.components.rememberInAppToast()
-    val shellLiveView by liveVm.liveView.collectAsStateWithLifecycle()
     val guideOnScreen = playerMode != PlayerMode.FULLSCREEN && multiview == null &&
-        (selectedSection == MainSection.EPG ||
-            (selectedSection == MainSection.LIVE_TV && shellLiveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE))
+        (selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV)
     val currentGuideOnScreen by rememberUpdatedState(guideOnScreen)
     var finishedMatch by remember { mutableStateOf<tv.own.owntv.features.epg.EpgMatchSummary?>(null) }
     LaunchedEffect(epgVm) {

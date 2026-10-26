@@ -344,6 +344,17 @@ def guide_tour():
         shot("guide-gruppen-runter")
         key("DPAD_RIGHT", wait=1.2)
         shot("guide-nach-gruppen")
+        # Drei Ebenen: ◀ aus dem Guide zu den Kategorien, ◀ noch einmal zum Menü, Zurück eine Ebene zurück.
+        key("DPAD_LEFT", wait=1.2)
+        shot("guide-links-kategorien")
+        key("DPAD_LEFT", wait=1.2)
+        shot("guide-links-menue")
+        key("DPAD_RIGHT", wait=1.2)
+        shot("guide-menue-rechts-kategorien")
+        key("DPAD_RIGHT", wait=1.2)
+        key("BACK", wait=1.2)
+        shot("guide-zurueck-kategorien")
+        key("DPAD_RIGHT", wait=1.2)
 
 
 def in_fullscreen():
@@ -356,12 +367,9 @@ def player_tour():
     if not open_section("Live-TV"):
         return
     shot("live")
-    # Live-TV öffnet als Guide; für den Sender per Namen in die Listenansicht wechseln.
+    # Live-TV ist immer der Guide; der Sender wird per Namen in den Zeilen gesucht.
     key("DPAD_RIGHT", wait=1.0)
-    if goto(r"^(Liste|Listenansicht)$"):
-        time.sleep(2)
-        key("DPAD_RIGHT", wait=1.0)
-    shot("live-liste")
+    shot("live-guide")
     if not goto(r"^Sky Sport Bundesliga 1"):
         return
     time.sleep(5)
@@ -438,38 +446,10 @@ def vod_section(name, layout):
         key("BACK", wait=1.5)
 
 
-def set_vod_layout():
-    """Einstellungen › Layout › „Layout für Filme und Serien“ umschalten."""
-    if not open_section("Mehr"):
-        return False
-    key("DPAD_RIGHT", wait=0.8)
-    if not goto(r"^Einstellungen$"):
-        return False
-    time.sleep(2)
-    key("DPAD_RIGHT", wait=0.8)
-    key("DPAD_DOWN", wait=0.8)
-    if not goto(r"^Layout$", xmin=600):
-        return False
-    time.sleep(1.5)
-    if not goto(r"^Layout für Filme und Serien", press=False):
-        return False
-    key("DPAD_RIGHT", wait=1.0)
-    shot("vod-layout-umgestellt")
-    if find(dump(), r"^Getrennt$") is None:
-        key("DPAD_CENTER", wait=1.2)
-        shot("vod-layout-ok")
-    key("BACK", wait=1.5)
-    key("BACK", wait=1.5)
-    return True
-
-
 def vod_tour():
-    vod_section("Filme", "standard")
-    vod_section("Serien", "standard")
-    if set_vod_layout():
-        vod_section("Filme", "umgestellt")
-        vod_section("Serien", "umgestellt")
-        set_vod_layout()  # zurück, damit der Rest der Tour wie gewohnt aussieht
+    # Filme und Serien haben nur noch das filmische Layout.
+    vod_section("Filme", "filmisch")
+    vod_section("Serien", "filmisch")
 
 
 def settings_tour():
