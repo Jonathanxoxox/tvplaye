@@ -495,6 +495,11 @@ private fun SeriesGrid(
     val (categoryEntries, groupsHeading) = vodCategoryEntries(railItems, railCounts, playlistMarks, series = true)
     val headerLabel = if (selectedItem?.key is LiveKey.Folder || selectedItem?.key is LiveKey.Custom) ProviderTags.parse(selectedLabel).name else selectedLabel
 
+    // The hero shows a title while the categories have focus too, as the classic IPTV player does: the
+    // first one of a category just picked there, or of the list when nothing was chosen yet.
+    LaunchedEffect(selectedKey, series.itemCount > 0) {
+        if (series.itemCount > 0 && (selectedSeries == null || railPaneFocused)) series.peek(0)?.let(vm::onSeriesFocused)
+    }
     // Back closes the sheet: one level out.
     androidx.activity.compose.BackHandler(enabled = categoriesOpen) { categoriesOpen = false; focusCurrentTitle() }
     LaunchedEffect(categoriesOpen) {
@@ -657,7 +662,7 @@ private fun SeriesGrid(
                         VodSortTool(sortMode, Modifier.focusRequester(sortFocus)) { sortOpen = true }
                         StageTool(text = stringResource(R.string.content_category_browser_title), icon = OwnTVIcon.LIST, onClick = { runCatching { railFocus.requestFocus() } })
                         Spacer(Modifier.weight(1f))
-                        StageKeyHints(listOf(playHint, optionsHint, "◀" to stringResource(R.string.content_category_browser_title)))
+                        StageKeyHints(listOf(playHint, optionsHint))
                     }
                     if (series.itemCount == 0) {
                         Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = listX, top = 60.mpx))

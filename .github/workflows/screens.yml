@@ -35,6 +35,7 @@ jobs:
 
       - name: Build x86_64 APK
         env:
+          FLUTLICHT_TMDB_KEY: ${{ secrets.TMDB_API_KEY }}
           KEYSTORE_PASSWORD: android
           KEY_ALIAS: sideload
           KEY_PASSWORD: android

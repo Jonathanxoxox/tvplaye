@@ -406,15 +406,20 @@ def vod_section(name, layout):
     time.sleep(2)
     shot(f"vod-{tag}-zeile-2")
     key("DPAD_UP", wait=0.8)
-    # OK auf einem Film spielt ihn ab; die Optionen kommen mit langem OK. Eine Serie öffnet OK.
-    key("DPAD_CENTER", long=name == "Filme", wait=3.0)
-    time.sleep(2)
-    shot(f"vod-{tag}-{'optionen' if name == 'Filme' else 'serie'}")
-    key("DPAD_DOWN", n=2, wait=0.8)
-    shot(f"vod-{tag}-{'optionen' if name == 'Filme' else 'serie'}-unten")
-    key("BACK", wait=1.5)
-    key("DPAD_LEFT", n=4, wait=0.6)
+    key("DPAD_LEFT", n=6, wait=0.6)
     shot(f"vod-{tag}-links")
+    key("DPAD_DOWN", n=3, wait=0.8)
+    time.sleep(2)
+    shot(f"vod-{tag}-kategorie")
+    # OK auf einem Film spielt ihn ab (auch ein langes OK über adb); eine Serie öffnet ihre Seite.
+    if name == "Serien":
+        key("DPAD_RIGHT", wait=1.0)
+        key("DPAD_CENTER", wait=3.0)
+        time.sleep(3)
+        shot(f"vod-{tag}-serie")
+        key("DPAD_DOWN", n=2, wait=0.8)
+        shot(f"vod-{tag}-serie-unten")
+        key("BACK", wait=1.5)
 
 
 def set_vod_layout():

@@ -43,6 +43,7 @@
 2	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	defaults_v3_applied
 1	file-path	app/src/main/java/tv/own/owntv/OwnTVApp.kt	image_cache
 1	performance	app/src/main/java/tv/own/owntv/OwnTVApp.kt	koin-started
+2	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	tmdb_key_v1_applied
 1	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	tvplayer
 3	empty	app/src/main/java/tv/own/owntv/core/i18n/LocalizedContent.kt	\0
 1	empty	app/src/main/java/tv/own/owntv/features/customize/CustomizeItemsScreen.kt	\0
@@ -199,7 +200,6 @@
 2	technical	app/src/main/java/tv/own/owntv/features/movies/MoviesScreen.kt	tmdb_details
 1	url	app/src/main/java/tv/own/owntv/features/movies/MoviesScreen.kt	w1280
 1	technical	app/src/main/java/tv/own/owntv/features/movies/MoviesScreen.kt	·
-1	technical	app/src/main/java/tv/own/owntv/features/movies/MoviesScreen.kt	◀
 5	empty	app/src/main/java/tv/own/owntv/features/profiles/ProfileComponents.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/profiles/ProfilePictureChooser.kt	bmp
 1	technical	app/src/main/java/tv/own/owntv/features/profiles/ProfilePictureChooser.kt	jpeg
@@ -246,7 +246,6 @@
 2	url	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	w300
 1	url	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	w780
 6	technical	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	·
-1	technical	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	◀
 3	empty	app/src/main/java/tv/own/owntv/features/series/SeriesViewModel.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/series/SeriesViewModel.kt	${StorageAccess.sanitize(ep.name.ifBlank { "episode-${ep.episodeNumber}" })}.$ext
 1	technical	app/src/main/java/tv/own/owntv/features/series/SeriesViewModel.kt	${StorageAccess.sanitize(episode.name.ifBlank { "episode-${episode.episodeNumber}" })}.$ext
