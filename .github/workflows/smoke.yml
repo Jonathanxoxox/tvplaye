@@ -61,15 +61,15 @@ jobs:
 
       - name: List OwnTV strings
         run: |
-          for f in $(find app/build/intermediates -path "*merged.dir*" \( -name values.xml -o -name values-de.xml \)); do
-            echo "===== $f"
+          for f in $(find app/build/intermediates -path "*mergeX86_64ReleaseResources/merged.dir*" \( -name values.xml -o -name values-de.xml \)); do
             python3 - "$f" <<'PY'
           import sys, re, xml.etree.ElementTree as ET
+          ET.register_namespace("xliff", "urn:oasis:names:tc:xliff:document:1.2")
+          tag = "XMLDE" if sys.argv[1].endswith("values-de.xml") else "XMLEN"
           for e in ET.parse(sys.argv[1]).getroot():
-              if e.tag in ("string", "plurals"):
-                  text = "".join(e.itertext())
-                  if re.search(r"own\s?tv", text, re.I):
-                      print("STR", e.get("name"), "=", text.replace("\n", " ")[:200])
+              if e.tag in ("string", "plurals") and re.search(r"OwnTV", "".join(e.itertext())):
+                  e.tail = None
+                  print(tag, ET.tostring(e, encoding="unicode").replace("\n", " "))
           PY
           done
 
