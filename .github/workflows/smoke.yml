@@ -40,6 +40,20 @@ jobs:
           mkdir -p dist
           cp "$(ls app/build/outputs/apk/x86_64/release/*.apk | head -n1)" dist/app.apk
 
+      - name: List OwnTV strings
+        run: |
+          for f in $(find app/build/intermediates -path "*merged.dir*" \( -name values.xml -o -name values-de.xml \)); do
+            echo "===== $f"
+            python3 - "$f" <<'PY'
+          import sys, re, xml.etree.ElementTree as ET
+          for e in ET.parse(sys.argv[1]).getroot():
+              if e.tag in ("string", "plurals"):
+                  text = "".join(e.itertext())
+                  if re.search(r"own\s?tv", text, re.I):
+                      print("STR", e.get("name"), "=", text.replace("\n", " ")[:200])
+          PY
+          done
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
