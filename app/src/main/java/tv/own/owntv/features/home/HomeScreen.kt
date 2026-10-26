@@ -1364,6 +1364,9 @@ private fun HeroFallbackPane(
                 color = tv.own.owntv.ui.theme.StageColors.Muted,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
+                // Wrapped in the middle, clear of the menu when it opens over the left edge.
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.widthIn(max = 1100.mpx),
             )
             Spacer(Modifier.height(8.dp))
             Text(
@@ -1372,6 +1375,9 @@ private fun HeroFallbackPane(
                 color = tv.own.owntv.ui.theme.StageColors.Muted,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
+                // Wrapped in the middle, clear of the menu when it opens over the left edge.
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.widthIn(max = 1100.mpx),
             )
         }
     }
@@ -1404,6 +1410,8 @@ private fun EmptyHomeState(
                 color = tv.own.owntv.ui.theme.StageColors.Muted,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.widthIn(max = 1100.mpx),
             )
         }
     }

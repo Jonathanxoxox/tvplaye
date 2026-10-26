@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -154,8 +155,34 @@ fun StageSurface(
             .then(if (focused) Modifier.stageFocusDecor(focusStyle, radius, accent, palette) else idle)
             .stageClickable(interaction, enabled, onClick, onLongClick),
         contentAlignment = contentAlignment,
-    ) { content(focused) }
+    ) {
+        // Flutlicht: in the dark theme a focused item is the near-white bar, so everything drawn on it
+        // in the page's light text colours would vanish. Inside the bar the palette's text colours are
+        // the dark focus ones; a poster keeps its own (only its frame is white).
+        if (focused && !palette.isLight && focusStyle != StageFocus.POSTER) {
+            CompositionLocalProvider(LocalStagePalette provides palette.onFocusBar()) { content(focused) }
+        } else {
+            content(focused)
+        }
+    }
 }
+
+/** The palette for what sits on the dark theme's near-white focus bar: dark text, dark flat fills. */
+private fun StagePalette.onFocusBar(): StagePalette = copy(
+    text = fxText,
+    muted = fxLine,
+    dim = fxLine,
+    itemText = fxText,
+    menuItemText = fxText,
+    tagText = fxLine,
+    body = fxLine,
+    navText = fxText,
+    ink = fxText,
+    segmentOn = fxText.copy(alpha = 0.16f),
+    keycap = fxText.copy(alpha = 0.10f),
+    // An off switch keeps a visible knob on the light bar (white on white otherwise).
+    knobOff = fxLine,
+)
 
 /** The PRIMARY (1.04) and POSTER (1.08, from 50% 40%) lift; FX and FILLED stay put. An episode lifts 1.06 from 50% 30%. */
 @Composable

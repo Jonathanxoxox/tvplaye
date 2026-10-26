@@ -48,4 +48,32 @@
     <string name="tvplayer_scene_mitternacht_desc" translatable="false">Mond, lila Hügel und Glühwürmchen</string>
     <string name="tvplayer_stadium_title" translatable="false">Flutlicht bei Fußball</string>
     <string name="tvplayer_stadium_line" translatable="false">Stadion bei Nacht in Live-TV und Guide, wenn Fußball läuft</string>
+    <string name="tvplayer_more_backup" translatable="false">Sicherung</string>
+    <string name="tvplayer_keys_heading" translatable="false">Tasten im Vollbild</string>
+    <string name="tvplayer_keys_help" translatable="false">Was die Tasten der Fernbedienung beim Fernsehen im Vollbild tun. Kurz drücken und gedrückt halten lassen sich getrennt belegen. Ab Werk wie bei TiviMate.</string>
+    <string name="tvplayer_keys_long" translatable="false">%1$s gedrückt halten</string>
+    <string name="tvplayer_keys_reset" translatable="false">Tasten wie TiviMate</string>
+    <string name="tvplayer_keys_reset_desc" translatable="false">Alle Tasten im Vollbild auf die Standardbelegung zurück</string>
+    <string name="tvplayer_key_ok" translatable="false">OK</string>
+    <string name="tvplayer_key_menu" translatable="false">Menü</string>
+    <string name="tvplayer_key_left" translatable="false">Links</string>
+    <string name="tvplayer_key_right" translatable="false">Rechts</string>
+    <string name="tvplayer_key_up" translatable="false">Hoch</string>
+    <string name="tvplayer_key_down" translatable="false">Runter</string>
+    <string name="tvplayer_key_info" translatable="false">Info</string>
+    <string name="tvplayer_key_guide" translatable="false">Guide</string>
+    <string name="tvplayer_key_red" translatable="false">Rot</string>
+    <string name="tvplayer_key_green" translatable="false">Grün</string>
+    <string name="tvplayer_key_yellow" translatable="false">Gelb</string>
+    <string name="tvplayer_key_blue" translatable="false">Blau</string>
+    <string name="tvplayer_action_none" translatable="false">Nichts</string>
+    <string name="tvplayer_action_info" translatable="false">Infoleiste mit EPG, Verlauf und letzten Sendern</string>
+    <string name="tvplayer_action_options" translatable="false">Optionen</string>
+    <string name="tvplayer_action_guide" translatable="false">TV-Guide</string>
+    <string name="tvplayer_action_channels" translatable="false">Senderliste</string>
+    <string name="tvplayer_action_last" translatable="false">Zuletzt gesehener Sender</string>
+    <string name="tvplayer_action_ch_up" translatable="false">Nächster Sender</string>
+    <string name="tvplayer_action_ch_down" translatable="false">Vorheriger Sender</string>
+    <string name="tvplayer_action_history" translatable="false">Verlauf</string>
+    <string name="tvplayer_action_search" translatable="false">Suche</string>
 </resources>
