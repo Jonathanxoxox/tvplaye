@@ -13,6 +13,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -165,6 +167,84 @@ fun StagePalette.forScene(scene: NightScene): StagePalette {
 }
 
 private class SceneTint(val page: Long, val glass: Long, val muted: Long, val dim: Long, val tag: Long, val body: Long)
+
+/** The world's page colour, or null when the scene keeps Cyan Blau. */
+private fun scenePage(scene: NightScene): Color? = when (scene) {
+    NightScene.TIEFSEE -> Color(0xFF0A2F4A)
+    NightScene.MONDWUESTE -> Color(0xFF2A1D45)
+    NightScene.GLIMMWALD -> Color(0xFF0D3A30)
+    NightScene.HAFENLICHTER -> Color(0xFF14223A)
+    else -> null
+}
+
+/**
+ * The dark surface tiers (rail, cards, outlines) moved into the world's hue: each keeps its brightness and
+ * saturation relative to the petrol page, so the steps between them stay as designed. Text and accent stay.
+ */
+fun OwnTVColors.forScene(scene: NightScene): OwnTVColors {
+    if (!isDark) return this
+    val page = scenePage(scene) ?: return this
+    fun move(c: Color) = moveHue(c, page)
+    return copy(
+        background = move(background),
+        surface = move(surface),
+        surfaceContainerLowest = move(surfaceContainerLowest),
+        surfaceContainerLow = move(surfaceContainerLow),
+        surfaceContainer = move(surfaceContainer),
+        surfaceContainerHigh = move(surfaceContainerHigh),
+        surfaceContainerHighest = move(surfaceContainerHighest),
+        outline = move(outline),
+        outlineVariant = move(outlineVariant),
+    )
+}
+
+/** A fixed dark petrol tone (the rail's panels) moved into the chosen world's hue, like [OwnTVColors.forScene]. */
+@Composable
+fun inScene(petrol: Color): Color {
+    val scene by rememberNightSceneSettings().scene.collectAsState()
+    if (LocalStagePalette.current.isLight) return petrol
+    val page = scenePage(scene) ?: return petrol
+    return moveHue(petrol, page)
+}
+
+private fun moveHue(c: Color, page: Color): Color {
+    val ref = hsl(DarkBackground)
+    val to = hsl(page)
+    val h = hsl(c)
+    return fromHsl(to[0], (h[1] * to[1] / ref[1]).coerceIn(0f, 1f), (h[2] * to[2] / ref[2]).coerceIn(0f, 1f), c.alpha)
+}
+
+/** Hue (0..1), saturation, lightness. */
+private fun hsl(c: Color): FloatArray {
+    val mx = maxOf(c.red, c.green, c.blue)
+    val mn = minOf(c.red, c.green, c.blue)
+    val l = (mx + mn) / 2f
+    val d = mx - mn
+    if (d == 0f) return floatArrayOf(0f, 0f, l)
+    val s = if (l > 0.5f) d / (2f - mx - mn) else d / (mx + mn)
+    val h = when (mx) {
+        c.red -> ((c.green - c.blue) / d + if (c.green < c.blue) 6f else 0f)
+        c.green -> (c.blue - c.red) / d + 2f
+        else -> (c.red - c.green) / d + 4f
+    } / 6f
+    return floatArrayOf(h, s, l)
+}
+
+private fun fromHsl(h: Float, s: Float, l: Float, alpha: Float): Color {
+    if (s == 0f) return Color(l, l, l, alpha)
+    val q = if (l < 0.5f) l * (1f + s) else l + s - l * s
+    val p = 2f * l - q
+    fun hue(t0: Float): Float {
+        val t = if (t0 < 0f) t0 + 1f else if (t0 > 1f) t0 - 1f else t0
+        return when {
+            t < 1f / 6f -> p + (q - p) * 6f * t
+            t < 0.5f -> q
+            t < 2f / 3f -> p + (q - p) * (2f / 3f - t) * 6f
+            else -> p
+        }
+    }
+    return Color(hue(h + 1f / 3f).coerceIn(0f, 1f), hue(h).coerceIn(0f, 1f), hue(h - 1f / 3f).coerceIn(0f, 1f), alpha)
+}
 
 @Composable
 private fun Modifier.sceneLayer(visible: Boolean, art: SceneArt): Modifier {

@@ -218,7 +218,7 @@ fun StageRail(
                     true
                 }
                 .focusGroup()
-                .background(if (expanded) MenuPanel else StripPanel)
+                .background(tv.own.owntv.ui.theme.inScene(if (expanded) MenuPanel else StripPanel))
                 .padding(horizontal = if (expanded) 26.mpx else 14.mpx, vertical = 40.mpx),
             horizontalAlignment = if (expanded) Alignment.Start else Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.mpx),

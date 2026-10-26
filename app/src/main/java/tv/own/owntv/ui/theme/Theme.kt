@@ -107,15 +107,15 @@ fun OwnTVTheme(
         ThemeMode.SYSTEM -> systemInDarkTheme
     }
 
+    // Flutlicht's worlds tint the dark panels to their scene (Glass & background › Szene).
+    val scene by rememberNightSceneSettings().scene.collectAsState()
+
     val colors = ownTvColors(
         isDark = useDark,
         accent = accent,
         customAccent = customAccent,
         focusHighlight = focusHighlight,
-    )
-
-    // Flutlicht's worlds tint the dark panels to their scene (Glass & background › Szene).
-    val scene by rememberNightSceneSettings().scene.collectAsState()
+    ).forScene(scene)
 
     CompositionLocalProvider(
         LocalOwnTVColors provides colors,
