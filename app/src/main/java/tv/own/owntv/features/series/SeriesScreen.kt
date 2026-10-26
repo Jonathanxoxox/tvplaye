@@ -326,12 +326,13 @@ private fun SeriesGrid(
     }
     val stepper = remember { VodStepper(scope) { effectiveListState } }
     val playlistMarks by vm.playlistMarks.collectAsStateWithLifecycle()
-    // Separate keeps the categories on screen; Cinematic opens them as a sheet (◀, or the Categories tool).
+    // Flutlicht: both layouts keep the categories on screen, as the classic IPTV player does; the sheet
+    // (categoriesOpen) is no longer opened.
     var categoriesOpen by remember { mutableStateOf(false) }
     var sheetHadFocus by remember { mutableStateOf(false) }
     var sortOpen by remember { mutableStateOf(false) }
     val sortFocus = remember { FocusRequester() }
-    val categoriesVisible = lockedKey == null && (!cinematic || categoriesOpen)
+    val categoriesVisible = lockedKey == null
     val railCounts by (if (categoriesVisible) vm.railCounts else remember { kotlinx.coroutines.flow.MutableStateFlow(emptyMap<LiveKey, Int>()) })
         .collectAsStateWithLifecycle()
     val catListState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -480,7 +481,7 @@ private fun SeriesGrid(
     DisposableEffect(onEntryHook, cinematic) {
         onEntryHook?.invoke {
             // The column's own row path (scrolls to it if needed), not the list's first child: the search field.
-            if (!cinematic && lockedKey == null) { railFocusRow = selectedIndex; true } else focusCurrentTitle()
+            if (lockedKey == null) { railFocusRow = selectedIndex; true } else focusCurrentTitle()
         }
         onDispose { onEntryHook?.invoke(null) }
     }
@@ -592,9 +593,8 @@ private fun SeriesGrid(
         .focusProperties {
             onExit = {
                 when (requestedFocusDirection) {
-                    // Cinematic's first column opens the sheet itself; in Separate, ◀ out of the first
-                    // column reaches the category column. Nothing lies to the right.
-                    androidx.compose.ui.focus.FocusDirection.Left -> if (cinematic) cancelFocusChange()
+                    // ◀ out of the first column reaches the category column. Nothing lies to the right.
+                    androidx.compose.ui.focus.FocusDirection.Left -> Unit
                     androidx.compose.ui.focus.FocusDirection.Right -> cancelFocusChange()
                     // Pinned (More) keeps Up for its tabs.
                     androidx.compose.ui.focus.FocusDirection.Up, androidx.compose.ui.focus.FocusDirection.Down ->
@@ -609,7 +609,7 @@ private fun SeriesGrid(
     var searchEditing by remember { mutableStateOf(false) }
     val searchLeft = Modifier.onPreviewKeyEvent { e ->
         if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionLeft && !searchEditing && lockedKey == null) {
-            if (cinematic) categoriesOpen = true else runCatching { railFocus.requestFocus() }
+            runCatching { railFocus.requestFocus() }
             true
         } else false
     }
@@ -628,16 +628,20 @@ private fun SeriesGrid(
             // An empty list has no title for the hero: the toolbar moves up under the header instead of
             // floating mid-screen over an empty hero.
             val toolTop = 122.mpx + if (titleInfo == null && series.itemCount == 0) 0.mpx else heroH
+            // The category column on the left (its width: Panel widths › Categories sheet), the hero,
+            // toolbar and posters to its right.
+            val colW = if (panelShares != null) screenW * (cinematicSheetPct / 100f) else fx(330)
+            val listX = fx(64) + colW + fx(26)
             Box(Modifier.fillMaxSize().then(if (categoriesOpen) Modifier.graphicsLayer { alpha = 0.36f } else Modifier)) {
                 VodCinematicBackdrop(titleInfo?.backdropUrl, series = true, Modifier.align(Alignment.TopEnd))
                 VodHeader(
                     section = stringResource(R.string.common_nav_series), category = headerLabel, count = vodCount(true, count),
                     showChevron = true, modifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(900)),
                 )
-                titleInfo?.let { VodHero(it, Modifier.padding(start = fx(84), top = 122.mpx).width(fx(1000)).height(heroH)) }
+                titleInfo?.let { VodHero(it, Modifier.padding(start = listX, top = 122.mpx).width(fx(1000)).height(heroH)) }
                 Column(Modifier.padding(top = toolTop).fillMaxSize().then(paneModifier)) {
                     Row(
-                        Modifier.padding(start = fx(68), end = fx(64)).fillMaxWidth()
+                        Modifier.padding(start = listX - fx(16), end = fx(64)).fillMaxWidth()
                             // ▼ from the toolbar returns to the title the hero shows, not the poster below the tool.
                             .onPreviewKeyEvent { e -> e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown && focusCurrentTitle() }
                             .focusGroup(),
@@ -651,17 +655,17 @@ private fun SeriesGrid(
                             onEditingChange = { searchEditing = it },
                         )
                         VodSortTool(sortMode, Modifier.focusRequester(sortFocus)) { sortOpen = true }
-                        StageTool(text = stringResource(R.string.content_category_browser_title), icon = OwnTVIcon.LIST, onClick = { categoriesOpen = true })
+                        StageTool(text = stringResource(R.string.content_category_browser_title), icon = OwnTVIcon.LIST, onClick = { runCatching { railFocus.requestFocus() } })
                         Spacer(Modifier.weight(1f))
                         StageKeyHints(listOf(playHint, optionsHint, "◀" to stringResource(R.string.content_category_browser_title)))
                     }
                     if (series.itemCount == 0) {
-                        Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = fx(84), top = 60.mpx))
+                        Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = listX, top = 60.mpx))
                     } else {
                         // The 196 × 294 posters, 26 apart, as many across as fit; the grid grows downwards
                         // (a grid, not a single row). Glow room on every side.
                         val glowRoom = 24.mpx
-                        val rowW = screenW - fx(84) - fx(64)
+                        val rowW = screenW - listX - fx(64)
                         val columns = ((rowW + 26.mpx) / 222.mpx).toInt().coerceAtLeast(1)
                         // A fixed gap under the toolbar that scrolling posters never enter; the grid's own
                         // top padding is only the room the focused poster's lift and ring need.
@@ -672,7 +676,7 @@ private fun SeriesGrid(
                                 columns = GridCells.Fixed(columns),
                                 horizontalArrangement = Arrangement.spacedBy(26.mpx),
                                 verticalArrangement = Arrangement.spacedBy(30.mpx),
-                                contentPadding = PaddingValues(start = fx(84), end = fx(64), top = 14.mpx, bottom = glowRoom),
+                                contentPadding = PaddingValues(start = listX, end = fx(64), top = 14.mpx, bottom = glowRoom),
                                 modifier = Modifier.fillMaxWidth().weight(1f),
                             ) {
                                 items(count = series.itemCount, key = series.itemKey { it.id }, contentType = series.itemContentType { "series" }) { index ->
@@ -696,8 +700,8 @@ private fun SeriesGrid(
                                                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                                                 when (e.key) {
                                                     Key.Menu -> { openMenu(show, index); true }
-                                                    // ◀ from the first column opens the categories.
-                                                    Key.DirectionLeft -> index % columns == 0 && run { categoriesOpen = true; true }
+                                                    // ◀ from the first column goes to the categories.
+                                                    Key.DirectionLeft -> index % columns == 0 && run { runCatching { railFocus.requestFocus() }; true }
                                                     else -> false
                                                 }
                                             },
@@ -708,6 +712,26 @@ private fun SeriesGrid(
                     }
                 }
             }
+            LiveCategories(
+                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
+                onSearchQueryChange = vm::setCategoryQuery,
+                entries = categoryEntries,
+                selectedIndex = selectedIndex,
+                groupsHeading = groupsHeading,
+                sheet = false,
+                listState = catListState,
+                onSelect = onCategorySelect,
+                onLongSelect = onCategoryLongSelect,
+                onNavigateRight = { focusTitles() },
+                focusRequester = railFocus,
+                focusRowIndex = railFocusRow,
+                onRowFocused = { railFocusRow = null },
+                onRowFocus = { catFocusIndex = it },
+                modifier = categoriesModifier
+                    .padding(start = fx(64), top = 128.mpx, bottom = 24.mpx)
+                    .width(colW)
+                    .fillMaxHeight(),
+            )
         } else {
             // Separate panels: the category column, the titles, the details card.
             val locked = lockedKey != null
@@ -910,7 +934,7 @@ private fun SeriesGrid(
     if (sortOpen) {
         VodSortMenu(
             series = true, current = sortMode,
-            x = if (cinematic) 470f else 880f, top = if (cinematic) 250.mpx else 186.mpx,
+            x = 880f, top = if (cinematic) 250.mpx else 186.mpx,
             onPick = vm::setSort,
             onDismiss = { sortOpen = false; runCatching { sortFocus.requestFocus() } },
         )
