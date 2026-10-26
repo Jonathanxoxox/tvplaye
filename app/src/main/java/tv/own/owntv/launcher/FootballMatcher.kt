@@ -52,7 +52,8 @@ internal class FootballMatcher(
             (pairing && (sportsChannel || (team >= 0 && textSaysFootball())))
         if (!football) return null
         if (team >= 0) return Hit(100 + rankBonus(team, 9), teams[team].name, Kind.TEAM)
-        teams.forEachIndexed { i, it -> if (it.foundIn(d)) return Hit(70 + rankBonus(i, 9), it.name, Kind.TEAM) }
+        // A title that names both sides already says who plays: a team in its text is only mentioned there.
+        if (!pairing) teams.forEachIndexed { i, followed -> if (followed.foundIn(d)) return Hit(70 + rankBonus(i, 9), followed.name, Kind.TEAM) }
         if (competition >= 0) return Hit(45 + rankBonus(competition, 5), competitions[competition].name, Kind.COMPETITION)
         competitions.forEachIndexed { i, c -> if (c.foundIn(d)) return Hit(30 + rankBonus(i, 5), c.name, Kind.COMPETITION) }
         return Hit(15, "football", Kind.FOOTBALL)

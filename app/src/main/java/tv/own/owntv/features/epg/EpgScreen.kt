@@ -402,6 +402,8 @@ fun EpgScreen(
     val catListState = rememberLazyListState()
     // The groups column beside the open menu, and whether it holds focus (the menu then stays open).
     val groupsFocus = remember { FocusRequester() }
+    // The empty guide's one button ("Add EPG"): ▶ from the rail lands on it, there is nothing else to reach.
+    val emptyAction = remember { FocusRequester() }
     val groupsListState = rememberLazyListState()
     var groupsFocused by remember { mutableStateOf(false) }
     // Set by ▶ from the open menu: the groups list then focuses its selected group itself.
@@ -410,8 +412,8 @@ fun EpgScreen(
 
     DisposableEffect(onEntryHook) {
         val focusRows = {
-            state.channels.isNotEmpty() &&
-                runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
+            if (state.channels.isEmpty()) runCatching { emptyAction.requestFocus() }.getOrDefault(false)
+            else runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
         }
         onEntryHook?.invoke {
             // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player. The list
@@ -569,11 +571,14 @@ fun EpgScreen(
         Box(Modifier.fillMaxWidth().weight(1f).padding(top = 18.mpx)) {
             when {
                 state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 44) }
+                // Live TV lists every channel of the group, guide or not: an empty grid is an empty group.
+                liveMode && state.channels.isEmpty() && (state.message == null || state.message == EpgMessage.MismatchedIds) ->
+                    GuideEmpty(title = stringResource(R.string.content_no_channels_here))
                 // No EPG feed added yet → a guide it can't fill. Point the user to EPG Sources.
                 !state.hasEpgSources && state.channels.isEmpty() -> GuideEmpty(
                     title = stringResource(R.string.content_epg_empty),
                     body = stringResource(R.string.content_epg_add_description),
-                    action = stringResource(R.string.content_epg_add), onAction = onAddEpg,
+                    action = stringResource(R.string.content_epg_add), onAction = onAddEpg, actionFocus = emptyAction,
                 )
                 state.channels.isEmpty() -> GuideEmpty(title = state.message?.let { epgMessageText(it) } ?: stringResource(R.string.content_epg_no_guide))
                 else -> {
@@ -960,7 +965,13 @@ private fun GuideRow(
 
 /** An empty guide: what is missing, and — with no EPG added — the way to add one. */
 @Composable
-private fun GuideEmpty(title: String, body: String? = null, action: String? = null, onAction: () -> Unit = {}) {
+private fun GuideEmpty(
+    title: String,
+    body: String? = null,
+    action: String? = null,
+    onAction: () -> Unit = {},
+    actionFocus: FocusRequester? = null,
+) {
     Box(Modifier.fillMaxSize().padding(bottom = 80.mpx), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(title, style = stageText(24, 700), color = StageColors.Text, textAlign = TextAlign.Center, modifier = Modifier.widthIn(max = 900.mpx))
@@ -969,7 +980,10 @@ private fun GuideEmpty(title: String, body: String? = null, action: String? = nu
             }
             if (action != null) {
                 Spacer(Modifier.height(24.mpx))
-                StageButton(action, onClick = onAction, icon = OwnTVIcon.ADD, height = 56.mpx, textSize = 19)
+                StageButton(
+                    action, onClick = onAction, icon = OwnTVIcon.ADD, height = 56.mpx, textSize = 19,
+                    modifier = if (actionFocus != null) Modifier.focusRequester(actionFocus) else Modifier,
+                )
             }
         }
     }
