@@ -440,10 +440,11 @@ fun EpgScreen(
             .fillMaxSize()
             // Entering from the rail lands in the grid, on the row focus was on. Not while the search field
             // is opening: the Search button it replaces held focus, so the field's own request enters from
-            // outside too, and redirecting it would send focus to the grid instead.
+            // outside too, and redirecting it would send focus to the grid instead. Nor when ▶ from the open
+            // menu heads for the groups beside it.
             .focusProperties {
                 onEnter = {
-                    if (state.channels.isNotEmpty() && !(searchOpen && !searchHadFocus)) {
+                    if (state.channels.isNotEmpty() && !(searchOpen && !searchHadFocus) && !groupsEnter) {
                         runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }
                     }
                 }
