@@ -19,7 +19,7 @@ internal object FootballReminders {
 
     private fun key(startMs: Long, title: String) = "$startMs|${FootballMatcher.fold(title)}"
 
-    /** True for a reminder Flutlicht set for one of the profile's teams (the prompt then asks for the remote). */
+    /** True for a reminder Mayo TV set for one of the profile's teams (the prompt then asks for the remote). */
     fun isTeamMatch(context: Context, profileId: Long, startMs: Long, title: String): Boolean =
         key(startMs, title) in FootballSetup.prefs(context).getStringSet(doneKey(profileId), emptySet()).orEmpty()
 

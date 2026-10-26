@@ -271,7 +271,7 @@ fun MoviesScreen(
     }
     val stepper = remember { VodStepper(scope) { effectiveListState } }
     val playlistMarks by vm.playlistMarks.collectAsStateWithLifecycle()
-    // Flutlicht: both layouts keep the categories on screen, as the classic IPTV player does; the sheet
+    // Mayo TV: both layouts keep the categories on screen, as the classic IPTV player does; the sheet
     // (categoriesOpen) is no longer opened.
     var categoriesOpen by remember { mutableStateOf(false) }
     var sheetHadFocus by remember { mutableStateOf(false) }

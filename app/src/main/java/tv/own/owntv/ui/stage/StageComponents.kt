@@ -156,7 +156,7 @@ fun StageSurface(
             .stageClickable(interaction, enabled, onClick, onLongClick),
         contentAlignment = contentAlignment,
     ) {
-        // Flutlicht: in the dark theme a focused item is the near-white bar, so everything drawn on it
+        // Mayo TV: in the dark theme a focused item is the near-white bar, so everything drawn on it
         // in the page's light text colours would vanish. Inside the bar the palette's text colours are
         // the dark focus ones; a poster keeps its own (only its frame is white).
         if (focused && !palette.isLight && focusStyle != StageFocus.POSTER) {

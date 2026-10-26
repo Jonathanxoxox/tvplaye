@@ -1,4 +1,4 @@
-name: Flutlicht APK
+name: Mayo TV APK
 
 # Baut bei jedem Push auf main oder einen Arbeitszweig eine signierte Release-APK. Sie landet zweimal
 # in den Releases: unter der festen Adresse im Release "latest" (zum Laden am Fernseher) und als
@@ -46,7 +46,7 @@ jobs:
           else
             echo "::warning::Secret KEYSTORE_BASE64 fehlt, diese APK bekommt einen einmaligen Schlüssel."
             keytool -genkeypair -keystore "$KS" -storepass android -keypass android -alias sideload \
-              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Flutlicht"
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mayo TV"
           fi
           echo "KEYSTORE_FILE=$KS" >> "$GITHUB_ENV"
 
@@ -62,13 +62,16 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleStandardRelease --stacktrace
           mkdir -p dist
-          cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/Flutlicht.apk
-          cp dist/Flutlicht.apk "dist/Flutlicht-v1.0.${GITHUB_RUN_NUMBER}.apk"
+          cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/MayoTV.apk
+          cp dist/MayoTV.apk "dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.apk"
+          # Bis 2026-10 hieß die App Flutlicht: gespeicherte Download-Links auf .../latest/Flutlicht.apk
+          # bekommen vorerst dieselbe APK.
+          cp dist/MayoTV.apk dist/Flutlicht.apk
 
       - uses: actions/upload-artifact@v7
         with:
-          name: Flutlicht
-          path: dist/Flutlicht.apk
+          name: MayoTV
+          path: dist/MayoTV.apk
           if-no-files-found: error
 
       # Ein Release behält seinen Tag; damit "latest" zum gebauten Stand passt, wird der Tag mitgezogen.
@@ -85,7 +88,9 @@ jobs:
           prerelease: true
           make_latest: false
           body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }} (Version 1.0.${{ github.run_number }})"
-          files: dist/Flutlicht.apk
+          files: |
+            dist/MayoTV.apk
+            dist/Flutlicht.apk
 
       # Der Text des Releases erscheint in der App unter "Neuerungen": die Commits seit dem letzten
       # erfolgreichen Bau dieses Zweigs, ohne Merges und ohne reine Tour-/CI-Pflege.
@@ -115,9 +120,9 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Flutlicht 1.0.${{ github.run_number }}
+          name: Mayo TV 1.0.${{ github.run_number }}
           # Nur main ist ein Update für den Fernseher; Arbeitszweige bleiben Vorabversionen.
           prerelease: ${{ github.ref_name != 'main' }}
           make_latest: ${{ github.ref_name == 'main' }}
           body_path: dist/notes.md
-          files: dist/Flutlicht-v1.0.${{ github.run_number }}.apk
+          files: dist/MayoTV-v1.0.${{ github.run_number }}.apk

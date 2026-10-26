@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bildschirm-Tour für den Starttest: richtet Flutlicht mit der Test-Playlist ein, läuft per
+"""Bildschirm-Tour für den Starttest: richtet Mayo TV mit der Test-Playlist ein, läuft per
 Fernbedienungstasten durch Menüs, Einstellungen, TV-Guide und Player und legt von jedem Schritt ein
 Bildschirmfoto plus die sichtbaren Texte ab. So lassen sich abgeschnittene, überlappende oder
 verdeckte Elemente ohne Fernseher prüfen.
@@ -250,8 +250,8 @@ def slug(text):
 
 
 def dismiss_exit(root):
-    """Zurück auf dem Menü fragt "Flutlicht beenden?": immer Abbrechen."""
-    if find(root, r"^Flutlicht beenden") is not None:
+    """Zurück auf dem Menü fragt "Mayo TV beenden?": immer Abbrechen."""
+    if find(root, r"^Mayo TV beenden") is not None:
         goto(r"^Abbrechen$")
         return True
     return False
@@ -544,7 +544,7 @@ def scenes_tour():
 def main():
     step("einrichtung", setup)
     # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
-    if find(dump(), r"Los geht|Wer schaut gerade|Angenehm lesbar|Flutlicht einrichten|Playlist hinzufügen|Hier eingeben|Importieren starten") is not None:
+    if find(dump(), r"Los geht|Wer schaut gerade|Angenehm lesbar|Mayo TV einrichten|Playlist hinzufügen|Hier eingeben|Importieren starten") is not None:
         print("[tour] Einrichtung nicht abgeschlossen, Tour endet hier", flush=True)
         return
     # TOUR_PARTS=vod,scenes,player,… läuft nur durch diese Teile (schneller beim Arbeiten an einem Bereich).

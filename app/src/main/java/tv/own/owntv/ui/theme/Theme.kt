@@ -107,7 +107,7 @@ fun OwnTVTheme(
         ThemeMode.SYSTEM -> systemInDarkTheme
     }
 
-    // Flutlicht's worlds tint the dark panels to their scene (Glass & background › Szene).
+    // Mayo TV's worlds tint the dark panels to their scene (Glass & background › Szene).
     val scene by rememberNightSceneSettings().scene.collectAsState()
 
     val colors = ownTvColors(

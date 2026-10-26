@@ -140,7 +140,7 @@ private fun MainRows(vm: SportsSettingsViewModel, c: SportsConfig, shown: Boolea
     val leagues = c.leagues
     val sports = SportsCatalog.sports.filter { s -> leagues.any { SportsCatalog.league(it)?.sport == s } }
 
-    // Flutlicht's own football: the channel group and the kick-off reminders ("Für dich" needs no switch).
+    // Mayo TV's own football: the channel group and the kick-off reminders ("Für dich" needs no switch).
     val context = androidx.compose.ui.platform.LocalContext.current
     var groupOn by remember { mutableStateOf(tv.own.owntv.launcher.FootballSetup.groupOn(context)) }
     var remindersOn by remember { mutableStateOf(tv.own.owntv.launcher.FootballSetup.remindersOn(context)) }

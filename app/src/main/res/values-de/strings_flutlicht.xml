@@ -1,70 +1,70 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Flutlicht: the core texts that name OwnTV, with the app's own name instead (generated from the merged resources). -->
+<!-- Mayo TV: the core texts that name OwnTV, with the app's own name instead (generated from the merged resources). -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <plurals name="settings_help_language"> <item quantity="one">Die Sprache aller Menüs und Meldungen in Flutlicht. <xliff:g id="count">%1$d</xliff:g> Sprache; folgt der Sprache des Fernsehers, bis Sie eine wählen.</item> <item quantity="other">Die Sprache aller Menüs und Meldungen in Flutlicht. <xliff:g id="count">%1$d</xliff:g> Sprachen; folgt der Sprache des Fernsehers, bis Sie eine wählen.</item> </plurals>
-    <string name="app_icon_restart_message">Sie haben ein neues Symbol und Logo gewählt. Die Änderung wird nach einem Neustart von Flutlicht wirksam.</string>
-    <string name="app_icon_restart_title">Flutlicht neu starten?</string>
-    <string name="common_own_tv_user">Flutlicht-Nutzer</string>
-    <string name="companion_add_page_title">Flutlicht — Quelle hinzufügen</string>
-    <string name="companion_backup_description">Wähle eine Flutlicht-Sicherungsdatei (.own oder eine ältere .json-Datei) aus und drücke auf „Senden“. Sie wird auf den TV übertragen — nimm die Fernbedienung und wähle dort aus, was wiederhergestellt werden soll.</string>
-    <string name="companion_backup_page_title">Flutlicht — Sicherung wiederherstellen</string>
-    <string name="companion_download_description">Ihr Fernseher hat eine Flutlicht-Sicherungsdatei vorbereitet. Tippen Sie auf die Schaltfläche, um sie auf diesem Gerät zu speichern (owntv-backup.own). Bewahren Sie sie an einem sicheren Ort auf — Sie können Ihre Daten später daraus wiederherstellen.</string>
-    <string name="companion_download_page_title">Flutlicht — Sicherung herunterladen</string>
-    <string name="companion_image_page_title">Flutlicht — Hintergrundbild</string>
-    <string name="companion_pin_page_title">Flutlicht — PIN eingeben</string>
-    <string name="companion_saved_page_title">Flutlicht — Gesendet</string>
-    <string name="content_epg_own_player">Flutlicht-Player</string>
-    <string name="content_exit_owntv">Flutlicht beenden?</string>
-    <string name="content_storage_folder_fallback">Dein Download-Ordner ist gerade nicht verfügbar. Downloads werden deshalb im eigenen Ordner von Flutlicht gespeichert, bis er wieder da ist.</string>
-    <string name="local_sync_browser_body">Diese Adresse ist für die Flutlicht-App auf deinem anderen Gerät. Öffne dort die lokale Synchronisierung und wähle dieses Gerät aus der Liste.</string>
-    <string name="local_sync_browser_title">Flutlicht lokale Synchronisierung</string>
-    <string name="local_sync_error_unreachable">Dieses Gerät war nicht erreichbar. Öffne dort Flutlicht → Mehr → Lokale Synchronisierung und schalte den Synchronisierungsmodus ein. Beide Geräte müssen im selben WLAN sein.</string>
-    <string name="player_trailer_blocked_title">Dieser Trailer kann nicht in Flutlicht abgespielt werden</string>
-    <string name="recording_failed_drm">Dieser Sender ist DRM-geschützt und kann daher angesehen, aber nicht aufgenommen werden. Der Schutz stammt von Ihrem Anbieter, nicht von Flutlicht.</string>
-    <string name="recovery_title">Flutlicht konnte seine Datenbank nicht öffnen</string>
-    <string name="settings_app_icon_sheet_mobile">Wie Flutlicht auf deinem Startbildschirm erscheint. Die App startet einmal neu.</string>
-    <string name="settings_app_icon_summary">Farbe des Flutlicht-Symbols und -Logos</string>
-    <string name="settings_app_startup_description">Was Flutlicht beim Start öffnet</string>
-    <string name="settings_auto_frame_rate_warning_description">Auf diesem Gerät läuft Android <xliff:g id="android_version">%1$s</xliff:g>. Vor Android 12 kann der Fernseher Flutlicht nicht mitteilen, zu welchen Bildwiederholraten er fließend wechseln kann. Daher kann der Bildschirm beim Wechsel der Bildwiederholrate für ein oder zwei Sekunden schwarz werden – manchmal mehr als einmal während einer Sendung.\n\nWir empfehlen, die automatische Bildwiederholrate hier deaktiviert zu lassen. Wenn Ihr Fernseher sauber umschaltet, aktivieren Sie sie und sehen Sie selbst: Sie können die Einstellung jederzeit wieder ändern.</string>
-    <string name="settings_auto_frame_rate_warning_description_mobile">Auf diesem Gerät läuft Android <xliff:g id="android_version">%1$s</xliff:g>. Vor Android 12 kann das Gerät Flutlicht nicht mitteilen, zu welchen Bildwiederholraten es fließend wechseln kann. Daher kann der Bildschirm beim Wechsel der Bildwiederholrate für ein oder zwei Sekunden schwarz werden – manchmal mehr als einmal während einer Sendung.\n\nWir empfehlen, die automatische Bildwiederholrate hier deaktiviert zu lassen. Wenn Ihr Bildschirm sauber umschaltet, aktivieren Sie sie und sehen Sie selbst: Sie können die Einstellung jederzeit wieder ändern.</string>
-    <string name="settings_catchup_player_internal">Flutlicht-Player</string>
-    <string name="settings_dns_toggle_description">Alle Domainabfragen von Flutlicht über einen benutzerdefinierten DNS-Server auflösen.</string>
-    <string name="settings_ffmpeg_audio_description">An: ExoPlayer kann auch Ton decodieren, für den das Gerät keinen Decoder hat, etwa DTS, TrueHD oder MP2. Die eigenen Decoder des Geräts haben weiterhin Vorrang. Aus: ExoPlayer nutzt nur die Decoder des Geräts. mpv decodiert immer mit FFmpeg. Eine Änderung startet Flutlicht neu.</string>
-    <string name="settings_ffmpeg_audio_restart_message">Der Audio-Decoder wechselt, sobald Flutlicht neu startet.</string>
-    <string name="settings_help_app_icon">Das Flutlicht-Symbol auf dem Startbildschirm des Fernsehers. Der Launcher braucht eventuell einen Moment, bis er die Änderung zeigt.</string>
-    <string name="settings_help_bg_background">Stage zeigt die eigenen sanften Farben von Flutlicht. Bild zeigt ein eigenes Bild hinter jedem Bildschirm. Schlicht ist eine flache dunkle Fläche.</string>
-    <string name="settings_help_brand_accent">Das Flutlicht-Logo im Menü, unter „Über“ und in der Einrichtung zeigt sein Play-Dreieck in deiner Akzentfarbe. Das Symbol auf dem Startbildschirm behält seine eigenen Farben.</string>
-    <string name="settings_help_check_updates">Sucht jetzt auf GitHub nach einer neueren Flutlicht-Version und bietet die Installation an. Playlists, Favoriten und Einstellungen bleiben, wie sie sind.</string>
-    <string name="settings_help_fonts">Die Schrift in ganz Flutlicht und wie groß Text erscheint. Pop-ups verwenden dieselbe Schrift.</string>
-    <string name="settings_help_startup">Was Flutlicht beim Start zeigt: die Startseite, den zuletzt gesehenen Sender, Ihre Favoriten oder einen Sender Ihrer Wahl.</string>
-    <string name="settings_help_theme">Flutlicht ist für Dunkel gestaltet. System folgt der Einstellung des Fernsehers, sofern vorhanden; Hell passt zu einem hellen Raum.</string>
-    <string name="settings_help_update_startup">Sucht bei jedem Start von Flutlicht nach einer neuen Version und meldet sich, wenn es eine gibt. Ohne Rückfrage wird nichts installiert.</string>
-    <string name="settings_language_contribution_description">Scannen Sie den QR-Code oder öffnen Sie den Link, um eine beliebige verfügbare Sprache auszuwählen und in allen sechs Übersetzungsbereichen von Flutlicht mitzuwirken.</string>
-    <string name="settings_language_contribution_qr_description">QR-Code für die Übersicht des Flutlicht-Übersetzungsprojekts</string>
-    <string name="settings_language_help_translate">Hilf mit, Flutlicht in deine Sprache zu übersetzen</string>
-    <string name="settings_language_pick_help"><xliff:g id="language">%1$s</xliff:g> in Flutlicht verwenden, unabhängig von der Sprache des Fernsehers.</string>
-    <string name="settings_language_system_help">Flutlicht folgt der Sprache des Fernsehers (derzeit <xliff:g id="language">%1$s</xliff:g>). Wählen Sie unten eine Sprache, um sie nur in Flutlicht zu verwenden.</string>
-    <string name="settings_live_tune_timeout_description">Zeigt ein Live-Sender bis dahin kein Bild, hört Flutlicht auf und sagt Ihnen Bescheid, statt einen schwarzen Bildschirm stehen zu lassen, während nacheinander alle Player durchprobiert werden. „Nie“ probiert weiter, was bei einem vom Anbieter entfernten Sender deutlich über eine Minute dauern kann. Wartezeiten, die Ihr Anbieter selbst verlangt, zählen nicht mit.</string>
-    <string name="settings_metadata_clear_advanced_message">Ihr TMDB-API-Schlüssel und die Adresse Ihres eigenen Servers werden von diesem Gerät gelöscht, und Flutlicht kehrt zum integrierten gemeinsamen Dienst mit seinem Tagesanteil zurück.</string>
-    <string name="settings_metadata_fair_share">Der integrierte Metadatendienst wird von allen Flutlicht-Nutzern gemeinsam genutzt, daher erhält jedes Gerät täglich seinen eigenen Anteil. Wenn Ihr Anteil aufgebraucht ist, pausieren Poster und Beschreibungen, bis er wieder aufgefüllt wird — die Informationen aus Ihrer eigenen Playlist funktionieren weiterhin normal. Ein eigener TMDB-API-Schlüssel oder Server hebt diese Beschränkung auf: Er ist kostenlos, und ein persönlicher Schlüssel hat praktisch kein Limit.</string>
-    <string name="settings_metadata_shared_worker_description">Flutlicht Worker · keine Einrichtung</string>
-    <string name="settings_open_subtitles_access_priority">Lasse beide Felder leer, um den gemeinsamen Worker von Flutlicht zu nutzen. Eine eigene Worker-URL hat Vorrang vor einem direkten API-Schlüssel. Kontositzungen bleiben profilspezifisch.</string>
-    <string name="settings_proxy_description">Den gesamten Datenverkehr und die gesamte Wiedergabe von Flutlicht über einen HTTP-Proxy leiten.</string>
-    <string name="settings_recording_timers_inexact">Dieses Gerät erlaubt Flutlicht keine exakten Wecker, daher kann eine Aufnahme einige Minuten später beginnen. Aufnahmen starten früher, um das auszugleichen.</string>
-    <string name="settings_restore_remote_description">Scannen Sie auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffnen Sie die URL), geben Sie diese PIN ein, wählen Sie Ihre Flutlicht-Sicherungsdatei und senden Sie sie. Was wiederhergestellt wird, wählen Sie dann hier.</string>
-    <string name="settings_sources_probe_unknown">Flutlicht konnte nicht ermitteln, wie viele Kanäle dieser Anbieter erlaubt.</string>
-    <string name="settings_sources_probe_warning">Viele Anbieter verraten nie, wie viele Kanäle Sie gleichzeitig sehen dürfen. Flutlicht findet es deshalb heraus, indem es einige öffnet und beobachtet, welche bestehen bleiben. Alles, was gerade läuft, wird beendet, und das kann bis zu zwei Minuten dauern.</string>
-    <string name="settings_surround_forced_description">Surround — Dolby/DTS an einen echten 5.1/7.1-Receiver ausgeben. Wenn der Ton ausfällt oder ruckelt, wechselt Flutlicht trotzdem zu Stereo und informiert dich.</string>
-    <string name="setup_byo_source_description">Flutlicht ist ein Player — füge deine eigene Xtream-, M3U- oder Stalker-Quelle hinzu.</string>
-    <string name="setup_disclaimer">Flutlicht ist ausschließlich ein Medienplayer. Die App enthält keine Sender, Wiedergabelisten oder Inhalte. Du bist selbst dafür verantwortlich, deine eigenen legal zugänglichen Xtream-, M3U- oder Stalker-Quellen hinzuzufügen.</string>
-    <string name="setup_line_app_icon">Wie Flutlicht auf dem Startbildschirm des Fernsehers erscheint</string>
-    <string name="setup_line_app_icon_mobile">Wie Flutlicht auf deinem Startbildschirm erscheint</string>
-    <string name="setup_set_up_owntv">Flutlicht einrichten</string>
-    <string name="setup_sync_device_description">Kopieren Sie alles über WLAN von Ihrem anderen Flutlicht-Gerät</string>
-    <string name="setup_welcome_title">Willkommen bei Flutlicht</string>
-    <string name="sports_alerts_footnote">Bei geschlossenem Flutlicht kommen Benachrichtigungen meist innerhalb einer Minute. Liegt das Handy lange still mit ausgeschaltetem Bildschirm, kann Android sie bis zu etwa 15 Minuten zurückhalten. Die Live-Ergebniskarte wird nicht zurückgehalten.</string>
-    <string name="sports_alerts_when_closed">Benachrichtigungen bei geschlossenem Flutlicht</string>
-    <string name="sports_no_playlist_body">Ergebnisse, Tabellen und Benachrichtigungen gehen auch ohne. Mit einer Playlist findet Flutlicht jeden Sender, der dieses Spiel zeigt.</string>
-    <string name="sports_sport_buttons_description">Meine Sportarten: nur deine Auswahl. Alle Sportarten: jede Liga, die Flutlicht kennt – das Laden dauert länger.</string>
-    <string name="update_ready">Flutlicht v<xliff:g id="available">%1$s</xliff:g> ist bereit (du verwendest v<xliff:g id="current">%2$s</xliff:g>).</string>
+    <plurals name="settings_help_language"> <item quantity="one">Die Sprache aller Menüs und Meldungen in Mayo TV. <xliff:g id="count">%1$d</xliff:g> Sprache; folgt der Sprache des Fernsehers, bis Sie eine wählen.</item> <item quantity="other">Die Sprache aller Menüs und Meldungen in Mayo TV. <xliff:g id="count">%1$d</xliff:g> Sprachen; folgt der Sprache des Fernsehers, bis Sie eine wählen.</item> </plurals>
+    <string name="app_icon_restart_message">Sie haben ein neues Symbol und Logo gewählt. Die Änderung wird nach einem Neustart von Mayo TV wirksam.</string>
+    <string name="app_icon_restart_title">Mayo TV neu starten?</string>
+    <string name="common_own_tv_user">Mayo-TV-Nutzer</string>
+    <string name="companion_add_page_title">Mayo TV — Quelle hinzufügen</string>
+    <string name="companion_backup_description">Wähle eine Mayo-TV-Sicherungsdatei (.own oder eine ältere .json-Datei) aus und drücke auf „Senden“. Sie wird auf den TV übertragen — nimm die Fernbedienung und wähle dort aus, was wiederhergestellt werden soll.</string>
+    <string name="companion_backup_page_title">Mayo TV — Sicherung wiederherstellen</string>
+    <string name="companion_download_description">Ihr Fernseher hat eine Mayo-TV-Sicherungsdatei vorbereitet. Tippen Sie auf die Schaltfläche, um sie auf diesem Gerät zu speichern (owntv-backup.own). Bewahren Sie sie an einem sicheren Ort auf — Sie können Ihre Daten später daraus wiederherstellen.</string>
+    <string name="companion_download_page_title">Mayo TV — Sicherung herunterladen</string>
+    <string name="companion_image_page_title">Mayo TV — Hintergrundbild</string>
+    <string name="companion_pin_page_title">Mayo TV — PIN eingeben</string>
+    <string name="companion_saved_page_title">Mayo TV — Gesendet</string>
+    <string name="content_epg_own_player">Mayo-TV-Player</string>
+    <string name="content_exit_owntv">Mayo TV beenden?</string>
+    <string name="content_storage_folder_fallback">Dein Download-Ordner ist gerade nicht verfügbar. Downloads werden deshalb im eigenen Ordner von Mayo TV gespeichert, bis er wieder da ist.</string>
+    <string name="local_sync_browser_body">Diese Adresse ist für die Mayo-TV-App auf deinem anderen Gerät. Öffne dort die lokale Synchronisierung und wähle dieses Gerät aus der Liste.</string>
+    <string name="local_sync_browser_title">Mayo TV lokale Synchronisierung</string>
+    <string name="local_sync_error_unreachable">Dieses Gerät war nicht erreichbar. Öffne dort Mayo TV → Mehr → Lokale Synchronisierung und schalte den Synchronisierungsmodus ein. Beide Geräte müssen im selben WLAN sein.</string>
+    <string name="player_trailer_blocked_title">Dieser Trailer kann nicht in Mayo TV abgespielt werden</string>
+    <string name="recording_failed_drm">Dieser Sender ist DRM-geschützt und kann daher angesehen, aber nicht aufgenommen werden. Der Schutz stammt von Ihrem Anbieter, nicht von Mayo TV.</string>
+    <string name="recovery_title">Mayo TV konnte seine Datenbank nicht öffnen</string>
+    <string name="settings_app_icon_sheet_mobile">Wie Mayo TV auf deinem Startbildschirm erscheint. Die App startet einmal neu.</string>
+    <string name="settings_app_icon_summary">Farbe des Mayo-TV-Symbols und -Logos</string>
+    <string name="settings_app_startup_description">Was Mayo TV beim Start öffnet</string>
+    <string name="settings_auto_frame_rate_warning_description">Auf diesem Gerät läuft Android <xliff:g id="android_version">%1$s</xliff:g>. Vor Android 12 kann der Fernseher Mayo TV nicht mitteilen, zu welchen Bildwiederholraten er fließend wechseln kann. Daher kann der Bildschirm beim Wechsel der Bildwiederholrate für ein oder zwei Sekunden schwarz werden – manchmal mehr als einmal während einer Sendung.\n\nWir empfehlen, die automatische Bildwiederholrate hier deaktiviert zu lassen. Wenn Ihr Fernseher sauber umschaltet, aktivieren Sie sie und sehen Sie selbst: Sie können die Einstellung jederzeit wieder ändern.</string>
+    <string name="settings_auto_frame_rate_warning_description_mobile">Auf diesem Gerät läuft Android <xliff:g id="android_version">%1$s</xliff:g>. Vor Android 12 kann das Gerät Mayo TV nicht mitteilen, zu welchen Bildwiederholraten es fließend wechseln kann. Daher kann der Bildschirm beim Wechsel der Bildwiederholrate für ein oder zwei Sekunden schwarz werden – manchmal mehr als einmal während einer Sendung.\n\nWir empfehlen, die automatische Bildwiederholrate hier deaktiviert zu lassen. Wenn Ihr Bildschirm sauber umschaltet, aktivieren Sie sie und sehen Sie selbst: Sie können die Einstellung jederzeit wieder ändern.</string>
+    <string name="settings_catchup_player_internal">Mayo-TV-Player</string>
+    <string name="settings_dns_toggle_description">Alle Domainabfragen von Mayo TV über einen benutzerdefinierten DNS-Server auflösen.</string>
+    <string name="settings_ffmpeg_audio_description">An: ExoPlayer kann auch Ton decodieren, für den das Gerät keinen Decoder hat, etwa DTS, TrueHD oder MP2. Die eigenen Decoder des Geräts haben weiterhin Vorrang. Aus: ExoPlayer nutzt nur die Decoder des Geräts. mpv decodiert immer mit FFmpeg. Eine Änderung startet Mayo TV neu.</string>
+    <string name="settings_ffmpeg_audio_restart_message">Der Audio-Decoder wechselt, sobald Mayo TV neu startet.</string>
+    <string name="settings_help_app_icon">Das Mayo-TV-Symbol auf dem Startbildschirm des Fernsehers. Der Launcher braucht eventuell einen Moment, bis er die Änderung zeigt.</string>
+    <string name="settings_help_bg_background">Stage zeigt die eigenen sanften Farben von Mayo TV. Bild zeigt ein eigenes Bild hinter jedem Bildschirm. Schlicht ist eine flache dunkle Fläche.</string>
+    <string name="settings_help_brand_accent">Das Mayo-TV-Logo im Menü, unter „Über“ und in der Einrichtung zeigt sein Play-Dreieck in deiner Akzentfarbe. Das Symbol auf dem Startbildschirm behält seine eigenen Farben.</string>
+    <string name="settings_help_check_updates">Sucht jetzt auf GitHub nach einer neueren Mayo-TV-Version und bietet die Installation an. Playlists, Favoriten und Einstellungen bleiben, wie sie sind.</string>
+    <string name="settings_help_fonts">Die Schrift in ganz Mayo TV und wie groß Text erscheint. Pop-ups verwenden dieselbe Schrift.</string>
+    <string name="settings_help_startup">Was Mayo TV beim Start zeigt: die Startseite, den zuletzt gesehenen Sender, Ihre Favoriten oder einen Sender Ihrer Wahl.</string>
+    <string name="settings_help_theme">Mayo TV ist für Dunkel gestaltet. System folgt der Einstellung des Fernsehers, sofern vorhanden; Hell passt zu einem hellen Raum.</string>
+    <string name="settings_help_update_startup">Sucht bei jedem Start von Mayo TV nach einer neuen Version und meldet sich, wenn es eine gibt. Ohne Rückfrage wird nichts installiert.</string>
+    <string name="settings_language_contribution_description">Scannen Sie den QR-Code oder öffnen Sie den Link, um eine beliebige verfügbare Sprache auszuwählen und in allen sechs Übersetzungsbereichen von Mayo TV mitzuwirken.</string>
+    <string name="settings_language_contribution_qr_description">QR-Code für die Übersicht des Mayo-TV-Übersetzungsprojekts</string>
+    <string name="settings_language_help_translate">Hilf mit, Mayo TV in deine Sprache zu übersetzen</string>
+    <string name="settings_language_pick_help"><xliff:g id="language">%1$s</xliff:g> in Mayo TV verwenden, unabhängig von der Sprache des Fernsehers.</string>
+    <string name="settings_language_system_help">Mayo TV folgt der Sprache des Fernsehers (derzeit <xliff:g id="language">%1$s</xliff:g>). Wählen Sie unten eine Sprache, um sie nur in Mayo TV zu verwenden.</string>
+    <string name="settings_live_tune_timeout_description">Zeigt ein Live-Sender bis dahin kein Bild, hört Mayo TV auf und sagt Ihnen Bescheid, statt einen schwarzen Bildschirm stehen zu lassen, während nacheinander alle Player durchprobiert werden. „Nie“ probiert weiter, was bei einem vom Anbieter entfernten Sender deutlich über eine Minute dauern kann. Wartezeiten, die Ihr Anbieter selbst verlangt, zählen nicht mit.</string>
+    <string name="settings_metadata_clear_advanced_message">Ihr TMDB-API-Schlüssel und die Adresse Ihres eigenen Servers werden von diesem Gerät gelöscht, und Mayo TV kehrt zum integrierten gemeinsamen Dienst mit seinem Tagesanteil zurück.</string>
+    <string name="settings_metadata_fair_share">Der integrierte Metadatendienst wird von allen Mayo-TV-Nutzern gemeinsam genutzt, daher erhält jedes Gerät täglich seinen eigenen Anteil. Wenn Ihr Anteil aufgebraucht ist, pausieren Poster und Beschreibungen, bis er wieder aufgefüllt wird — die Informationen aus Ihrer eigenen Playlist funktionieren weiterhin normal. Ein eigener TMDB-API-Schlüssel oder Server hebt diese Beschränkung auf: Er ist kostenlos, und ein persönlicher Schlüssel hat praktisch kein Limit.</string>
+    <string name="settings_metadata_shared_worker_description">Mayo TV Worker · keine Einrichtung</string>
+    <string name="settings_open_subtitles_access_priority">Lasse beide Felder leer, um den gemeinsamen Worker von Mayo TV zu nutzen. Eine eigene Worker-URL hat Vorrang vor einem direkten API-Schlüssel. Kontositzungen bleiben profilspezifisch.</string>
+    <string name="settings_proxy_description">Den gesamten Datenverkehr und die gesamte Wiedergabe von Mayo TV über einen HTTP-Proxy leiten.</string>
+    <string name="settings_recording_timers_inexact">Dieses Gerät erlaubt Mayo TV keine exakten Wecker, daher kann eine Aufnahme einige Minuten später beginnen. Aufnahmen starten früher, um das auszugleichen.</string>
+    <string name="settings_restore_remote_description">Scannen Sie auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffnen Sie die URL), geben Sie diese PIN ein, wählen Sie Ihre Mayo-TV-Sicherungsdatei und senden Sie sie. Was wiederhergestellt wird, wählen Sie dann hier.</string>
+    <string name="settings_sources_probe_unknown">Mayo TV konnte nicht ermitteln, wie viele Kanäle dieser Anbieter erlaubt.</string>
+    <string name="settings_sources_probe_warning">Viele Anbieter verraten nie, wie viele Kanäle Sie gleichzeitig sehen dürfen. Mayo TV findet es deshalb heraus, indem es einige öffnet und beobachtet, welche bestehen bleiben. Alles, was gerade läuft, wird beendet, und das kann bis zu zwei Minuten dauern.</string>
+    <string name="settings_surround_forced_description">Surround — Dolby/DTS an einen echten 5.1/7.1-Receiver ausgeben. Wenn der Ton ausfällt oder ruckelt, wechselt Mayo TV trotzdem zu Stereo und informiert dich.</string>
+    <string name="setup_byo_source_description">Mayo TV ist ein Player — füge deine eigene Xtream-, M3U- oder Stalker-Quelle hinzu.</string>
+    <string name="setup_disclaimer">Mayo TV ist ausschließlich ein Medienplayer. Die App enthält keine Sender, Wiedergabelisten oder Inhalte. Du bist selbst dafür verantwortlich, deine eigenen legal zugänglichen Xtream-, M3U- oder Stalker-Quellen hinzuzufügen.</string>
+    <string name="setup_line_app_icon">Wie Mayo TV auf dem Startbildschirm des Fernsehers erscheint</string>
+    <string name="setup_line_app_icon_mobile">Wie Mayo TV auf deinem Startbildschirm erscheint</string>
+    <string name="setup_set_up_owntv">Mayo TV einrichten</string>
+    <string name="setup_sync_device_description">Kopieren Sie alles über WLAN von Ihrem anderen Mayo-TV-Gerät</string>
+    <string name="setup_welcome_title">Willkommen bei Mayo TV</string>
+    <string name="sports_alerts_footnote">Bei geschlossenem Mayo TV kommen Benachrichtigungen meist innerhalb einer Minute. Liegt das Handy lange still mit ausgeschaltetem Bildschirm, kann Android sie bis zu etwa 15 Minuten zurückhalten. Die Live-Ergebniskarte wird nicht zurückgehalten.</string>
+    <string name="sports_alerts_when_closed">Benachrichtigungen bei geschlossenem Mayo TV</string>
+    <string name="sports_no_playlist_body">Ergebnisse, Tabellen und Benachrichtigungen gehen auch ohne. Mit einer Playlist findet Mayo TV jeden Sender, der dieses Spiel zeigt.</string>
+    <string name="sports_sport_buttons_description">Meine Sportarten: nur deine Auswahl. Alle Sportarten: jede Liga, die Mayo TV kennt – das Laden dauert länger.</string>
+    <string name="update_ready">Mayo TV v<xliff:g id="available">%1$s</xliff:g> ist bereit (du verwendest v<xliff:g id="current">%2$s</xliff:g>).</string>
 </resources>

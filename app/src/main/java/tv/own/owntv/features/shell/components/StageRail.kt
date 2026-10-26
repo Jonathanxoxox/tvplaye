@@ -273,7 +273,7 @@ val StageRailStripWidth = StripWidth
 /** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable
 private fun MenuLogo(expanded: Boolean) {
-    // Flutlicht: the floodlight mark on the strip, with the name beside it when the menu is open.
+    // Mayo TV: the floodlight mark on the strip, with the name beside it when the menu is open.
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = if (expanded) 10.mpx else 0.mpx),

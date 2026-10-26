@@ -353,7 +353,7 @@ private fun GlassBackgroundPreview() {
     }
 }
 
-/** Flutlicht's night scenes: the theme behind every page, and the stadium while football is on. */
+/** Mayo TV's night scenes: the theme behind every page, and the stadium while football is on. */
 @Composable
 private fun NightSceneRows(okHints: List<Pair<String, String>>, stepHints: List<Pair<String, String>>) {
     val nights = tv.own.owntv.ui.theme.rememberNightSceneSettings()

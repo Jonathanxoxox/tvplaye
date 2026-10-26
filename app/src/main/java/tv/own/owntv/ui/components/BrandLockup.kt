@@ -33,7 +33,7 @@ fun rememberAppliedIcon(): AppIcon {
 }
 
 /**
- * The app's mark at [size]: the floodlight. Flutlicht has one mark, whatever icon colour core keeps on record.
+ * The app's mark at [size]: the floodlight. Mayo TV has one mark, whatever icon colour core keeps on record.
  * [subtle] draws it in the theme's muted ink instead of its own colours, so it sits in the page rather than on it.
  */
 @Composable
@@ -48,7 +48,7 @@ fun BrandMark(size: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) 
     }
 }
 
-/** The wordmark at [width]: the cream "Flutlicht" whose i-dot is a glowing floodlight lamp, one picture of 903 × 180. [subtle] as for [BrandMark]. */
+/** The wordmark at [width]: the cream "Mayo TV" with a warm glow, one picture of 903 × 180. [subtle] as for [BrandMark]. */
 @Composable
 fun Wordmark(width: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) {
     val size = modifier.width(width).height(width * 180f / 903f)

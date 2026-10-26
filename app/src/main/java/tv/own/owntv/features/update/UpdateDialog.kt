@@ -52,7 +52,7 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
     val state by manager.state.collectAsStateWithLifecycle()
     val focus = remember { FocusRequester() }
     val context = LocalContext.current
-    // Flutlicht kommt per Sideload auf die Box und darf anfangs keine Apps installieren. Statt erst
+    // Mayo TV kommt per Sideload auf die Box und darf anfangs keine Apps installieren. Statt erst
     // 50 MB zu laden und dann an der Sperre zu scheitern, öffnet „Jetzt aktualisieren“ zuerst die
     // Freigabe; kommt man mit erteilter Erlaubnis zurück, startet der Download von selbst.
     var waitingForInstallPermission by remember { mutableStateOf(false) }
@@ -139,11 +139,11 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
     }
 }
 
-/** Ob Flutlicht Pakete installieren darf (ab Android 8 eine Freigabe pro App). */
+/** Ob Mayo TV Pakete installieren darf (ab Android 8 eine Freigabe pro App). */
 private fun canInstallPackages(context: android.content.Context): Boolean =
     android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()
 
-/** Öffnet „Unbekannte Apps installieren“ für Flutlicht; false, wenn die Box diese Seite nicht hat. */
+/** Öffnet „Unbekannte Apps installieren“ für Mayo TV; false, wenn die Box diese Seite nicht hat. */
 private fun openInstallPermissionSettings(context: android.content.Context): Boolean {
     if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) return false
     val intent = android.content.Intent(

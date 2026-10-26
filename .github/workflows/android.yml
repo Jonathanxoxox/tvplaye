@@ -7,7 +7,7 @@ name: Android CI
 #                so PR branches still don't produce APKs (the restriction added in ac33c65 is
 #                unchanged); they only get the test/lint verdict.
 #
-# Flutlicht: nur noch von Hand. Gebaut wird mit tvplayer.yml und smoke.yml; die Tags v1.0.<Lauf>
+# Mayo TV: nur noch von Hand. Gebaut wird mit tvplayer.yml und smoke.yml; die Tags v1.0.<Lauf>
 # gehören zu deren Releases und dürfen hier kein OwnTV-Release auslösen.
 on:
   workflow_dispatch:
