@@ -61,3 +61,4 @@ jobs:
             echo "===== RESUMED ====="; adb shell dumpsys activity activities | grep -i "ResumedActivity" || true
             echo "===== CRASH ====="; adb logcat -d -b crash || true
             echo "===== ERRORS ====="; adb logcat -d '*:E' | tail -n 200 || true
+            if adb logcat -d -b crash | grep -q "Process: io.github.jonathanxoxox.tvplayer"; then echo "::error::Die App stürzt beim Start ab"; exit 1; fi
