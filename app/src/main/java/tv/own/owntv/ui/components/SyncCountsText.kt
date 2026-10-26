@@ -12,7 +12,6 @@ import tv.own.owntv.core.sync.breakdownText
 import tv.own.owntv.core.sync.compactCount
 import tv.own.owntv.core.sync.detailText
 import tv.own.owntv.core.sync.displayText
-import tv.own.owntv.core.sync.labelText
 import tv.own.owntv.core.sync.primaryText
 import tv.own.owntv.core.sync.remainderText
 import tv.own.owntv.core.sync.summaryText
@@ -41,9 +40,6 @@ fun SyncProgressDisplay.primaryText(): String = primaryText(LocalContext.current
 
 @Composable
 fun SyncProgressDisplay.detailText(): String = detailText(LocalContext.current.resources)
-
-@Composable
-fun SyncWarning.labelText(): String = labelText(LocalContext.current.resources)
 
 @Composable
 fun List<SyncWarning>.warningText(): String? = warningText(LocalContext.current.resources)
