@@ -59,6 +59,15 @@ jobs:
             -hls_list_size 0 fx/stream/index.m3u8
           nohup python3 -m http.server 8080 --directory fx > http.log 2>&1 &
 
+      - name: Metadaten-Dienst erreichbar?
+        continue-on-error: true
+        run: |
+          mkdir -p tour
+          for u in "https://owntv-tmdb-meta.xiannero.workers.dev/3/search/movie?query=Gladiator&language=de-DE" \
+                   "https://tmdb.owntv.me/3/search/movie?query=Gladiator&language=de-DE"; do
+            echo "$u -> $(curl -s -o /tmp/body -w '%{http_code}' --max-time 20 "$u") $(head -c 200 /tmp/body)" | tee -a tour/net.txt
+          done
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
