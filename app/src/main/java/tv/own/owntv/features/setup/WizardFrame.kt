@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -158,10 +159,10 @@ private val WizardStep.labelRes: Int get() = when (this) {
 /** One choice card of a step (`.tile2`): icon, 23 px title, 16 px line; focused = FX. */
 internal class WizardCard(val icon: OwnTVIcon, val title: String, val line: String, val onClick: () -> Unit)
 
-/** The cards side by side, equal widths, 16 apart; the first takes [firstFocus]. */
+/** The cards side by side, equal widths and heights, 16 apart; the first takes [firstFocus]. */
 @Composable
 internal fun WizardCards(cards: List<WizardCard>, firstFocus: FocusRequester? = null) {
-    Row(horizontalArrangement = Arrangement.spacedBy(16.mpx)) {
+    Row(Modifier.height(androidx.compose.foundation.layout.IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(16.mpx)) {
         cards.forEachIndexed { i, card ->
             StageSurface(
                 onClick = card.onClick,
@@ -170,12 +171,13 @@ internal fun WizardCards(cards: List<WizardCard>, firstFocus: FocusRequester? = 
                 idle = Modifier.background(StageColors.Ink.copy(alpha = 0.05f), RoundedCornerShape(22.mpx)),
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .heightIn(min = 170.mpx)
                     .then(if (i == 0 && firstFocus != null) Modifier.focusRequester(firstFocus) else Modifier),
             ) { focused ->
                 Column(Modifier.fillMaxWidth().padding(24.mpx)) {
                     OwnTVIcon(card.icon, if (focused) StageColors.Text else StageColors.Muted, Modifier.size(30.mpx))
-                    Text(card.title, style = stageText(23, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 18.mpx))
+                    Text(card.title, style = stageText(23, 800), color = StageColors.Text, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 18.mpx))
                     Text(card.line, style = stageText(16, 500).copy(lineHeight = 23.mpxLine()), color = StageColors.Muted, modifier = Modifier.padding(top = 6.mpx))
                 }
             }
