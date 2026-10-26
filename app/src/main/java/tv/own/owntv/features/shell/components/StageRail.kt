@@ -165,16 +165,16 @@ fun StageRail(
     }
     val items = StageRailOrder.filter { it == MainSection.SEARCH || it in visibleSections }
 
-    // Opened over the page (Floating, or a widened Compact): dim what it covers, so the cut-off page
-    // reads as the background and the menu as the one thing in front.
+    // Opened over the page (Floating, or a widened Compact): the page slides aside ([rememberRailPush])
+    // and dims, so the menu is the one thing in front.
     val scrim by animateFloatAsState(if (state == RailState.OPEN) 1f else 0f)
     Box(modifier.fillMaxSize()) {
         if (scrim > 0f) {
             Box(
                 Modifier.fillMaxSize().graphicsLayer { alpha = scrim }.background(
                     Brush.horizontalGradient(
-                        if (rtl) listOf(Color.Black.copy(alpha = 0.28f), Color.Black.copy(alpha = 0.62f))
-                        else listOf(Color.Black.copy(alpha = 0.62f), Color.Black.copy(alpha = 0.28f)),
+                        if (rtl) listOf(Color.Black.copy(alpha = 0.5f), Color.Black.copy(alpha = 0.72f))
+                        else listOf(Color.Black.copy(alpha = 0.72f), Color.Black.copy(alpha = 0.5f)),
                     ),
                 ),
             )
@@ -269,6 +269,15 @@ private val StripWidth = 110.mpx
 
 /** What every screen leaves free at its left edge for the resting icon strip. */
 val StageRailStripWidth = StripWidth
+
+/**
+ * How far the page slides aside while the menu is open over it, as in the classic IPTV player: the page
+ * moves over by the menu's extra width instead of lying cut off under it. A docked menu keeps its own
+ * room and pushes nothing. Read it inside a graphics layer, so the slide redraws without recomposing.
+ */
+@Composable
+fun rememberRailPush(state: RailState): androidx.compose.runtime.State<androidx.compose.ui.unit.Dp> =
+    androidx.compose.animation.core.animateDpAsState(if (state == RailState.OPEN) MenuWidth - StripWidth else 0.mpx)
 
 /** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable

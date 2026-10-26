@@ -41,6 +41,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import tv.own.owntv.core.epg.displayLogoUrl
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -701,6 +702,7 @@ fun OwnTVShell(
         railIdleHidden -> tv.own.owntv.features.shell.components.RailState.HIDDEN
         else -> tv.own.owntv.features.shell.components.RailState.CAPSULE
     }
+    val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -1141,6 +1143,8 @@ fun OwnTVShell(
                                         tv.own.owntv.features.shell.components.railDockedReserve(navSize)
                                     } else tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
+                                // The open menu pushes the page aside instead of covering its left edge.
+                                .graphicsLayer { translationX = railPush.value.toPx() * if (contentLtr) 1f else -1f }
                                 // ◀ with nothing further left in the content goes back to the rail, however the
                                 // content was entered. The D-pad search alone missed it whenever the open rail
                                 // overlapped the content's left edge, which left Back as the only way out.

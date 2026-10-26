@@ -332,6 +332,9 @@ def guide_tour():
     key("DPAD_CENTER", long=True, wait=1.5)
     shot("guide-ok-lang")
     key("BACK", wait=1.0)
+    # Das Menü über dem Guide: die Seite rückt zur Seite und wird dunkler
+    if to_rail():
+        shot("guide-menue-offen")
 
 
 def in_fullscreen():

@@ -456,6 +456,10 @@ fun EpgScreen(
             showVideo = effectivePreview && previewArmed,
             modifier = Modifier.width(640.mpx),
         )
+        // The programme title runs level with the shell's pills and clock: it stops short of them.
+        val statusRect = tv.own.owntv.features.shell.components.StageStatusBounds.rect
+        val windowW = androidx.compose.ui.platform.LocalView.current.width
+        val statusClear = if (statusRect.width <= 0f) 0.mpx else with(density) { (windowW - statusRect.left).toDp() } - fx(64) + 28.mpx
         Box(Modifier.weight(1f).fillMaxHeight()) {
             if (topChannel != null) {
                 val chName = ProviderTags.parse(topChannel.name).name
@@ -465,6 +469,7 @@ fun EpgScreen(
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
                     modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
+                    topEndClear = statusClear.coerceAtLeast(0.mpx),
                 )
             }
             // The key hints at the bottom of the top area, level with the video's bottom edge.
