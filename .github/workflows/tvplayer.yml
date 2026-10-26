@@ -1,10 +1,12 @@
 name: Flutlicht APK
 
-# Baut bei jedem Push auf den Arbeitszweig eine signierte Release-APK und legt sie unter einer
-# festen Adresse im Release "latest" ab, damit man sie am Fernseher direkt laden kann.
+# Baut bei jedem Push auf main oder einen Arbeitszweig eine signierte Release-APK. Sie landet zweimal
+# in den Releases: unter der festen Adresse im Release "latest" (zum Laden am Fernseher) und als
+# Release v1.0.<Lauf>, das der Updater in der App findet (er fragt GitHubs neuestes Release ab und
+# vergleicht dessen Tag mit der installierten Version).
 on:
   push:
-    branches: [ "claude/**" ]
+    branches: [ "main", "claude/**" ]
   workflow_dispatch:
 
 permissions:
@@ -18,15 +20,15 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
       # Das Android-SDK ist auf ubuntu-latest vorinstalliert; fehlende Plattformen lädt Gradle nach.
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
 
       # Signiert wird mit dem Schlüssel aus dem Secret KEYSTORE_BASE64, damit jede neue APK sich über
       # die alte installiert. Fehlt das Secret, entsteht ein einmaliger Schlüssel nur für diesen Lauf.
@@ -56,15 +58,22 @@ jobs:
           ./gradlew assembleStandardRelease --stacktrace
           mkdir -p dist
           cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/Flutlicht.apk
+          cp dist/Flutlicht.apk "dist/Flutlicht-v1.0.${GITHUB_RUN_NUMBER}.apk"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Flutlicht
           path: dist/Flutlicht.apk
           if-no-files-found: error
 
+      # Ein Release behält seinen Tag; damit "latest" zum gebauten Stand passt, wird der Tag mitgezogen.
+      - name: Move tag "latest"
+        run: |
+          git tag -f latest "$GITHUB_SHA"
+          git push -f origin refs/tags/latest
+
       - name: Publish "latest" release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Neueste Version
@@ -72,3 +81,13 @@ jobs:
           make_latest: false
           body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }} (Version 1.0.${{ github.run_number }})"
           files: dist/Flutlicht.apk
+
+      - name: Publish versioned release for the in-app updater
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          target_commitish: ${{ github.sha }}
+          name: Flutlicht 1.0.${{ github.run_number }}
+          make_latest: true
+          body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }}"
+          files: dist/Flutlicht-v1.0.${{ github.run_number }}.apk
