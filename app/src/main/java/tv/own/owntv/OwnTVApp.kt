@@ -171,6 +171,12 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setCustomAccent("#2BC0DC")
                     prefs.edit().putBoolean("defaults_v3_applied", true).apply()
                 }
+                // Live TV opens as the guide, like TiviMate's "TV" (the separate guide section is gone).
+                if (!prefs.getBoolean("defaults_v4_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    settings.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
+                    prefs.edit().putBoolean("defaults_v4_applied", true).apply()
+                }
             }
         }
         // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and

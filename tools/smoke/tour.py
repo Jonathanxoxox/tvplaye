@@ -314,7 +314,8 @@ def more_tour():
 
 
 def guide_tour():
-    if not open_section("Programmübersicht"):
+    # Live-TV ist der Guide (wie „TV“ bei TiviMate), eine eigene Programmübersicht gibt es nicht mehr.
+    if not open_section("Live-TV"):
         return
     time.sleep(2)
     shot("guide")
@@ -333,7 +334,7 @@ def guide_tour():
     shot("guide-ok-lang")
     key("BACK", wait=1.0)
     # Das Menü über dem Guide: die Seite rückt zur Seite und wird dunkler
-    if to_rail() and goto(r"^Programmübersicht$", press=False):
+    if to_rail() and goto(r"^Live-TV$", press=False):
         shot("guide-menue-offen")
         key("DPAD_RIGHT", wait=1.2)
         shot("guide-gruppen")
@@ -353,7 +354,11 @@ def player_tour():
     if not open_section("Live-TV"):
         return
     shot("live")
+    # Live-TV öffnet als Guide; für den Sender per Namen in die Listenansicht wechseln.
     key("DPAD_RIGHT", wait=1.0)
+    if goto(r"^(Liste|Listenansicht)$"):
+        time.sleep(2)
+        key("DPAD_RIGHT", wait=1.0)
     shot("live-liste")
     if not goto(r"^Sky Sport Bundesliga 1"):
         return

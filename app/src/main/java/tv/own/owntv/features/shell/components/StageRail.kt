@@ -91,9 +91,9 @@ enum class RailState {
  */
 data class NowPlayingRail(val logoUrl: String?, val audioMode: Boolean, val playing: Boolean)
 
-/** The menu order: Search, then TV and the Guide first as in a classic IPTV player, More last. */
+/** The menu order: Search, then TV (which opens as the guide) first as in a classic IPTV player, More last. */
 private val StageRailOrder = listOf(
-    MainSection.SEARCH, MainSection.LIVE_TV, MainSection.EPG, MainSection.SPORTS,
+    MainSection.SEARCH, MainSection.LIVE_TV, MainSection.SPORTS,
     MainSection.MOVIES, MainSection.SERIES, MainSection.DOWNLOADS, MainSection.HOME,
 )
 

@@ -511,6 +511,15 @@ fun OwnTVShell(
         }
     }
 
+    // No separate TV Guide section any more: like TiviMate's "TV", Live TV is the guide. Whatever still
+    // asks for the guide (a shortcut, the player, the start screen) lands on Live TV in its Guide view.
+    LaunchedEffect(selectedSection) {
+        if (selectedSection == MainSection.EPG) {
+            liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
+            onSelectSection(MainSection.LIVE_TV)
+        }
+    }
+
     // Movies/Series/Live load on first open via their reactive Paging flows — their indexed first page is
     // cheap, so they need NO preloading (a Live-TV-only user pays nothing for them). The TV Guide is the ONE
     // exception: load() pulls every guide channel + a programme window, which is heavy enough that doing it on
@@ -1755,8 +1764,8 @@ fun OwnTVShell(
                     } else null,
                     remote = tv.own.owntv.player.LiveRemoteActions(
                         // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
-                        onOpenGuide = if (isLiveChannel && MainSection.EPG in visibleSections) {
-                            { exitPlayer(); if (selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG) }
+                        onOpenGuide = if (isLiveChannel && MainSection.LIVE_TV in visibleSections) {
+                            { exitPlayer(); liveVm.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE); onSelectSection(MainSection.LIVE_TV) }
                         } else null,
                         // Long Down: search, the channel carrying on in the preview.
                         onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
