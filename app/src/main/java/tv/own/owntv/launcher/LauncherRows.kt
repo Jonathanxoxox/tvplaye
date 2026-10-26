@@ -22,6 +22,7 @@ import tv.own.owntv.core.database.dao.ChannelDao
 import tv.own.owntv.core.database.dao.SourceDao
 import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.entity.ContentOrderEntity
+import tv.own.owntv.core.epg.EpgMatcher
 import tv.own.owntv.core.epg.displayLogoUrl
 import tv.own.owntv.core.live.LiveEpgReader
 import tv.own.owntv.core.model.MediaType
@@ -108,18 +109,38 @@ internal class LauncherRows(private val context: Context) {
             .filter { FootballMatcher.isSportsChannel(it.name) || FootballMatcher.isNationalChannel(it.name) })
             .distinctBy { it.id }
             .take(MAX_SPORTS_CHANNELS)
+        // Variants of one channel share a guide: by their guide id, read once, and by name, so "Sky Sport
+        // Bundesliga 1", its HD, FHD, UHD and backup feeds and another country's copy are one family. A
+        // variant without a guide of its own shows its family's, so every variant of a match is found.
+        val byGuideId = HashMap<String, tv.own.owntv.core.live.EpgNowNext?>()
+        var reads = 0
+        suspend fun sharedGuide(ch: ChannelEntity): tv.own.owntv.core.live.EpgNowNext? {
+            if (guides.containsKey(ch.id)) return guides[ch.id]
+            val key = ch.epgChannelId?.trim()?.lowercase()?.takeIf { it.isNotEmpty() }
+            if (key != null && byGuideId.containsKey(key)) return byGuideId[key]
+            if (reads >= MAX_GUIDE_READS) return null
+            reads++
+            return guide(ch).also { if (key != null) byGuideId[key] = it }
+        }
+        val families = candidates.groupBy { EpgMatcher.normalizeForEpg(it.name).ifEmpty { it.id.toString() } }.values
         // Today's football: up to midnight, and at least the launcher row's look-ahead.
         val horizon = maxOf(now + LOOKAHEAD_MS, endOfDay(now))
         val picks = ArrayList<Pick>()
-        for (ch in candidates) {
-            val g = guide(ch) ?: continue
-            val programmes = listOfNotNull(g.now, g.next) + g.upcoming.orEmpty()
-            val sportsChannel = ch.id in favoriteIds || FootballMatcher.isSportsChannel(ch.name)
-            for (p in programmes.distinctBy { it.startMs }) {
-                if (p.stopMs <= now || p.startMs >= horizon) continue
-                val hit = matcher.match(p.title, p.description, sportsChannel) ?: continue
-                val bonus = (if (ch.id in favoriteIds) 10 else 0) + timeScore(p, now) + qualityScore(ch.name)
-                picks += Pick(ch, p, hit.score + bonus, hit)
+        // Variants repeat the same programmes, so each one is matched once.
+        val hits = HashMap<Triple<String, String?, Boolean>, FootballMatcher.Hit?>()
+        for (family in families) {
+            val own = family.associate { ch -> ch.id to if (ch.epgChannelId.isNullOrBlank()) null else sharedGuide(ch) }
+            var familyGuide = own.values.firstOrNull { it != null }
+            for (ch in family) {
+                val g = own[ch.id] ?: familyGuide ?: sharedGuide(ch)?.also { familyGuide = it } ?: continue
+                val programmes = listOfNotNull(g.now, g.next) + g.upcoming.orEmpty()
+                val sportsChannel = ch.id in favoriteIds || FootballMatcher.isSportsChannel(ch.name)
+                for (p in programmes.distinctBy { it.startMs }) {
+                    if (p.stopMs <= now || p.startMs >= horizon) continue
+                    val hit = hits.getOrPut(Triple(p.title, p.description, sportsChannel)) { matcher.match(p.title, p.description, sportsChannel) } ?: continue
+                    val bonus = (if (ch.id in favoriteIds) 10 else 0) + timeScore(p, now) + qualityScore(ch.name)
+                    picks += Pick(ch, p, hit.score + bonus, hit)
+                }
             }
         }
         // The same match on several channels (HD, FHD, backup …) becomes one tile on the best of them.
@@ -128,12 +149,20 @@ internal class LauncherRows(private val context: Context) {
             .sortedWith(compareByDescending<Pair<Pick, Int>> { it.first.score }.thenBy { it.first.programme.startMs })
         val forYou = matches.filter { it.first.programme.startMs < now + LOOKAHEAD_MS }.take(MAX_FOR_YOU)
 
-        // The channel group: running football first (best first), then today's in kick-off order; every
-        // channel of a match counts, the best one leading.
-        val (runningPicks, laterPicks) = picks.partition { it.programme.startMs <= now }
-        val groupChannels = (runningPicks.sortedByDescending { it.score } + laterPicks.sortedWith(compareBy<Pick> { it.programme.startMs }.thenByDescending { it.score }))
-            .filter { it.hit.kind != FootballMatcher.Kind.FOOTBALL || it.channel.id in favoriteIds || FootballMatcher.isSportsChannel(it.channel.name) }
-            .map { it.channel.id }.distinct().take(MAX_GROUP)
+        // The channel group: running matches first (best first), then today's in kick-off order. Every
+        // variant of a match is listed, right below each other, the best one leading.
+        val groupChannels = groups
+            .map { group ->
+                group.filter { it.hit.kind != FootballMatcher.Kind.FOOTBALL || it.channel.id in favoriteIds || FootballMatcher.isSportsChannel(it.channel.name) }
+                    .sortedByDescending { it.score }
+            }
+            .filter { it.isNotEmpty() }
+            .sortedWith(
+                compareBy<List<Pick>> { it.first().programme.startMs > now }
+                    .thenBy { if (it.first().programme.startMs <= now) -it.first().score.toLong() else it.first().programme.startMs }
+                    .thenByDescending { it.first().score },
+            )
+            .flatten().map { it.channel.id }.distinct().take(MAX_GROUP)
         runCatching { FootballGroup.update(context, profile.profileId, groupChannels) }
             .onFailure { android.util.Log.w(TAG, "football group not updated", it) }
         val teamMatches = matches.map { it.first }.filter { it.hit.kind == FootballMatcher.Kind.TEAM }
@@ -325,9 +354,11 @@ internal class LauncherRows(private val context: Context) {
         private const val MAX_FAVORITES = 40
         private const val TAG = "LauncherRows"
         private const val MAX_FOR_YOU = 15
-        private const val MAX_GROUP = 60
+        private const val MAX_GROUP = 250
         private const val MAX_SCAN = 20_000
-        private const val MAX_SPORTS_CHANNELS = 400
+        private const val MAX_SPORTS_CHANNELS = 5_000
+        /** Guides read per refresh; variants that share a guide id cost one read. */
+        private const val MAX_GUIDE_READS = 800
         private const val LOOKAHEAD_MS = 6 * 3_600_000L
         private const val FIVE_MINUTES = 5 * 60_000L
         private val OPEN_APP: Uri = Uri.Builder().scheme(SCHEME).authority(HOST_OPEN).build()
