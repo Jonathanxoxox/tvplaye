@@ -95,6 +95,7 @@ import tv.own.owntv.core.theme.ThemeMode
 import tv.own.owntv.core.live.LiveKey
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import tv.own.owntv.ui.theme.flutlichtNight
 
 /** Which layer currently holds focus (drives Back navigation). */
 private enum class ShellLayer { SIDEBAR, CONTENT }
@@ -301,6 +302,14 @@ fun OwnTVShell(
     val timeshiftOffsetState = liveVm.timeshiftOffsetSec.collectAsStateWithLifecycle()
     val watchingWallState = liveVm.watchingWallMs.collectAsStateWithLifecycle()
     val onLocalCopy by liveVm.onLocalCopy.collectAsStateWithLifecycle()
+    // Flutlichtnacht: the night stadium behind Live TV and the TV Guide while the focused channel shows football.
+    val nightChannel by liveVm.previewChannel.collectAsStateWithLifecycle()
+    val nightNowNext by liveVm.nowNext.collectAsStateWithLifecycle()
+    val nightGroup by liveVm.previewCategoryName.collectAsStateWithLifecycle()
+    val nightNow = nightNowNext?.now
+    val footballFocused = remember(nightChannel?.name, nightNow?.title, nightNow?.description, nightGroup) {
+        tv.own.owntv.launcher.FootballMatcher.isFootballFocus(nightNow?.title, nightNow?.description, nightChannel?.name, nightGroup)
+    }
     val timeshifted by remember(liveVm) {
         liveVm.timeshiftOffsetSec.map { it != null }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(false)
@@ -1090,7 +1099,11 @@ fun OwnTVShell(
                     .background(shellBase)
                     // The Stage page, across the whole width — under a docked rail's reserve too.
                     // Over a picture it draws only the Accent light; the picture shows through.
-                    .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent),
+                    .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent)
+                    .flutlichtNight(
+                        footballFocused && playerMode == PlayerMode.NONE &&
+                            (selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG),
+                    ),
             ) {
                 // Live TV's view (List / Guide), and how a guide — the TV Guide or Live TV's Guide view —
                 // starts a channel or an archive programme: through LiveViewModel, the one live path.

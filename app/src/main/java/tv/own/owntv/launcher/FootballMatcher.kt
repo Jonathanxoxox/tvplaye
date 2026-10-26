@@ -46,6 +46,17 @@ internal object FootballMatcher {
         return null
     }
 
+    /**
+     * Whether the focused channel shows football right now, for the Flutlichtnacht scene: the running
+     * programme decides when the guide has one, otherwise the channel's name or group (a "LaLiga TV" or
+     * a "Fußball" group).
+     */
+    fun isFootballFocus(title: String?, description: String?, channelName: String?, groupName: String?): Boolean {
+        if (groupName != null && match(groupName, null) != null) return true
+        if (!title.isNullOrBlank()) return match(title, description) != null
+        return channelName != null && match(channelName, null) != null
+    }
+
     private val MARKS = Regex("\\p{M}+")
     private val NON_ALNUM = Regex("[^a-z0-9]+")
 
