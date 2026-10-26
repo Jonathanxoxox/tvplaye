@@ -105,10 +105,16 @@ internal class LauncherRows(private val context: Context) {
 
         val sportsConfig = settings.activeSportsConfig.first()
         val matcher = FootballMatcher.from(sportsConfig, FootballSetup.useDefaultTeams(context))
-        val candidates = (favorites + channelDao.snapshotAll(sources, MAX_SCAN)
-            .filter { FootballMatcher.isSportsChannel(it.name) || FootballMatcher.isNationalChannel(it.name) })
-            .distinctBy { it.id }
-            .take(MAX_SPORTS_CHANNELS)
+        // Each name is folded once: the playlist can hold tens of thousands of channels.
+        val sportsIds = HashSet<Long>()
+        val scanned = channelDao.snapshotAll(sources, MAX_SCAN).filter { ch ->
+            val name = FootballMatcher.fold(ch.name)
+            when {
+                FootballMatcher.isSportsChannelFolded(name) -> { sportsIds += ch.id; true }
+                else -> FootballMatcher.isNationalChannelFolded(name)
+            }
+        }
+        val candidates = (favorites + scanned).distinctBy { it.id }.take(MAX_SPORTS_CHANNELS)
         // Variants of one channel share a guide: by their guide id, read once, and by name, so "Sky Sport
         // Bundesliga 1", its HD, FHD, UHD and backup feeds and another country's copy are one family. A
         // variant without a guide of its own shows its family's, so every variant of a match is found.
@@ -134,7 +140,7 @@ internal class LauncherRows(private val context: Context) {
             for (ch in family) {
                 val g = own[ch.id] ?: familyGuide ?: sharedGuide(ch)?.also { familyGuide = it } ?: continue
                 val programmes = listOfNotNull(g.now, g.next) + g.upcoming.orEmpty()
-                val sportsChannel = ch.id in favoriteIds || FootballMatcher.isSportsChannel(ch.name)
+                val sportsChannel = ch.id in favoriteIds || ch.id in sportsIds
                 for (p in programmes.distinctBy { it.startMs }) {
                     if (p.stopMs <= now || p.startMs >= horizon) continue
                     val hit = hits.getOrPut(Triple(p.title, p.description, sportsChannel)) { matcher.match(p.title, p.description, sportsChannel) } ?: continue
@@ -153,7 +159,7 @@ internal class LauncherRows(private val context: Context) {
         // variant of a match is listed, right below each other, the best one leading.
         val groupChannels = groups
             .map { group ->
-                group.filter { it.hit.kind != FootballMatcher.Kind.FOOTBALL || it.channel.id in favoriteIds || FootballMatcher.isSportsChannel(it.channel.name) }
+                group.filter { it.hit.kind != FootballMatcher.Kind.FOOTBALL || it.channel.id in favoriteIds || it.channel.id in sportsIds }
                     .sortedByDescending { it.score }
             }
             .filter { it.isNotEmpty() }

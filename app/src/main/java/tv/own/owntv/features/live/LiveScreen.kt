@@ -48,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.layout
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.ui.focus.FocusRequester as RowFocus
 import tv.own.owntv.ui.theme.mpx
@@ -73,6 +72,7 @@ import tv.own.owntv.core.settings.PanelSection
 import tv.own.owntv.features.settings.data.computePanelWidths
 import tv.own.owntv.features.settings.rememberPanelShares
 import tv.own.owntv.features.shell.components.CategoryContextMenu
+import tv.own.owntv.ui.components.glowRoom
 import tv.own.owntv.ui.components.MoveOrderOverlay
 import tv.own.owntv.ui.components.chNavPaging
 import tv.own.owntv.ui.components.longPressMenuGuard
@@ -762,9 +762,7 @@ fun LiveScreen(
                         )
                     }
                 } else {
-                    // The list clips whatever is drawn outside it, which cut the focused row's 44 px glow.
-                    // It is laid out [glowRoom] wider at each side and padded back by the same amount,
-                    // so the rows sit exactly where they did and the glow has room to show.
+                    // Room for the focused row's 44 px glow, which the list would clip (see [glowRoom]).
                     val glowRoom = 24.mpx
                     // Scroll only as far as the focused row needs to be on screen, as Home does: the TV
                     // default pins focus a third of the way down, so each ▼ moved the highlight a row
@@ -773,15 +771,7 @@ fun LiveScreen(
                     LazyColumn(
                         state = effectiveListState,
                         verticalArrangement = Arrangement.spacedBy(8.mpx),
-                        modifier = Modifier.fillMaxWidth().weight(1f).layout { measurable, constraints ->
-                            val extra = glowRoom.roundToPx()
-                            val placeable = measurable.measure(
-                                constraints.copy(
-                                    minWidth = constraints.minWidth + extra * 2, maxWidth = constraints.maxWidth + extra * 2,
-                                ),
-                            )
-                            layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(-extra, 0) }
-                        },
+                        modifier = Modifier.fillMaxWidth().weight(1f).glowRoom(glowRoom),
                         contentPadding = androidx.compose.foundation.layout.PaddingValues(start = glowRoom, end = glowRoom, bottom = 16.mpx),
                     ) {
                         items(

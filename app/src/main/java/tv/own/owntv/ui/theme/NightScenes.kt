@@ -9,8 +9,12 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -47,8 +51,9 @@ import kotlin.math.sin
  * Flutlicht's night scenes, in the layered style of Jonas Laterne (super7): animated landscapes behind
  * the shell's pages, without characters.
  *
- * - [NightScene.NORDLICHT] and [NightScene.MITTERNACHT] are themes the user picks under
- *   Glass & background; they show behind every page while no player covers the screen.
+ * - [NightScene.NORDLICHT], [NightScene.MITTERNACHT] and the four worlds of NightWorlds.kt (Tiefsee, Mondwüste,
+ *   Glimmwald, Hafenlichter) are themes the user picks under Glass & background; they show behind every page
+ *   while no player covers the screen. The worlds also tint the panels to match ([StagePalette.forScene]).
  * - Flutlichtnacht, the night stadium, is not a theme of its own: it takes over Live TV and the TV Guide
  *   while the focused channel shows football (switchable), whatever theme is chosen.
  *
@@ -58,7 +63,7 @@ import kotlin.math.sin
  *
  * Each scene is designed on a 1280×720 board and scaled to cover the area like `xMidYMid slice`.
  */
-enum class NightScene { NONE, NORDLICHT, MITTERNACHT }
+enum class NightScene { NONE, NORDLICHT, MITTERNACHT, TIEFSEE, MONDWUESTE, GLIMMWALD, HAFENLICHTER }
 
 /** The chosen scene and the football switch, kept in the app's own preferences (the core is not changed). */
 object NightSceneSettings {
@@ -104,10 +109,142 @@ fun rememberNightSceneSettings(): NightSceneSettings {
  */
 @Composable
 fun Modifier.nightScenes(scene: NightScene, stadium: Boolean, playerFree: Boolean): Modifier =
-    this
-        .sceneLayer(playerFree && stadium, FlutlichtArt)
-        .sceneLayer(playerFree && !stadium && scene == NightScene.NORDLICHT, NordlichtArt)
-        .sceneLayer(playerFree && !stadium && scene == NightScene.MITTERNACHT, MitternachtArt)
+    NightScene.entries.fold(this.sceneLayer(playerFree && stadium, FlutlichtArt)) { m, s ->
+        val art = artOf(s)
+        if (art == null) m else m.sceneLayer(playerFree && !stadium && scene == s, art)
+    }
+
+/**
+ * The art of every theme; the stadium is not one of them. A function, not a map: a top-level map would build
+ * the worlds while this file's own statics (SKY_STARS) are still null.
+ */
+private fun artOf(scene: NightScene): SceneArt? = when (scene) {
+    NightScene.NONE -> null
+    NightScene.NORDLICHT -> NordlichtArt
+    NightScene.MITTERNACHT -> MitternachtArt
+    NightScene.TIEFSEE -> TiefseeArt
+    NightScene.MONDWUESTE -> MondwuesteArt
+    NightScene.GLIMMWALD -> GlimmwaldArt
+    NightScene.HAFENLICHTER -> HafenArt
+}
+
+/** A small live picture of [scene] (the settings' help panel); the plain page colour for [NightScene.NONE]. */
+@Composable
+fun NightScenePreview(scene: NightScene, modifier: Modifier = Modifier) {
+    Box(
+        modifier
+            .background(LocalStagePalette.current.page)
+            .nightScenes(scene, stadium = false, playerFree = true),
+    )
+}
+
+/**
+ * The panels of a world: page, glass and the cool greys tinted to the scene, so the rail and the sheets sit in
+ * the picture instead of on it. Text, focus bar and switches stay as they are, and so does their contrast.
+ * Nordlicht and Mitternacht keep Cyan Blau, as before.
+ */
+fun StagePalette.forScene(scene: NightScene): StagePalette {
+    if (isLight) return this
+    val t = when (scene) {
+        NightScene.TIEFSEE -> SceneTint(0xFF0A2F4A, 0xFF114A6E, 0xFFA9CBE0, 0xFF7FA8C2, 0xFFC3DBEA, 0xFFD3E4EF)
+        NightScene.MONDWUESTE -> SceneTint(0xFF2A1D45, 0xFF3C2A5E, 0xFFCDBFE0, 0xFFA595C2, 0xFFD6CBE8, 0xFFE3DAEF)
+        NightScene.GLIMMWALD -> SceneTint(0xFF0D3A30, 0xFF145244, 0xFFB4D8C8, 0xFF88B8A4, 0xFFC6E2D4, 0xFFD5EAE0)
+        NightScene.HAFENLICHTER -> SceneTint(0xFF14223A, 0xFF1F3354, 0xFFBCC8DC, 0xFF8E9DB8, 0xFFCBD5E6, 0xFFDCE3EE)
+        else -> return this
+    }
+    val page = Color(t.page)
+    return copy(
+        page = page,
+        glassTint = Color(t.glass),
+        glassOff = Color(t.glass),
+        muted = Color(t.muted),
+        dim = Color(t.dim),
+        tagText = Color(t.tag),
+        body = Color(t.body),
+        scrim = Color(page.red * 0.3f, page.green * 0.3f, page.blue * 0.3f, 0.55f),
+        wash = page,
+    )
+}
+
+private class SceneTint(val page: Long, val glass: Long, val muted: Long, val dim: Long, val tag: Long, val body: Long)
+
+/** The world's page colour, or null when the scene keeps Cyan Blau. */
+private fun scenePage(scene: NightScene): Color? = when (scene) {
+    NightScene.TIEFSEE -> Color(0xFF0A2F4A)
+    NightScene.MONDWUESTE -> Color(0xFF2A1D45)
+    NightScene.GLIMMWALD -> Color(0xFF0D3A30)
+    NightScene.HAFENLICHTER -> Color(0xFF14223A)
+    else -> null
+}
+
+/**
+ * The dark surface tiers (rail, cards, outlines) moved into the world's hue: each keeps its brightness and
+ * saturation relative to the petrol page, so the steps between them stay as designed. Text and accent stay.
+ */
+fun OwnTVColors.forScene(scene: NightScene): OwnTVColors {
+    if (!isDark) return this
+    val page = scenePage(scene) ?: return this
+    fun move(c: Color) = moveHue(c, page)
+    return copy(
+        background = move(background),
+        surface = move(surface),
+        surfaceContainerLowest = move(surfaceContainerLowest),
+        surfaceContainerLow = move(surfaceContainerLow),
+        surfaceContainer = move(surfaceContainer),
+        surfaceContainerHigh = move(surfaceContainerHigh),
+        surfaceContainerHighest = move(surfaceContainerHighest),
+        outline = move(outline),
+        outlineVariant = move(outlineVariant),
+    )
+}
+
+/** A fixed dark petrol tone (the rail's panels) moved into the chosen world's hue, like [OwnTVColors.forScene]. */
+@Composable
+fun inScene(petrol: Color): Color {
+    val scene by rememberNightSceneSettings().scene.collectAsState()
+    if (LocalStagePalette.current.isLight) return petrol
+    val page = scenePage(scene) ?: return petrol
+    return moveHue(petrol, page)
+}
+
+private fun moveHue(c: Color, page: Color): Color {
+    val ref = hsl(DarkBackground)
+    val to = hsl(page)
+    val h = hsl(c)
+    return fromHsl(to[0], (h[1] * to[1] / ref[1]).coerceIn(0f, 1f), (h[2] * to[2] / ref[2]).coerceIn(0f, 1f), c.alpha)
+}
+
+/** Hue (0..1), saturation, lightness. */
+private fun hsl(c: Color): FloatArray {
+    val mx = maxOf(c.red, c.green, c.blue)
+    val mn = minOf(c.red, c.green, c.blue)
+    val l = (mx + mn) / 2f
+    val d = mx - mn
+    if (d == 0f) return floatArrayOf(0f, 0f, l)
+    val s = if (l > 0.5f) d / (2f - mx - mn) else d / (mx + mn)
+    val h = when (mx) {
+        c.red -> ((c.green - c.blue) / d + if (c.green < c.blue) 6f else 0f)
+        c.green -> (c.blue - c.red) / d + 2f
+        else -> (c.red - c.green) / d + 4f
+    } / 6f
+    return floatArrayOf(h, s, l)
+}
+
+private fun fromHsl(h: Float, s: Float, l: Float, alpha: Float): Color {
+    if (s == 0f) return Color(l, l, l, alpha)
+    val q = if (l < 0.5f) l * (1f + s) else l + s - l * s
+    val p = 2f * l - q
+    fun hue(t0: Float): Float {
+        val t = if (t0 < 0f) t0 + 1f else if (t0 > 1f) t0 - 1f else t0
+        return when {
+            t < 1f / 6f -> p + (q - p) * 6f * t
+            t < 0.5f -> q
+            t < 2f / 3f -> p + (q - p) * (2f / 3f - t) * 6f
+            else -> p
+        }
+    }
+    return Color(hue(h + 1f / 3f).coerceIn(0f, 1f), hue(h).coerceIn(0f, 1f), hue(h - 1f / 3f).coerceIn(0f, 1f), alpha)
+}
 
 @Composable
 private fun Modifier.sceneLayer(visible: Boolean, art: SceneArt): Modifier {
@@ -149,8 +286,8 @@ private fun Modifier.sceneLayer(visible: Boolean, art: SceneArt): Modifier {
     return this.then(draw)
 }
 
-private const val DW = 1280f
-private const val DH = 720f
+internal const val DW = 1280f
+internal const val DH = 720f
 
 /** One loop of every scene; each motion repeats a whole number of times in it, so nothing ever jumps. */
 private const val LOOP_MS = 120_000
@@ -159,7 +296,7 @@ private const val LOOP_MS = 120_000
  * One scene: [back] and [front] stand still and are rendered once; [middle] moves between them (behind
  * mountains and hills), [top] moves in front. All four draw on the 1280×720 board.
  */
-private abstract class SceneArt {
+internal abstract class SceneArt {
     open val hasFront: Boolean = false
     abstract fun DrawScope.back()
     open fun DrawScope.front() {}
@@ -170,9 +307,9 @@ private abstract class SceneArt {
 
 // ── shared helpers ──
 
-private fun wave(t: Float, cycles: Float, phase: Float): Float = sin((2.0 * PI * (t * cycles + phase)).toFloat())
+internal fun wave(t: Float, cycles: Float, phase: Float): Float = sin((2.0 * PI * (t * cycles + phase)).toFloat())
 
-private fun pulse(t: Float, cycles: Float, phase: Float, low: Float): Float = low + (1f - low) * (0.5f + 0.5f * wave(t, cycles, phase))
+internal fun pulse(t: Float, cycles: Float, phase: Float, low: Float): Float = low + (1f - low) * (0.5f + 0.5f * wave(t, cycles, phase))
 
 private fun render(w: Int, h: Int, density: Density, direction: LayoutDirection, block: DrawScope.() -> Unit): ImageBitmap {
     val bitmap = ImageBitmap(w, h)
@@ -180,7 +317,7 @@ private fun render(w: Int, h: Int, density: Density, direction: LayoutDirection,
     return bitmap
 }
 
-private fun DrawScope.sprite(image: ImageBitmap, x: Float, y: Float, w: Float, h: Float, alpha: Float) = drawImage(
+internal fun DrawScope.sprite(image: ImageBitmap, x: Float, y: Float, w: Float, h: Float, alpha: Float) = drawImage(
     image,
     dstOffset = IntOffset(x.roundToInt(), y.roundToInt()),
     dstSize = IntSize(w.roundToInt().coerceAtLeast(1), h.roundToInt().coerceAtLeast(1)),
@@ -188,20 +325,20 @@ private fun DrawScope.sprite(image: ImageBitmap, x: Float, y: Float, w: Float, h
     filterQuality = FilterQuality.Low,
 )
 
-private fun DrawScope.glowSprite(vararg stops: Pair<Float, Color>) {
+internal fun DrawScope.glowSprite(vararg stops: Pair<Float, Color>) {
     drawRect(Brush.radialGradient(*stops, center = center, radius = size.minDimension / 2f))
 }
 
-private fun glow(make: (Int, Int, DrawScope.() -> Unit) -> ImageBitmap, vararg stops: Pair<Float, Color>): ImageBitmap =
+internal fun glow(make: (Int, Int, DrawScope.() -> Unit) -> ImageBitmap, vararg stops: Pair<Float, Color>): ImageBitmap =
     make(64, 64) { glowSprite(*stops) }
 
-private fun tint(color: Long, alpha: Float) = Color(color).copy(alpha = alpha)
+internal fun tint(color: Long, alpha: Float) = Color(color).copy(alpha = alpha)
 
-private fun DrawScope.stars(t: Float, a: Float, list: List<FloatArray>, color: Color) {
+internal fun DrawScope.stars(t: Float, a: Float, list: List<FloatArray>, color: Color) {
     for (st in list) drawCircle(color, st[2], Offset(st[0], st[1]), alpha = a * pulse(t, st[3], st[4], 0.25f))
 }
 
-private fun DrawScope.vignette(color: Long) {
+internal fun DrawScope.vignette(color: Long) {
     drawRect(
         Brush.radialGradient(0.55f to tint(color, 0f), 1f to tint(color, 0.75f), center = Offset(DW / 2f, DH * 0.45f), radius = 900f),
         size = Size(DW, DH),
@@ -209,7 +346,7 @@ private fun DrawScope.vignette(color: Long) {
 }
 
 /** x, y, radius, twinkles per loop, phase — spread over the upper half of the board. */
-private val SKY_STARS = listOf(
+internal val SKY_STARS = listOf(
     floatArrayOf(512f, 36f, 1.3f, 37f, 0f), floatArrayOf(590f, 88f, 1f, 25f, 0.3f), floatArrayOf(664f, 24f, 1.5f, 19f, 0.5f),
     floatArrayOf(710f, 130f, 1f, 37f, 0.7f), floatArrayOf(802f, 52f, 1.2f, 25f, 0.1f), floatArrayOf(874f, 18f, 1f, 19f, 0.9f),
     floatArrayOf(930f, 104f, 1.4f, 25f, 0.4f), floatArrayOf(988f, 40f, 1f, 37f, 0.6f), floatArrayOf(1044f, 140f, 1.1f, 19f, 0.2f),

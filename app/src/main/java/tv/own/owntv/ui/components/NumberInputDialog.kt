@@ -7,7 +7,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.tv.material3.Text
 import tv.own.owntv.ui.theme.mpx
 import androidx.compose.foundation.layout.fillMaxWidth

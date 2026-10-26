@@ -91,6 +91,14 @@ android {
             ?: ""
         buildConfigField("String", "TMDB_EDGE_KEY", "\"${edgeKey.replace("\\", "\\\\").replace("\"", "\\\"")}\"")
 
+        // Flutlicht: OwnTV's shared metadata service refuses builds without its edge key (403), so a
+        // TMDB API key of our own (GitHub secret TMDB_API_KEY → env FLUTLICHT_TMDB_KEY) is put into
+        // Settings → Metadata once on first start. Blank keeps the old behaviour.
+        val flutlichtTmdbKey = System.getenv("FLUTLICHT_TMDB_KEY")
+            ?: providers.gradleProperty("flutlicht.tmdbKey").orNull
+            ?: ""
+        buildConfigField("String", "FLUTLICHT_TMDB_KEY", "\"${flutlichtTmdbKey.filter { it.isLetterOrDigit() }}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

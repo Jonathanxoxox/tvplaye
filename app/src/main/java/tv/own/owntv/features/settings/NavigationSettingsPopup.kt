@@ -30,7 +30,6 @@ import tv.own.owntv.ui.stage.StagePopupRadio
 import tv.own.owntv.ui.stage.StagePill
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.mpx
-import androidx.compose.foundation.layout.Spacer
 
 /**
  * Settings › Layout › Navigation: Floating or Docked as radio rows, then the rail's

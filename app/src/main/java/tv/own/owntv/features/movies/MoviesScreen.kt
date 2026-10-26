@@ -11,7 +11,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.layout.layout
 import tv.own.owntv.features.live.LiveCategories
 import tv.own.owntv.core.live.ProviderTags
 import tv.own.owntv.features.live.edgeScrollSpec
@@ -103,6 +102,7 @@ import tv.own.owntv.core.customize.CustomizeKeys
 import tv.own.owntv.core.database.entity.ContentOrderEntity
 import tv.own.owntv.core.database.entity.MovieEntity
 import tv.own.owntv.features.customize.MoveToCategoryDialog
+import tv.own.owntv.ui.components.glowRoom
 import tv.own.owntv.ui.components.TextInputDialog
 import tv.own.owntv.features.live.displayLabel
 import tv.own.owntv.core.settings.PanelSection
@@ -271,12 +271,13 @@ fun MoviesScreen(
     }
     val stepper = remember { VodStepper(scope) { effectiveListState } }
     val playlistMarks by vm.playlistMarks.collectAsStateWithLifecycle()
-    // Separate keeps the categories on screen; Cinematic opens them as a sheet (◀, or the Categories tool).
+    // Flutlicht: both layouts keep the categories on screen, as the classic IPTV player does; the sheet
+    // (categoriesOpen) is no longer opened.
     var categoriesOpen by remember { mutableStateOf(false) }
     var sheetHadFocus by remember { mutableStateOf(false) }
     var sortOpen by remember { mutableStateOf(false) }
     val sortFocus = remember { FocusRequester() }
-    val categoriesVisible = lockedKey == null && (!cinematic || categoriesOpen)
+    val categoriesVisible = lockedKey == null
     val railCounts by (if (categoriesVisible) vm.railCounts else remember { kotlinx.coroutines.flow.MutableStateFlow(emptyMap<LiveKey, Int>()) })
         .collectAsStateWithLifecycle()
     val catListState = rememberLazyListState()
@@ -419,7 +420,7 @@ fun MoviesScreen(
     DisposableEffect(onEntryHook, cinematic) {
         onEntryHook?.invoke {
             // The column's own row path (scrolls to it if needed), not the list's first child: the search field.
-            if (!cinematic && lockedKey == null) { railFocusRow = selectedIndex; true } else focusCurrentTitle()
+            if (lockedKey == null) { railFocusRow = selectedIndex; true } else focusCurrentTitle()
         }
         onDispose { onEntryHook?.invoke(null) }
     }
@@ -433,6 +434,11 @@ fun MoviesScreen(
     val (categoryEntries, groupsHeading) = vodCategoryEntries(railItems, railCounts, playlistMarks, series = false)
     val headerLabel = if (selectedItem?.key is LiveKey.Folder || selectedItem?.key is LiveKey.Custom) ProviderTags.parse(selectedLabel).name else selectedLabel
 
+    // The hero shows a title while the categories have focus too, as the classic IPTV player does: the
+    // first one of a category just picked there, or of the list when nothing was chosen yet.
+    LaunchedEffect(selectedKey, movies.itemCount > 0) {
+        if (movies.itemCount > 0 && (selectedMovie == null || railPaneFocused)) movies.peek(0)?.let(vm::onMovieFocused)
+    }
     // Back closes the sheet: one level out.
     androidx.activity.compose.BackHandler(enabled = categoriesOpen) { categoriesOpen = false; focusCurrentTitle() }
     LaunchedEffect(categoriesOpen) {
@@ -473,6 +479,28 @@ fun MoviesScreen(
                 contextCategoryKey = item.key
             }
         }
+    }
+    // The category column: a sheet over Cinematic, a column beside the titles otherwise.
+    val categoryQuery by vm.categoryQuery.collectAsStateWithLifecycle()
+    val categoryColumn: @Composable (Boolean, () -> Unit, Modifier) -> Unit = { sheet, onRight, columnModifier ->
+        LiveCategories(
+            searchQuery = categoryQuery,
+            onSearchQueryChange = vm::setCategoryQuery,
+            entries = categoryEntries,
+            selectedIndex = selectedIndex,
+            groupsHeading = groupsHeading,
+            sheet = sheet,
+            listState = catListState,
+            onSelect = onCategorySelect,
+            onLongSelect = onCategoryLongSelect,
+            onNavigateRight = onRight,
+            focusRequester = railFocus,
+            focusRowIndex = railFocusRow,
+            onRowFocused = { railFocusRow = null },
+            onRowFocus = { catFocusIndex = it },
+            sheetHint = stringResource(R.string.common_nav_movies),
+            modifier = categoriesModifier.then(columnModifier),
+        )
     }
     val targetMovieId = if (rememberMovies) perCategoryMovieIds[selectedKey] ?: selectedMovie?.id else selectedMovie?.id
     val openMenu: (MovieEntity, Int) -> Unit = { movie, index -> contextMovie = movie; contextMovieId = movie.id; contextMovieIndex = index }
@@ -531,9 +559,8 @@ fun MoviesScreen(
         .focusProperties {
             onExit = {
                 when (requestedFocusDirection) {
-                    // Cinematic's first column opens the sheet itself; in Separate, ◀ out of the first
-                    // column reaches the category column. Nothing lies to the right.
-                    androidx.compose.ui.focus.FocusDirection.Left -> if (cinematic) cancelFocusChange()
+                    // ◀ out of the first column reaches the category column. Nothing lies to the right.
+                    androidx.compose.ui.focus.FocusDirection.Left -> Unit
                     androidx.compose.ui.focus.FocusDirection.Right -> cancelFocusChange()
                     // Pinned (More) keeps Up for its tabs.
                     androidx.compose.ui.focus.FocusDirection.Up, androidx.compose.ui.focus.FocusDirection.Down ->
@@ -548,7 +575,7 @@ fun MoviesScreen(
     var searchEditing by remember { mutableStateOf(false) }
     val searchLeft = Modifier.onPreviewKeyEvent { e ->
         if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionLeft && !searchEditing && lockedKey == null) {
-            if (cinematic) categoriesOpen = true else runCatching { railFocus.requestFocus() }
+            runCatching { railFocus.requestFocus() }
             true
         } else false
     }
@@ -567,16 +594,20 @@ fun MoviesScreen(
             // An empty list has no title for the hero: the toolbar moves up under the header instead of
             // floating mid-screen over an empty hero.
             val toolTop = 122.mpx + if (titleInfo == null && movies.itemCount == 0) 0.mpx else heroH
+            // The category column on the left (its width: Panel widths › Categories sheet), the hero,
+            // toolbar and posters to its right.
+            val colW = if (panelShares != null) screenW * (cinematicSheetPct / 100f) else fx(330)
+            val listX = fx(64) + colW + fx(26)
             Box(Modifier.fillMaxSize().then(if (categoriesOpen) Modifier.graphicsLayer { alpha = 0.36f } else Modifier)) {
                 VodCinematicBackdrop(titleInfo?.backdropUrl, series = false, Modifier.align(Alignment.TopEnd))
                 VodHeader(
                     section = stringResource(R.string.common_nav_movies), category = headerLabel, count = vodCount(false, count),
                     showChevron = true, modifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(900)),
                 )
-                titleInfo?.let { VodHero(it, Modifier.padding(start = fx(84), top = 122.mpx).width(fx(1000)).height(heroH)) }
+                titleInfo?.let { VodHero(it, Modifier.padding(start = listX, top = 122.mpx).width(fx(1000)).height(heroH)) }
                 Column(Modifier.padding(top = toolTop).fillMaxSize().then(paneModifier)) {
                     Row(
-                        Modifier.padding(start = fx(68), end = fx(64)).fillMaxWidth()
+                        Modifier.padding(start = listX - fx(16), end = fx(64)).fillMaxWidth()
                             // ▼ from the toolbar returns to the title the hero shows, not the poster below the tool.
                             .onPreviewKeyEvent { e -> e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown && focusCurrentTitle() }
                             .focusGroup(),
@@ -590,17 +621,17 @@ fun MoviesScreen(
                             onEditingChange = { searchEditing = it },
                         )
                         VodSortTool(sortMode, Modifier.focusRequester(sortFocus)) { sortOpen = true }
-                        StageTool(text = stringResource(R.string.content_category_browser_title), icon = OwnTVIcon.LIST, onClick = { categoriesOpen = true })
+                        StageTool(text = stringResource(R.string.content_category_browser_title), icon = OwnTVIcon.LIST, onClick = { runCatching { railFocus.requestFocus() } })
                         Spacer(Modifier.weight(1f))
-                        StageKeyHints(listOf(playHint, optionsHint, "◀" to stringResource(R.string.content_category_browser_title)))
+                        StageKeyHints(listOf(playHint, optionsHint))
                     }
                     if (movies.itemCount == 0) {
-                        Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = fx(84), top = 60.mpx))
+                        Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = listX, top = 60.mpx))
                     } else {
                         // The 196 × 294 posters, 26 apart, as many across as fit; the grid grows downwards
                         // (a grid, not a single row). Glow room on every side.
                         val glowRoom = 24.mpx
-                        val rowW = screenW - fx(84) - fx(64)
+                        val rowW = screenW - listX - fx(64)
                         val columns = ((rowW + 26.mpx) / 222.mpx).toInt().coerceAtLeast(1)
                         // A fixed gap under the toolbar that scrolling posters never enter; the grid's own
                         // top padding is only the room the focused poster's lift and ring need.
@@ -611,7 +642,7 @@ fun MoviesScreen(
                                 columns = GridCells.Fixed(columns),
                                 horizontalArrangement = Arrangement.spacedBy(26.mpx),
                                 verticalArrangement = Arrangement.spacedBy(30.mpx),
-                                contentPadding = PaddingValues(start = fx(84), end = fx(64), top = 14.mpx, bottom = glowRoom),
+                                contentPadding = PaddingValues(start = listX, end = fx(64), top = 14.mpx, bottom = glowRoom),
                                 modifier = Modifier.fillMaxWidth().weight(1f),
                             ) {
                                 items(count = movies.itemCount, key = movies.itemKey { it.id }, contentType = movies.itemContentType { "movie" }) { index ->
@@ -638,8 +669,8 @@ fun MoviesScreen(
                                                 if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                                                 when (e.key) {
                                                     Key.Menu -> { openMenu(movie, index); true }
-                                                    // ◀ from the first column opens the categories.
-                                                    Key.DirectionLeft -> index % columns == 0 && run { categoriesOpen = true; true }
+                                                    // ◀ from the first column goes to the categories.
+                                                    Key.DirectionLeft -> index % columns == 0 && run { runCatching { railFocus.requestFocus() }; true }
                                                     else -> false
                                                 }
                                             },
@@ -650,6 +681,13 @@ fun MoviesScreen(
                     }
                 }
             }
+            categoryColumn(
+                false, { focusTitles() },
+                Modifier
+                    .padding(start = fx(64), top = 128.mpx, bottom = 24.mpx)
+                    .width(colW)
+                    .fillMaxHeight(),
+            )
         } else {
             // Separate panels: the category column, the titles, the details card.
             val locked = lockedKey != null
@@ -669,22 +707,9 @@ fun MoviesScreen(
                     section = stringResource(R.string.common_nav_movies), category = headerLabel, count = vodCount(false, count),
                     showChevron = false, modifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(860)),
                 )
-                LiveCategories(
-                    searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                    onSearchQueryChange = vm::setCategoryQuery,
-                    entries = categoryEntries,
-                    selectedIndex = selectedIndex,
-                    groupsHeading = groupsHeading,
-                    sheet = false,
-                    listState = catListState,
-                    onSelect = onCategorySelect,
-                    onLongSelect = onCategoryLongSelect,
-                    onNavigateRight = { focusTitles() },
-                    focusRequester = railFocus,
-                    focusRowIndex = railFocusRow,
-                    onRowFocused = { railFocusRow = null },
-                    onRowFocus = { catFocusIndex = it },
-                    modifier = categoriesModifier
+                categoryColumn(
+                    false, { focusTitles() },
+                    Modifier
                         .padding(start = margin, top = top, bottom = 24.mpx)
                         .width(colW)
                         .fillMaxHeight(),
@@ -713,11 +738,7 @@ fun MoviesScreen(
                 // The lists clip what is drawn outside them, which cut the focused card's glow: they are
                 // laid out [glowRoom] wider at each side and padded back by the same amount.
                 val glowRoom = 24.mpx
-                val glowWide = Modifier.layout { measurable, constraints ->
-                    val extra = glowRoom.roundToPx()
-                    val placeable = measurable.measure(constraints.copy(minWidth = constraints.minWidth + extra * 2, maxWidth = constraints.maxWidth + extra * 2))
-                    layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(-extra, 0) }
-                }
+                val glowWide = Modifier.glowRoom(glowRoom)
                 if (movies.itemCount == 0) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(emptyText, style = stageText(20, 500), color = StageColors.Muted)
@@ -827,23 +848,9 @@ fun MoviesScreen(
         }
 
         if (categoriesOpen) {
-            LiveCategories(
-                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                onSearchQueryChange = vm::setCategoryQuery,
-                entries = categoryEntries,
-                selectedIndex = selectedIndex,
-                groupsHeading = groupsHeading,
-                sheet = true,
-                listState = catListState,
-                onSelect = onCategorySelect,
-                onLongSelect = onCategoryLongSelect,
-                onNavigateRight = { categoriesOpen = false; focusTitles() },
-                focusRequester = railFocus,
-                focusRowIndex = railFocusRow,
-                onRowFocused = { railFocusRow = null },
-                onRowFocus = { catFocusIndex = it },
-                sheetHint = stringResource(R.string.common_nav_movies),
-                modifier = categoriesModifier
+            categoryColumn(
+                true, { categoriesOpen = false; focusTitles() },
+                Modifier
                     .padding(start = fx(24), top = 24.mpx, bottom = 24.mpx)
                     .width(
                         // Panel widths › Categories sheet (Cinematic): its own % of the screen, as Live TV's Stage sheet.
@@ -857,7 +864,7 @@ fun MoviesScreen(
     if (sortOpen) {
         VodSortMenu(
             series = false, current = sortMode,
-            x = if (cinematic) 470f else 880f, top = if (cinematic) 250.mpx else 186.mpx,
+            x = 880f, top = if (cinematic) 250.mpx else 186.mpx,
             onPick = vm::setSort,
             onDismiss = { sortOpen = false; runCatching { sortFocus.requestFocus() } },
         )

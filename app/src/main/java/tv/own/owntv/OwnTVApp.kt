@@ -177,6 +177,21 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                     settings.setLiveView(tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE)
                     prefs.edit().putBoolean("defaults_v4_applied", true).apply()
                 }
+                // Posters, backdrops, plot and cast for Movies & Series: the build's own TMDB key, once,
+                // and only when no key is set yet (the shared OwnTV service answers 403 to this build).
+                if (BuildConfig.FLUTLICHT_TMDB_KEY.isNotBlank() && !prefs.getBoolean("tmdb_key_v1_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    if (settings.currentTmdbApiKey().isBlank()) settings.setTmdbApiKey(BuildConfig.FLUTLICHT_TMDB_KEY)
+                    prefs.edit().putBoolean("tmdb_key_v1_applied", true).apply()
+                }
+                // Plot and titles from TMDB in the TV's language (German), not TMDB's English default.
+                if (!prefs.getBoolean("tmdb_lang_v1_applied", false)) {
+                    val settings = GlobalContext.get().get<tv.own.owntv.core.settings.SettingsRepository>()
+                    if (settings.metadataLanguage.first().isBlank()) {
+                        settings.setMetadataLanguage(tv.own.owntv.core.metadata.MetadataConfig.LANGUAGE_AUTO)
+                    }
+                    prefs.edit().putBoolean("tmdb_lang_v1_applied", true).apply()
+                }
             }
         }
         // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and
