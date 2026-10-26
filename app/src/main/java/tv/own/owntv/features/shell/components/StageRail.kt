@@ -278,16 +278,13 @@ private fun MenuLogo(expanded: Boolean) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = if (expanded) 10.mpx else 0.mpx),
     ) {
-        androidx.compose.foundation.Image(
-            painter = androidx.compose.ui.res.painterResource(R.mipmap.flutlicht_icon),
-            contentDescription = null,
-            modifier = Modifier.size(64.mpx).clip(RoundedCornerShape(12.mpx)),
-        )
+        // In the theme's muted ink, so the logo belongs to the menu instead of standing out of it.
+        BrandMark(56.mpx, Modifier.padding(4.mpx), subtle = true)
         if (expanded) {
             Text(
                 stringResource(R.string.tvplayer_app_name),
                 style = stageText(40, 800),
-                color = StageColors.Text,
+                color = StageColors.Muted,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(start = 18.mpx),
             )

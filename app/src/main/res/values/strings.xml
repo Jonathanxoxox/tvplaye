@@ -36,10 +36,10 @@
     <string name="tvplayer_football_reminders_setting" translatable="false">An Spiele meiner Teams erinnern</string>
     <string name="tvplayer_football_reminders_desc" translatable="false">Spiele deiner Teams im TV-Guide bekommen automatisch eine Erinnerung vor Anpfiff (Vorlauf: Spielerinnerungen weiter unten).</string>
     <string name="tvplayer_football_remote" translatable="false">Fernbedienung an Jonathan geben!</string>
-    <string name="tvplayer_scene_heading" translatable="false">Nachtszenen</string>
+    <string name="tvplayer_scene_heading" translatable="false">Farben und Nachtszenen</string>
     <string name="tvplayer_scene_title" translatable="false">Szene</string>
-    <string name="tvplayer_scene_line" translatable="false">Animierte Landschaft hinter allen Seiten, im Stil von Jonas Laterne</string>
-    <string name="tvplayer_scene_help" translatable="false">Läuft hinter Menüs, Senderliste und Guide, im Player ist sie aus. Tiefsee, Mondwüste, Glimmwald und Hafenlichter färben auch Menü und Flächen passend. Mit Animationen aus steht die Szene still.</string>
+    <string name="tvplayer_scene_line" translatable="false">Ruhiges Farbthema oder animierte Landschaft hinter allen Seiten</string>
+    <string name="tvplayer_scene_help" translatable="false">Farbthemen färben Seite, Menü und Flächen und bewegen sich nicht. Nachtszenen laufen hinter Menüs, Senderliste und Guide, im Player sind sie aus. Tiefsee, Mondwüste, Glimmwald und Hafenlichter färben auch Menü und Flächen passend. Mit Animationen aus steht die Szene still. Im hellen Design bleibt alles hell.</string>
     <string name="tvplayer_scene_panel" translatable="false">%1$s\n\n%2$s</string>
     <string name="tvplayer_scene_off" translatable="false">Aus</string>
     <string name="tvplayer_scene_nordlicht" translatable="false">Nordlicht</string>
@@ -47,6 +47,18 @@
     <string name="tvplayer_scene_off_desc" translatable="false">Cyan Blau, ruhig, ohne Animation</string>
     <string name="tvplayer_scene_nordlicht_desc" translatable="false">Polarlicht über Bergen und See, in der Ferne leuchtet ein Stadion</string>
     <string name="tvplayer_scene_mitternacht_desc" translatable="false">Mond, lila Hügel und Glühwürmchen</string>
+    <string name="tvplayer_color_graphit" translatable="false">Graphit</string>
+    <string name="tvplayer_color_schiefer" translatable="false">Schiefer</string>
+    <string name="tvplayer_color_koenigsblau" translatable="false">Königsblau</string>
+    <string name="tvplayer_color_rasengruen" translatable="false">Rasengrün</string>
+    <string name="tvplayer_color_bordeaux" translatable="false">Bordeaux</string>
+    <string name="tvplayer_color_espresso" translatable="false">Espresso</string>
+    <string name="tvplayer_color_graphit_desc" translatable="false">Farbthema: fast schwarzes Anthrazit, neutral und ohne Farbstich</string>
+    <string name="tvplayer_color_schiefer_desc" translatable="false">Farbthema: kühles Blaugrau, etwas heller</string>
+    <string name="tvplayer_color_koenigsblau_desc" translatable="false">Farbthema: sattes, tiefes Blau</string>
+    <string name="tvplayer_color_rasengruen_desc" translatable="false">Farbthema: dunkles Grün wie der Rasen unter Flutlicht</string>
+    <string name="tvplayer_color_bordeaux_desc" translatable="false">Farbthema: tiefes Weinrot</string>
+    <string name="tvplayer_color_espresso_desc" translatable="false">Farbthema: warmes dunkles Braun</string>
     <string name="tvplayer_scene_tiefsee" translatable="false">Tiefsee</string>
     <string name="tvplayer_scene_mondwueste" translatable="false">Mondwüste</string>
     <string name="tvplayer_scene_glimmwald" translatable="false">Glimmwald</string>
