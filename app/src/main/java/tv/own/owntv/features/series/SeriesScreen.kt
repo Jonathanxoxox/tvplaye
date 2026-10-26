@@ -13,7 +13,6 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
-import androidx.compose.ui.layout.layout
 import tv.own.owntv.features.live.LiveCategories
 import tv.own.owntv.core.live.ProviderTags
 import tv.own.owntv.features.live.edgeScrollSpec
@@ -130,6 +129,7 @@ import tv.own.owntv.core.database.entity.ContentOrderEntity
 import tv.own.owntv.core.database.entity.EpisodeEntity
 import tv.own.owntv.core.database.entity.SeriesEntity
 import tv.own.owntv.features.customize.MoveToCategoryDialog
+import tv.own.owntv.ui.components.glowRoom
 import tv.own.owntv.ui.components.TextInputDialog
 import tv.own.owntv.features.live.displayLabel
 import tv.own.owntv.core.settings.PanelSection
@@ -541,6 +541,28 @@ private fun SeriesGrid(
             }
         }
     }
+    // The category column: a sheet over Cinematic, a column beside the titles otherwise.
+    val categoryQuery by vm.categoryQuery.collectAsStateWithLifecycle()
+    val categoryColumn: @Composable (Boolean, () -> Unit, Modifier) -> Unit = { sheet, onRight, columnModifier ->
+        LiveCategories(
+            searchQuery = categoryQuery,
+            onSearchQueryChange = vm::setCategoryQuery,
+            entries = categoryEntries,
+            selectedIndex = selectedIndex,
+            groupsHeading = groupsHeading,
+            sheet = sheet,
+            listState = catListState,
+            onSelect = onCategorySelect,
+            onLongSelect = onCategoryLongSelect,
+            onNavigateRight = onRight,
+            focusRequester = railFocus,
+            focusRowIndex = railFocusRow,
+            onRowFocused = { railFocusRow = null },
+            onRowFocus = { catFocusIndex = it },
+            sheetHint = stringResource(R.string.common_nav_series),
+            modifier = categoriesModifier.then(columnModifier),
+        )
+    }
     val targetSeriesId = if (rememberSeries) perCategorySeriesIds[selectedKey] ?: selectedSeries?.id else selectedSeries?.id
     val openMenu: (tv.own.owntv.core.database.entity.SeriesEntity, Int) -> Unit = { show, index -> contextSeries = show; contextSeriesId = show.id; contextSeriesIndex = index }
     val onShowFocus: (tv.own.owntv.core.database.entity.SeriesEntity) -> Unit = { show ->
@@ -717,22 +739,9 @@ private fun SeriesGrid(
                     }
                 }
             }
-            LiveCategories(
-                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                onSearchQueryChange = vm::setCategoryQuery,
-                entries = categoryEntries,
-                selectedIndex = selectedIndex,
-                groupsHeading = groupsHeading,
-                sheet = false,
-                listState = catListState,
-                onSelect = onCategorySelect,
-                onLongSelect = onCategoryLongSelect,
-                onNavigateRight = { focusTitles() },
-                focusRequester = railFocus,
-                focusRowIndex = railFocusRow,
-                onRowFocused = { railFocusRow = null },
-                onRowFocus = { catFocusIndex = it },
-                modifier = categoriesModifier
+            categoryColumn(
+                false, { focusTitles() },
+                Modifier
                     .padding(start = fx(64), top = 128.mpx, bottom = 24.mpx)
                     .width(colW)
                     .fillMaxHeight(),
@@ -756,22 +765,9 @@ private fun SeriesGrid(
                     section = stringResource(R.string.common_nav_series), category = headerLabel, count = vodCount(true, count),
                     showChevron = false, modifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(860)),
                 )
-                LiveCategories(
-                    searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                    onSearchQueryChange = vm::setCategoryQuery,
-                    entries = categoryEntries,
-                    selectedIndex = selectedIndex,
-                    groupsHeading = groupsHeading,
-                    sheet = false,
-                    listState = catListState,
-                    onSelect = onCategorySelect,
-                    onLongSelect = onCategoryLongSelect,
-                    onNavigateRight = { focusTitles() },
-                    focusRequester = railFocus,
-                    focusRowIndex = railFocusRow,
-                    onRowFocused = { railFocusRow = null },
-                    onRowFocus = { catFocusIndex = it },
-                    modifier = categoriesModifier
+                categoryColumn(
+                    false, { focusTitles() },
+                    Modifier
                         .padding(start = margin, top = top, bottom = 24.mpx)
                         .width(colW)
                         .fillMaxHeight(),
@@ -800,11 +796,7 @@ private fun SeriesGrid(
                 // The lists clip what is drawn outside them, which cut the focused card's glow: they are
                 // laid out [glowRoom] wider at each side and padded back by the same amount.
                 val glowRoom = 24.mpx
-                val glowWide = Modifier.layout { measurable, constraints ->
-                    val extra = glowRoom.roundToPx()
-                    val placeable = measurable.measure(constraints.copy(minWidth = constraints.minWidth + extra * 2, maxWidth = constraints.maxWidth + extra * 2))
-                    layout(constraints.maxWidth, constraints.maxHeight) { placeable.place(-extra, 0) }
-                }
+                val glowWide = Modifier.glowRoom(glowRoom)
                 if (series.itemCount == 0) {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         Text(emptyText, style = stageText(20, 500), color = StageColors.Muted)
@@ -909,23 +901,9 @@ private fun SeriesGrid(
         }
 
         if (categoriesOpen) {
-            LiveCategories(
-                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                onSearchQueryChange = vm::setCategoryQuery,
-                entries = categoryEntries,
-                selectedIndex = selectedIndex,
-                groupsHeading = groupsHeading,
-                sheet = true,
-                listState = catListState,
-                onSelect = onCategorySelect,
-                onLongSelect = onCategoryLongSelect,
-                onNavigateRight = { categoriesOpen = false; focusTitles() },
-                focusRequester = railFocus,
-                focusRowIndex = railFocusRow,
-                onRowFocused = { railFocusRow = null },
-                onRowFocus = { catFocusIndex = it },
-                sheetHint = stringResource(R.string.common_nav_series),
-                modifier = categoriesModifier
+            categoryColumn(
+                true, { categoriesOpen = false; focusTitles() },
+                Modifier
                     .padding(start = fx(24), top = 24.mpx, bottom = 24.mpx)
                     .width(
                         // Panel widths › Categories sheet (Cinematic): its own % of the screen, as Live TV's Stage sheet.
