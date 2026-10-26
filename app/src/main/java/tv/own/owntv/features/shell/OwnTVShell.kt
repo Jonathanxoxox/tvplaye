@@ -95,7 +95,7 @@ import tv.own.owntv.core.theme.ThemeMode
 import tv.own.owntv.core.live.LiveKey
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import tv.own.owntv.ui.theme.flutlichtNight
+import tv.own.owntv.ui.theme.nightScenes
 
 /** Which layer currently holds focus (drives Back navigation). */
 private enum class ShellLayer { SIDEBAR, CONTENT }
@@ -302,7 +302,11 @@ fun OwnTVShell(
     val timeshiftOffsetState = liveVm.timeshiftOffsetSec.collectAsStateWithLifecycle()
     val watchingWallState = liveVm.watchingWallMs.collectAsStateWithLifecycle()
     val onLocalCopy by liveVm.onLocalCopy.collectAsStateWithLifecycle()
-    // Flutlichtnacht: the night stadium behind Live TV and the TV Guide while the focused channel shows football.
+    // Night scenes (Glass & background): the chosen theme behind every page, and Flutlichtnacht — the night
+    // stadium — behind Live TV and the TV Guide while the focused channel shows football.
+    val nightSettings = tv.own.owntv.ui.theme.rememberNightSceneSettings()
+    val nightScene by nightSettings.scene.collectAsStateWithLifecycle()
+    val nightStadiumOn by nightSettings.stadium.collectAsStateWithLifecycle()
     val nightChannel by liveVm.previewChannel.collectAsStateWithLifecycle()
     val nightNowNext by liveVm.nowNext.collectAsStateWithLifecycle()
     val nightGroup by liveVm.previewCategoryName.collectAsStateWithLifecycle()
@@ -1100,9 +1104,11 @@ fun OwnTVShell(
                     // The Stage page, across the whole width — under a docked rail's reserve too.
                     // Over a picture it draws only the Accent light; the picture shows through.
                     .stageBackground(tv.own.owntv.ui.theme.stageAccent.accent)
-                    .flutlichtNight(
-                        footballFocused && playerMode == PlayerMode.NONE &&
+                    .nightScenes(
+                        scene = nightScene,
+                        stadium = nightStadiumOn && footballFocused &&
                             (selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG),
+                        playerFree = playerMode == PlayerMode.NONE,
                     ),
             ) {
                 // Live TV's view (List / Guide), and how a guide — the TV Guide or Live TV's Guide view —
