@@ -7,6 +7,10 @@ on:
   push:
     branches: [ "claude/project-thread-xpoaz5" ]
   workflow_dispatch:
+    inputs:
+      parts:
+        description: "Teile der Tour (all oder z. B. vod,player)"
+        default: all
 
 permissions:
   contents: write
@@ -47,13 +51,13 @@ jobs:
       - name: Test playlist, guide and stream
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q pillow
           python3 tools/smoke/fixtures.py fx
           mkdir -p fx/stream
           ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=25 -f lavfi -i sine=frequency=440 \
             -t 120 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -f hls -hls_time 4 \
             -hls_list_size 0 fx/stream/index.m3u8
           nohup python3 -m http.server 8080 --directory fx > http.log 2>&1 &
-          pip install -q pillow
 
       - name: Enable KVM
         run: |
@@ -62,6 +66,8 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Tour on emulator
+        env:
+          TOUR_PARTS: ${{ inputs.parts || 'all' }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30

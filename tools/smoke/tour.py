@@ -389,6 +389,67 @@ def player_tour():
     shot("player-zurueck-2")
 
 
+def vod_section(name, layout):
+    """Filme oder Serien: Raster, Hero, Kategorien und die Detailseite eines Titels."""
+    if not open_section(name):
+        return
+    time.sleep(4)  # Metadaten (TMDB) für den ersten Titel nachladen lassen
+    tag = f"{slug(name)}-{layout}"
+    shot(f"vod-{tag}")
+    key("DPAD_RIGHT", wait=1.0)
+    time.sleep(3)
+    shot(f"vod-{tag}-titel")
+    key("DPAD_RIGHT", n=2, wait=0.8)
+    time.sleep(3)
+    shot(f"vod-{tag}-titel-3")
+    key("DPAD_DOWN", wait=1.0)
+    time.sleep(2)
+    shot(f"vod-{tag}-zeile-2")
+    key("DPAD_UP", wait=0.8)
+    key("DPAD_CENTER", wait=3.0)
+    time.sleep(2)
+    shot(f"vod-{tag}-details")
+    key("DPAD_DOWN", n=2, wait=0.8)
+    shot(f"vod-{tag}-details-unten")
+    key("BACK", wait=1.5)
+    key("DPAD_LEFT", n=4, wait=0.6)
+    shot(f"vod-{tag}-links")
+
+
+def set_vod_layout():
+    """Einstellungen › Layout › „Layout für Filme und Serien“ umschalten."""
+    if not open_section("Mehr"):
+        return False
+    key("DPAD_RIGHT", wait=0.8)
+    if not goto(r"^Einstellungen$"):
+        return False
+    time.sleep(2)
+    key("DPAD_RIGHT", wait=0.8)
+    key("DPAD_DOWN", wait=0.8)
+    if not goto(r"^Layout$", xmin=600):
+        return False
+    time.sleep(1.5)
+    if not goto(r"^Layout für Filme und Serien", press=False):
+        return False
+    key("DPAD_RIGHT", wait=1.0)
+    shot("vod-layout-umgestellt")
+    if find(dump(), r"^Getrennt$") is None:
+        key("DPAD_CENTER", wait=1.2)
+        shot("vod-layout-ok")
+    key("BACK", wait=1.5)
+    key("BACK", wait=1.5)
+    return True
+
+
+def vod_tour():
+    vod_section("Filme", "standard")
+    vod_section("Serien", "standard")
+    if set_vod_layout():
+        vod_section("Filme", "umgestellt")
+        vod_section("Serien", "umgestellt")
+        set_vod_layout()  # zurück, damit der Rest der Tour wie gewohnt aussieht
+
+
 def settings_tour():
     if not open_section("Mehr"):
         return
@@ -434,11 +495,15 @@ def main():
     if find(dump(), r"Los geht|Wer schaut gerade|Angenehm lesbar|Flutlicht einrichten|Playlist hinzufügen|Hier eingeben|Importieren starten") is not None:
         print("[tour] Einrichtung nicht abgeschlossen, Tour endet hier", flush=True)
         return
-    step("menue", rail_tour)
-    step("mehr-tour", more_tour)
-    step("guide", guide_tour)
-    step("player", player_tour)
-    step("einstellungen-tour", settings_tour)
+    # TOUR_PARTS=vod,player,… läuft nur durch diese Teile (schneller beim Arbeiten an einem Bereich).
+    parts = [p for p in os.environ.get("TOUR_PARTS", "all").replace(" ", "").split(",") if p]
+    for part, name, fn in [
+        ("menu", "menue", rail_tour), ("vod", "filme-serien", vod_tour), ("more", "mehr-tour", more_tour),
+        ("guide", "guide", guide_tour), ("player", "player", player_tour),
+        ("settings", "einstellungen-tour", settings_tour),
+    ]:
+        if "all" in parts or part in parts:
+            step(name, fn)
     with open(os.path.join(OUT, "steps.json"), "w", encoding="utf-8") as f:
         json.dump(steps, f, ensure_ascii=False, indent=1)
 
