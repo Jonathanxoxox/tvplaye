@@ -54,10 +54,56 @@ for group, names in groups.items():
                 f"<title>{title}</title><desc>{desc}</desc></programme>"
             )
             t = end
+# Filme und Serien (type="movie"/"series"), damit Filme/Serien in der Tour nicht leer sind. Echte Titel,
+# damit die Metadaten (TMDB) Poster, Hintergrund und Besetzung finden; die eigenen Poster sind nur Ersatz.
+movies = {
+    "Filme | Neu": [
+        "Gladiator II (2024)", "Wicked (2024)", "Dune: Part Two (2024)", "Alles steht Kopf 2 (2024)",
+        "Deadpool & Wolverine (2024)", "Oppenheimer (2023)", "Barbie (2023)", "Top Gun: Maverick (2022)",
+    ],
+    "Filme | Deutsch": [
+        "Lola rennt (1998)", "Das Boot (1981)", "Der Schuh des Manitu (2001)", "Good Bye, Lenin! (2003)",
+        "Im Westen nichts Neues (2022)", "Das Leben der Anderen (2006)",
+    ],
+    "Filme | Horror": ["Wolfman (2010)", "Nosferatu (2024)", "Smile 2 (2024)"],
+}
+series = {
+    "Serien | Neu": [("Nobody Wants This (2024)", 1, 6), ("The Bear (2022)", 2, 5), ("Shōgun (2024)", 1, 5)],
+    "Serien | Deutsch": [("Dark (2017)", 3, 6), ("Babylon Berlin (2017)", 2, 4), ("4 Blocks (2017)", 1, 6)],
+    "Serien | Kinder": [("Bluey (2018)", 2, 6), ("Peppa Wutz (2004)", 1, 6)],
+}
+posters = []
+for group, titles in movies.items():
+    for title in titles:
+        logo = f"{base}/poster/m{len(posters)}.png"
+        posters.append(title)
+        lines.append(f'#EXTINF:-1 type="movie" tvg-logo="{logo}" group-title="{group}",{title}')
+        lines.append(f"{base}/stream/index.m3u8")
+for group, shows_ in series.items():
+    for show, seasons, episodes in shows_:
+        logo = f"{base}/poster/m{len(posters)}.png"
+        posters.append(show)
+        for s_ in range(1, seasons + 1):
+            for e_ in range(1, episodes + 1):
+                lines.append(f'#EXTINF:-1 type="series" tvg-logo="{logo}" group-title="{group}",{show} S{s_:02d}E{e_:02d}')
+                lines.append(f"{base}/stream/index.m3u8")
+try:  # Ersatzposter; ohne Pillow bleiben die Kacheln eben ohne Bild
+    from PIL import Image, ImageDraw
+
+    (out / "poster").mkdir(parents=True, exist_ok=True)
+    for i, title in enumerate(posters):
+        im = Image.new("RGB", (400, 600))
+        d = ImageDraw.Draw(im)
+        for y in range(600):
+            d.line([(0, y), (400, y)], fill=(20 + (i * 37) % 120, 40 + y // 8, 80 + (i * 53) % 150))
+        d.multiline_text((24, 420), title.replace(" (", "\n("), fill="white", spacing=8)
+        im.save(out / "poster" / f"m{i}.png")
+except ImportError:
+    pass
 out.mkdir(parents=True, exist_ok=True)
 (out / "playlist.m3u").write_text("\n".join(lines) + "\n", encoding="utf-8")
 channels = "".join(f'<channel id="ch{i}"><display-name>ch{i}</display-name></channel>' for i in range(1, n + 1))
 (out / "epg.xml").write_text(
     '<?xml version="1.0" encoding="UTF-8"?><tv>' + channels + "".join(programmes) + "</tv>\n", encoding="utf-8"
 )
-print(f"{n} Sender, {len(programmes)} Sendungen")
+print(f"{n} Sender, {len(programmes)} Sendungen, {len(posters)} Filme und Serien")
