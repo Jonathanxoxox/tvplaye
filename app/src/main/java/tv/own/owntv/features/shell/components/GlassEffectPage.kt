@@ -1,6 +1,5 @@
 package tv.own.owntv.features.shell.components
 
-import tv.own.owntv.ui.theme.stageTone
 import tv.own.owntv.ui.theme.LocalStagePalette
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -286,7 +285,7 @@ private fun GlassBackgroundPreview() {
                 .fillMaxWidth()
                 .aspectRatio(16f / 9f)
                 .clip(RoundedCornerShape(18.mpx))
-                .background(stageTone(Color(0xFF0B5257), LocalStagePalette.current.page))
+                .background(LocalStagePalette.current.page)
                 .drawBehind { drawInnerRing(previewRim, 1.mpx.toPx(), 18.mpx.toPx()) },
         ) {
             val scale = maxWidth / 1920.mpx
@@ -360,23 +359,40 @@ private fun NightSceneRows(okHints: List<Pair<String, String>>, stepHints: List<
     val stadium by nights.stadium.collectAsStateWithLifecycle()
     StageSettingsHeading(stringResource(R.string.tvplayer_scene_heading), 2)
     val scenes = tv.own.owntv.ui.theme.NightScene.entries
-    val sceneLabels = listOf(stringResource(R.string.tvplayer_scene_off), stringResource(R.string.tvplayer_scene_nordlicht), stringResource(R.string.tvplayer_scene_mitternacht))
-    val sceneDescs = listOf(stringResource(R.string.tvplayer_scene_off_desc), stringResource(R.string.tvplayer_scene_nordlicht_desc), stringResource(R.string.tvplayer_scene_mitternacht_desc))
+    val sceneLabels = listOf(
+        stringResource(R.string.tvplayer_scene_off), stringResource(R.string.tvplayer_scene_nordlicht), stringResource(R.string.tvplayer_scene_mitternacht),
+        stringResource(R.string.tvplayer_scene_tiefsee), stringResource(R.string.tvplayer_scene_mondwueste), stringResource(R.string.tvplayer_scene_glimmwald),
+        stringResource(R.string.tvplayer_scene_hafenlichter),
+    )
+    val sceneDescs = listOf(
+        stringResource(R.string.tvplayer_scene_off_desc), stringResource(R.string.tvplayer_scene_nordlicht_desc), stringResource(R.string.tvplayer_scene_mitternacht_desc),
+        stringResource(R.string.tvplayer_scene_tiefsee_desc), stringResource(R.string.tvplayer_scene_mondwueste_desc), stringResource(R.string.tvplayer_scene_glimmwald_desc),
+        stringResource(R.string.tvplayer_scene_hafenlichter_desc),
+    )
     val sceneIndex = scenes.indexOf(scene)
     val sceneTitle = stringResource(R.string.tvplayer_scene_title)
+    // Seven scenes are too many side by side: the name with ◀ ▶, and a live picture of it in the panel.
     StageSettingRow(
         icon = OwnTVIcon.SPARKLE,
         title = sceneTitle,
         desc = stringResource(R.string.tvplayer_scene_line),
-        value = SettingValue.Segmented(sceneLabels, sceneIndex),
+        value = SettingValue.Stepper(sceneLabels[sceneIndex]),
         onClick = { nights.setScene(scenes[(sceneIndex + 1) % scenes.size]) },
         onStep = { d -> nights.setScene(scenes[(sceneIndex + d).coerceIn(0, scenes.lastIndex)]) },
         help = SettingHelp(
-            sceneTitle,
-            stringResource(R.string.tvplayer_scene_help),
-            sceneLabels.zip(sceneDescs) { l, d -> "$l — $d" },
-            chosen = sceneIndex,
+            sceneTitle + dotSeparator() + sceneLabels[sceneIndex],
+            stringResource(R.string.tvplayer_scene_panel, sceneDescs[sceneIndex], stringResource(R.string.tvplayer_scene_help)),
             hints = stepHints,
+            extra = {
+                tv.own.owntv.ui.theme.NightScenePreview(
+                    scene,
+                    Modifier
+                        .padding(top = 16.mpx)
+                        .fillMaxWidth()
+                        .aspectRatio(16f / 9f)
+                        .clip(RoundedCornerShape(18.mpx)),
+                )
+            },
         ),
     )
     val stadiumTitle = stringResource(R.string.tvplayer_stadium_title)

@@ -1,6 +1,5 @@
 package tv.own.owntv.features.shell.components
 
-import tv.own.owntv.ui.theme.stageTone
 import tv.own.owntv.ui.theme.LocalStagePalette
 import androidx.compose.runtime.Immutable
 
@@ -97,7 +96,7 @@ fun MediaDetailsScreen(details: MediaDetailsUi, onExit: () -> Unit, modifier: Mo
             else -> false
         }
     }
-    val page = stageTone(Color(0xFF0B5257), LocalStagePalette.current.page)
+    val page = LocalStagePalette.current.page
     tv.own.owntv.ui.components.OwnTVPopup(onDismissRequest = onExit, stageLayout = true, stageScaled = false) {
         LaunchedEffect(Unit) { kotlinx.coroutines.delay(60); runCatching { focus.requestFocus() } }
         Box(modifier.fillMaxSize().background(page).trapAllFocusExit()) {
