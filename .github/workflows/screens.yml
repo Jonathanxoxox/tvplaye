@@ -1,4 +1,4 @@
-name: Flutlicht Bildschirm-Tour
+name: Mayo TV Bildschirm-Tour
 
 # Richtet die App im Emulator (1920×1080, Deutsch) mit einer Test-Playlist ein, läuft per
 # Fernbedienungstasten durch Menüs, TV-Guide, Player und Einstellungen und legt die Fotos im Zweig
@@ -42,7 +42,7 @@ jobs:
         run: |
           KS="$RUNNER_TEMP/release.keystore"
           keytool -genkeypair -keystore "$KS" -storepass android -keypass android -alias sideload \
-            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Flutlicht"
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mayo TV"
           export KEYSTORE_FILE="$KS"
           chmod +x ./gradlew
           ./gradlew assembleX86_64Release --stacktrace
@@ -114,7 +114,7 @@ jobs:
           cp http.log tour/ 2>/dev/null || true
           cd tour
           git init -q -b screens
-          git config user.name "flutlicht-ci"; git config user.email "ci@users.noreply.github.com"
+          git config user.name "mayotv-ci"; git config user.email "ci@users.noreply.github.com"
           echo "Lauf ${{ github.run_id }} · ${{ github.sha }}" > README.md
           git add -A && git commit -q -m "Bildschirm-Tour ${{ github.sha }}"
           git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/$BRANCH

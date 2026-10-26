@@ -51,7 +51,7 @@ import kotlin.math.sin
 import tv.own.owntv.R
 
 /**
- * Flutlicht's night scenes, in the layered style of Jonas Laterne (super7): animated landscapes behind
+ * Mayo TV's night scenes, in the layered style of Jonas Laterne (super7): animated landscapes behind
  * the shell's pages, without characters.
  *
  * - [NightScene.NORDLICHT], [NightScene.MITTERNACHT] and the four worlds of NightWorlds.kt (Tiefsee, Mondwüste,

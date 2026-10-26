@@ -672,7 +672,7 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
                 horizontalArrangement = Arrangement.spacedBy(9.mpx), verticalAlignment = Alignment.CenterVertically,
             ) {
                 OwnTVIcon(OwnTVIcon.NETWORK, StageColors.Text, Modifier.size(18.mpx))
-                // Flutlicht is built on OwnTV; the GPL wants the origin named.
+                // Mayo TV is built on OwnTV; the GPL wants the origin named.
                 Text(stringResource(R.string.tvplayer_about_based_on, GITHUB_REPO), style = stageText(16, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             val languages = SupportedLocales.all.count { it.packaged }

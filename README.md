@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="app/src/main/res/drawable-xhdpi/flutlicht_banner.png" alt="Flutlicht" width="480">
+  <img src="app/src/main/res/drawable-xhdpi/flutlicht_banner.png" alt="Mayo TV" width="480">
 </p>
 
 <p align="center">
@@ -16,13 +16,13 @@
 
 ---
 
-Flutlicht ist ein IPTV-Player für die Android-TV-Box. Er ist auf schnelles Umschalten mit der
+Mayo TV ist ein IPTV-Player für die Android-TV-Box. Er ist auf schnelles Umschalten mit der
 Fernbedienung ausgelegt: OK öffnet im Vollbild die Senderliste mit Programm, beim Zappen erscheint
 unten eine Info-Leiste, Links/Rechts/Hoch/Runter tun, was man von einem IPTV-Player erwartet. Dazu
-kommt, worum es eigentlich geht: **Fußball**. Flutlicht weiß, welche Teams und Ligen du verfolgst,
+kommt, worum es eigentlich geht: **Fußball**. Mayo TV weiß, welche Teams und Ligen du verfolgst,
 zeigt laufende Spiele direkt im Launcher und erinnert dich vor dem Anpfiff.
 
-> ⚠️ Flutlicht ist nur ein Player. Er bringt keine Sender, Playlists oder Streams mit. Du fügst deine
+> ⚠️ Mayo TV ist nur ein Player. Er bringt keine Sender, Playlists oder Streams mit. Du fügst deine
 > eigene Quelle hinzu und bist selbst dafür verantwortlich.
 
 ## 📥 Installieren
@@ -30,18 +30,19 @@ zeigt laufende Spiele direkt im Launcher und erinnert dich vor dem Anpfiff.
 Die neueste APK liegt immer unter derselben Adresse:
 
 ```
-https://github.com/Jonathanxoxox/tvplayer/releases/download/latest/Flutlicht.apk
+https://github.com/Jonathanxoxox/tvplayer/releases/download/latest/MayoTV.apk
 ```
 
-Am Fernseher z. B. mit **Downloader** öffnen, „Apps aus unbekannten Quellen“ erlauben, installieren.
-Danach aktualisiert sich Flutlicht selbst: Jeder Build erscheint zusätzlich als Release `v1.0.<Lauf>`,
+Bis Oktober 2026 hieß die App Flutlicht; der alte Link auf `Flutlicht.apk` liefert vorerst dieselbe
+APK. Am Fernseher z. B. mit **Downloader** öffnen, „Apps aus unbekannten Quellen“ erlauben, installieren.
+Danach aktualisiert sich Mayo TV selbst: Jeder Build erscheint zusätzlich als Release `v1.0.<Lauf>`,
 das der Updater in der App findet (Einstellungen → App → Nach Updates suchen).
 
 Die App installiert sich als `io.github.jonathanxoxox.tvplayer`. Seit Build v1.0.36 sind alle APKs mit
 demselben Schlüssel signiert. Wer eine ältere Version hat, deinstalliert sie einmal, danach gehen
 Updates einfach drüber.
 
-## ✨ Was Flutlicht kann
+## ✨ Was Mayo TV kann
 
 ### ⚽ Fußball
 - **„Für dich“ im Launcher**: Eine Zeile auf dem Android-TV-Startbildschirm mit den Spielen deiner
@@ -142,7 +143,7 @@ but is not endorsed or certified by TMDB. Die Untertitelsuche nutzt
 
 ## 📄 Lizenz
 
-GNU General Public License v3.0, siehe [LICENSE](LICENSE). Flutlicht ist eine veränderte Fassung von
+GNU General Public License v3.0, siehe [LICENSE](LICENSE). Mayo TV ist eine veränderte Fassung von
 [OwnTV](https://github.com/ahXN00/OwnTV) (© ahXN00, GPLv3). Geändert wurden ab Oktober 2026 unter
 anderem Name und Branding, die Vollbild-Bedienung, die Launcher-Zeilen und alle Fußball-Funktionen.
 Die Kernbibliothek stammt unverändert von dort.

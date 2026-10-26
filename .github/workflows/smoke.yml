@@ -1,4 +1,4 @@
-name: Flutlicht Starttest
+name: Mayo TV Starttest
 
 # Startet die App auf einem Emulator und schreibt Absturzmeldungen ins Log, damit ein Fehler beim
 # Start ohne Fernseher sichtbar wird.
@@ -52,7 +52,7 @@ jobs:
         run: |
           KS="$RUNNER_TEMP/release.keystore"
           keytool -genkeypair -keystore "$KS" -storepass android -keypass android -alias sideload \
-            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Flutlicht"
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mayo TV"
           export KEYSTORE_FILE="$KS"
           chmod +x ./gradlew
           ./gradlew assembleX86_64Release --stacktrace
