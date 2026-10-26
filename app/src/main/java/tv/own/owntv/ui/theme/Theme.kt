@@ -3,6 +3,8 @@ package tv.own.owntv.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ColorScheme
@@ -105,16 +107,19 @@ fun OwnTVTheme(
         ThemeMode.SYSTEM -> systemInDarkTheme
     }
 
+    // Flutlicht's worlds tint the dark panels to their scene (Glass & background › Szene).
+    val scene by rememberNightSceneSettings().scene.collectAsState()
+
     val colors = ownTvColors(
         isDark = useDark,
         accent = accent,
         customAccent = customAccent,
         focusHighlight = focusHighlight,
-    )
+    ).forScene(scene)
 
     CompositionLocalProvider(
         LocalOwnTVColors provides colors,
-        LocalStagePalette provides if (useDark) StagePalette.Dark else StagePalette.Light,
+        LocalStagePalette provides if (useDark) StagePalette.Dark.forScene(scene) else StagePalette.Light,
         LocalThemeMode provides themeMode,
         LocalFocusBorderWidth provides focusBorderWidthDp.dp,
         LocalAnimationLevel provides animationLevel,

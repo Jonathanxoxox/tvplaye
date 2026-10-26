@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       parts:
-        description: "Teile der Tour (all oder z. B. vod,player)"
+        description: "Teile der Tour (all oder z. B. vod,scenes,player)"
         default: all
 
 permissions:

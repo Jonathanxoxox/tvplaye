@@ -495,18 +495,64 @@ def settings_tour():
             key("BACK", wait=1.5)
 
 
+SCENES = ["Tiefsee", "Mondwüste", "Glimmwald", "Hafenlichter"]
+
+
+def open_scene_row():
+    """Mehr › Einstellungen › Darstellung › Glas & Hintergrund, Fokus auf die Zeile „Szene“."""
+    if not open_section("Mehr"):
+        return False
+    key("DPAD_RIGHT", wait=0.8)
+    if not goto(r"^Einstellungen$"):
+        return False
+    time.sleep(2)
+    key("DPAD_RIGHT", wait=0.8)
+    key("DPAD_DOWN", wait=0.8)
+    if not goto(r"^Darstellung$", xmin=600):
+        return False
+    time.sleep(1.5)
+    if not goto(r"^Glas & Hintergrund$"):
+        return False
+    time.sleep(1.5)
+    return goto(r"^Szene$", press=False)
+
+
+def scenes_tour():
+    """Jede neue Nachtszene einstellen (Vorschau im Feld rechts), dann Startseite und Live-TV davor."""
+    for name in SCENES:
+        if not open_scene_row():
+            shot(f"szene-{slug(name)}-zeile-fehlt")
+            return
+        for _ in range(8):
+            if find(dump(), "^" + re.escape(name) + "$") is not None:
+                break
+            key("DPAD_RIGHT", wait=1.0)
+        time.sleep(2)
+        shot(f"szene-{slug(name)}-einstellung")
+        # Erst mit Zurück raus: ◀ auf der Szenen-Zeile würde die Szene wieder umstellen.
+        key("BACK", wait=1.5)
+        key("BACK", wait=1.5)
+        key("BACK", wait=1.5)
+        for section in ["Startseite", "Live-TV"]:
+            if open_section(section):
+                time.sleep(2)
+                shot(f"szene-{slug(name)}-{slug(section)}")
+        key("DPAD_RIGHT", wait=1.5)
+        shot(f"szene-{slug(name)}-live-liste")
+
+
 def main():
     step("einrichtung", setup)
     # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
     if find(dump(), r"Los geht|Wer schaut gerade|Angenehm lesbar|Flutlicht einrichten|Playlist hinzufügen|Hier eingeben|Importieren starten") is not None:
         print("[tour] Einrichtung nicht abgeschlossen, Tour endet hier", flush=True)
         return
-    # TOUR_PARTS=vod,player,… läuft nur durch diese Teile (schneller beim Arbeiten an einem Bereich).
+    # TOUR_PARTS=vod,scenes,player,… läuft nur durch diese Teile (schneller beim Arbeiten an einem Bereich).
     parts = [p for p in os.environ.get("TOUR_PARTS", "all").replace(" ", "").split(",") if p]
     for part, name, fn in [
         ("menu", "menue", rail_tour), ("vod", "filme-serien", vod_tour), ("more", "mehr-tour", more_tour),
         ("guide", "guide", guide_tour), ("player", "player", player_tour),
-        ("settings", "einstellungen-tour", settings_tour),
+        ("settings", "einstellungen-tour", settings_tour), ("scenes", "szenen", scenes_tour),
     ]:
         if "all" in parts or part in parts:
             step(name, fn)
