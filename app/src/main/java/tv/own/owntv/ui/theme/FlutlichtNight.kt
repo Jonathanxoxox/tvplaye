@@ -50,11 +50,11 @@ import kotlin.math.sin
 fun Modifier.flutlichtNight(visible: Boolean): Modifier {
     val moving = animationsOn
     val on = visible && !LocalStagePalette.current.isLight
-    val alpha = animateFloatAsState(if (on) 1f else 0f, if (moving) tween<Float>(900) else snap<Float>(), label = "flutlicht-fade")
+    val alpha = animateFloatAsState(if (on) 1f else 0f, if (moving) tween<Float>(900) else snap<Float>())
     if (!on && alpha.value <= 0f) return this
     val time: State<Float> = if (moving) {
-        rememberInfiniteTransition(label = "flutlicht")
-            .animateFloat(0f, 1f, infiniteRepeatable(tween(LOOP_MS, easing = LinearEasing)), label = "flutlicht-t")
+        rememberInfiniteTransition()
+            .animateFloat(0f, 1f, infiniteRepeatable(tween(LOOP_MS, easing = LinearEasing)))
     } else {
         remember { mutableFloatStateOf(0.25f) }
     }
