@@ -1,4 +1,4 @@
-name: TV Player APK
+name: Flutlicht APK
 
 # Baut bei jedem Push auf den Arbeitszweig eine signierte Release-APK und legt sie unter einer
 # festen Adresse im Release "latest" ab, damit man sie am Fernseher direkt laden kann.
@@ -40,7 +40,7 @@ jobs:
           else
             echo "::warning::Secret KEYSTORE_BASE64 fehlt, diese APK bekommt einen einmaligen Schlüssel."
             keytool -genkeypair -keystore "$KS" -storepass android -keypass android -alias sideload \
-              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=TV Player"
+              -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Flutlicht"
           fi
           echo "KEYSTORE_FILE=$KS" >> "$GITHUB_ENV"
 
@@ -55,12 +55,12 @@ jobs:
           chmod +x ./gradlew
           ./gradlew assembleStandardRelease --stacktrace
           mkdir -p dist
-          cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/TVPlayer.apk
+          cp "$(ls app/build/outputs/apk/standard/release/*.apk | head -n1)" dist/Flutlicht.apk
 
       - uses: actions/upload-artifact@v4
         with:
-          name: TVPlayer
-          path: dist/TVPlayer.apk
+          name: Flutlicht
+          path: dist/Flutlicht.apk
           if-no-files-found: error
 
       - name: Publish "latest" release
@@ -71,4 +71,4 @@ jobs:
           prerelease: true
           make_latest: false
           body: "Automatisch gebaut aus ${{ github.ref_name }} @ ${{ github.sha }} (Version 1.0.${{ github.run_number }})"
-          files: dist/TVPlayer.apk
+          files: dist/Flutlicht.apk

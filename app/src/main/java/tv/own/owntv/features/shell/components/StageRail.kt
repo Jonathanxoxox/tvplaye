@@ -253,17 +253,32 @@ private val StripPanel = Color(0xFF1A878B)
 private val MenuWidth = 440.mpx
 private val StripWidth = 110.mpx
 
+/** What every screen leaves free at its left edge for the resting icon strip. */
+val StageRailStripWidth = StripWidth
+
 /** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable
 private fun MenuLogo(expanded: Boolean) {
-    val name = stringResource(R.string.tvplayer_app_name)
-    Text(
-        if (expanded) name else name.split(' ').joinToString("") { it.take(1) },
-        style = stageText(if (expanded) 46 else 40, 800),
-        color = stageAccent.accent,
-        maxLines = 1,
-        modifier = Modifier.padding(start = if (expanded) 16.mpx else 0.mpx),
-    )
+    // Flutlicht: the floodlight mark on the strip, with the name beside it when the menu is open.
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(start = if (expanded) 10.mpx else 0.mpx),
+    ) {
+        androidx.compose.foundation.Image(
+            painter = androidx.compose.ui.res.painterResource(R.mipmap.flutlicht_icon),
+            contentDescription = null,
+            modifier = Modifier.size(64.mpx).clip(RoundedCornerShape(12.mpx)),
+        )
+        if (expanded) {
+            Text(
+                stringResource(R.string.tvplayer_app_name),
+                style = stageText(40, 800),
+                color = StageColors.Text,
+                maxLines = 1,
+                modifier = Modifier.padding(start = 18.mpx),
+            )
+        }
+    }
 }
 
 private val MainSection.stageIcon: OwnTVIcon

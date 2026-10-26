@@ -315,6 +315,8 @@ fun PlayerHud(
     // Menu, Up and Down wait for the release too: held, they open the guide, history or search.
     var menuPending by remember { mutableStateOf(false) }
     var verticalPending by remember { mutableStateOf<Key?>(null) }
+    // Right switches to the channel before on release; held, it shows the programme in the info bar.
+    var rightPending by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) } // stream technical-info overlay
     // Used only by "Report this stream", which writes the current readout into the playback log.
     val reportContext = androidx.compose.ui.platform.LocalContext.current
@@ -654,6 +656,38 @@ fun PlayerHud(
                     }
                 }
                 return@onPreviewKeyEvent true
+            }
+            // Right: the channel before on release, the info bar with the programme when held. Left/Right
+            // keep scrubbing where the timeline owns them.
+            val scrubsLeftRight = error == null && (if (onScrubLive != null) liveLeftRightRewinds else !isLive && duration > 0L)
+            if (listFirst && onPreviousChannel != null && !controlsVisible && !inert && dialog == HudDialog.NONE &&
+                !showOptions && !scrubsLeftRight && e.key.horizontalDirection(layoutDirection) == HorizontalDirection.END
+            ) {
+                when (e.type) {
+                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
+                        rightPending = true
+                    } else if (rightPending) {
+                        rightPending = false
+                        showPanel = true
+                    }
+                    KeyEventType.KeyUp -> if (rightPending) { rightPending = false; cancelDirectTune(); onPreviousChannel() }
+                }
+                return@onPreviewKeyEvent true
+            }
+            // The classic remote's other player keys: Info and Yellow the info bar, Guide, Red, Green and
+            // Backspace the guide, Record the recording, Stop leaves the picture.
+            if (listFirst && !controlsVisible && !inert && dialog == HudDialog.NONE && !showOptions && !digitsActive) {
+                val action: (() -> Unit)? = when (e.key) {
+                    Key.Info, Key.ProgramYellow -> ({ showPanel = true })
+                    Key.Guide, Key.ProgramRed, Key.ProgramGreen, Key.Backspace -> onOpenGuide
+                    Key.MediaRecord -> onRecordThis
+                    Key.MediaStop -> onBack
+                    else -> null
+                }
+                if (action != null) {
+                    if (e.type == KeyEventType.KeyDown && e.nativeKeyEvent.repeatCount == 0) action()
+                    return@onPreviewKeyEvent true
+                }
             }
             // ---- Existing key handling (unchanged, but skip for digit KeyUp already consumed above) ----
             if (e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false

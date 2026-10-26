@@ -172,6 +172,9 @@ fun EpgScreen(
     onListView: () -> Unit = {},
     /** How ▶ from the rail enters the guide: at the grid row focus was on (the rail's entry hook, as Home's). */
     onEntryHook: (((() -> Boolean)?) -> Unit)? = null,
+    /** Holding ☰ in the grid: search. Blue: settings. */
+    onOpenSearch: () -> Unit = {},
+    onOpenSettings: () -> Unit = {},
 ) {
     val vm: EpgViewModel = koinViewModel()
     // Live TV's view model: its preview player (no second decoder), its category list and playlist marks.
@@ -606,6 +609,9 @@ fun EpgScreen(
                                     onMenu = { p -> returnTo = null; if (p != null) menuFor = channel to p else channelMenuFor = channel },
                                     onChannelMenu = { returnTo = null; channelMenuFor = channel },
                                     onFavorite = { vm.toggleFavoriteChannel(channel) },
+                                    onGroups = { sheetOpen = true },
+                                    onSearch = onOpenSearch,
+                                    onSettings = onOpenSettings,
                                 )
                             }
                         }
@@ -794,6 +800,9 @@ private fun GuideRow(
     onMenu: (EpgProgrammeEntity?) -> Unit,
     onChannelMenu: () -> Unit,
     onFavorite: () -> Unit,
+    onGroups: () -> Unit,
+    onSearch: () -> Unit,
+    onSettings: () -> Unit,
 ) {
     // Cache peek first, so a row scrolled back into view draws at once; a miss reads this one channel.
     val cacheRevision by vm.cacheRevision.collectAsStateWithLifecycle()
@@ -808,6 +817,7 @@ private fun GuideRow(
     }
     var focused by remember { mutableStateOf(false) }
     var okDown by remember { mutableStateOf(false) }
+    var menuDown by remember { mutableStateOf(false) }
     LaunchedEffect(focused, cursorTime, programmes) { if (focused) onShow(programmeAt(programmes, cursorTime)) }
     val rowSelected = focused && !cellMode
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight), verticalAlignment = Alignment.CenterVertically) {
@@ -830,7 +840,16 @@ private fun GuideRow(
                             else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime else System.currentTimeMillis())) }
                             true
                         }
-                        Key.Menu -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
+                        // ☰ opens the programme menu on release; held, it opens the search.
+                        Key.Menu -> {
+                            val repeat = e.nativeKeyEvent.repeatCount
+                            if (down && repeat == 0) menuDown = true
+                            else if (down && menuDown) { menuDown = false; onSearch() }
+                            else if (!down && menuDown) { menuDown = false; onMenu(programmeAt(progs, cursorTime)) }
+                            true
+                        }
+                        Key.Guide, Key.ProgramYellow -> { if (down) onGroups(); true }
+                        Key.ProgramBlue -> { if (down) onSettings(); true }
                         // The classic remote's guide keys: Info and Play show the programme, Red and Stop
                         // toggle the favourite, Green the channel options, CH± and RW/FF scroll a page.
                         Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
@@ -839,8 +858,8 @@ private fun GuideRow(
                         Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS); true }
                         Key.ChannelDown, Key.PageDown, Key.MediaFastForward -> { if (down) onStep(GUIDE_PAGE_ROWS); true }
                         // Physical by design: the timeline runs left to right in every language.
-                        // Row stage: ◀ leaves for the menu, ▶ steps into the programmes.
-                        Key.DirectionLeft -> if (!cellMode) false else {
+                        // Row stage: ◀ shows the groups (◀ again reaches the menu), ▶ steps into the programmes.
+                        Key.DirectionLeft -> if (!cellMode) { if (down) onGroups(); true } else {
                             if (down) onCursor(cursorStep(progs, cursorTime, -1, windowStart, windowEnd))
                             true
                         }

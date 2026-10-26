@@ -178,7 +178,9 @@ fun Modifier.stageGlass(radius: Dp, overContent: Boolean = false): Modifier {
     val palette = LocalStagePalette.current
     // Light glass is white 74% at the 56% default, so the flat opacity is lifted (0.3 + 0.8 x).
     val flat = if (palette.isLight) (0.3f + 0.8f * config.alpha).coerceIn(0f, 1f) else config.alpha
-    val fill = if (on) palette.glassTint.copy(alpha = if (overContent) 0.55f + 0.45f * config.alpha.coerceIn(0f, 1f) else flat) else palette.glassOff
+    // TV Player: sheets and menus over content are solid, as in the classic IPTV player, so no text
+    // behind them ever shows through.
+    val fill = if (overContent) palette.glassTint.copy(alpha = 1f) else if (on) palette.glassTint.copy(alpha = flat) else palette.glassOff
     // `.mine.light .glass`: highlight white 90%, rim ink 7% (8% glass off), shadow rgb(20,40,32) 16% (14% off, 0 20 50).
     val shadow = if (palette.isLight) Color(20, 40, 32).copy(alpha = if (on) 0.16f else 0.14f) else Color.Black.copy(alpha = if (on) 0.45f else 0.5f)
     val shadowBlur = if (palette.isLight && !on) 50 else 60

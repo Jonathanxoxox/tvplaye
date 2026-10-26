@@ -555,12 +555,12 @@ fun OwnTVShell(
         focusRail()
         Unit
     }
-    // Back out of a live channel lands in the TV Guide, with the channel carrying on in its preview, as
-    // classic IPTV players do. Films, series and a hidden Guide keep the plain exit.
-    val exitToGuide = {
-        val toGuide = zapSource == MainSection.LIVE_TV && MainSection.EPG in visibleSections
+    // Back out of a live channel lands in the channel list, with the channel carrying on in its preview,
+    // as Jonathan wants it. Films, series and a hidden list keep the plain exit.
+    val exitToList = {
+        val toList = zapSource == MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections
         exitPlayer()
-        if (toGuide && selectedSection != MainSection.EPG) onSelectSection(MainSection.EPG)
+        if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
     }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
     tv.own.owntv.features.downloads.DownloadWatchPrompt(onClosePlayer = { if (playerMode != PlayerMode.NONE) exitPlayer() })
@@ -867,7 +867,7 @@ fun OwnTVShell(
 
     BackHandler {
         when {
-            playerMode == PlayerMode.FULLSCREEN -> exitToGuide()
+            playerMode == PlayerMode.FULLSCREEN -> exitToList()
             showAvatarPicker -> showAvatarPicker = false
             showPlaylistPicker -> showPlaylistPicker = false
             showExit -> showExit = false
@@ -900,16 +900,22 @@ fun OwnTVShell(
     var shortcutLongFired by remember { mutableStateOf(false) }
     var shortcutHoldJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     val longPressBackArmed = playerMode == PlayerMode.MINI && !showExit && !showAvatarPicker && !showPlaylistPicker
-    // Holding Back in the TV Guide goes straight back to the channel in its preview, full screen.
-    val guideBackChannel = previewChannel
-        ?.takeIf { playerMode == PlayerMode.NONE && selectedSection == MainSection.EPG && !showExit && !showAvatarPicker && !showPlaylistPicker }
+    // Holding Back anywhere in the menus goes straight back to the channel watched last, full screen:
+    // the one in the preview, else the last one this session, else the newest in the history.
+    var lastLiveChannel by remember { mutableStateOf<tv.own.owntv.core.database.entity.ChannelEntity?>(null) }
+    LaunchedEffect(previewChannel) { previewChannel?.let { lastLiveChannel = it } }
+    val backToChannelArmed = playerMode == PlayerMode.NONE && !showExit && !showAvatarPicker && !showPlaylistPicker
     val backToChannel: () -> Unit = {
-        guideBackChannel?.let { ch ->
-            restoreFocus = false
-            liveVm.watchFromGuide(ch)
-            zapSource = MainSection.LIVE_TV
-            homeVm.stopPreview()
-            if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
+        scope.launch {
+            val ch = previewChannel ?: lastLiveChannel
+                ?: runCatching { liveVm.historyChannels(1).firstOrNull()?.channel }.getOrNull()
+            if (ch != null && playerMode == PlayerMode.NONE) {
+                restoreFocus = false
+                liveVm.watchFromGuide(ch)
+                zapSource = MainSection.LIVE_TV
+                homeVm.stopPreview()
+                if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
+            }
         }
     }
     // Media keys (the third way in) act on the docked window wherever focus is — but only if nothing nearer
@@ -936,7 +942,7 @@ fun OwnTVShell(
                 if (e.key != Key.Back) return@onPreviewKeyEvent false
                 when (e.type) {
                     KeyEventType.KeyDown -> {
-                        if ((longPressBackArmed || guideBackChannel != null) && backHoldJob == null) {
+                        if ((longPressBackArmed || backToChannelArmed) && backHoldJob == null) {
                             val toChannel = !longPressBackArmed
                             backLongFired = false
                             backHoldJob = scope.launch {
@@ -1108,13 +1114,13 @@ fun OwnTVShell(
                 Box(
                     modifier = Modifier.weight(1f).fillMaxWidth()
                         .then(
-                            // The floating rail sits over the content, so the content starts at the screen
-                            // edge (or beside a docked rail).
+                            // Every screen starts clear of the menu's icon strip (or beside a docked rail), so
+                            // the strip never lies over text. Only the open menu covers the content.
                             Modifier
                                 .padding(
                                     start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) {
                                         tv.own.owntv.features.shell.components.railDockedReserve(navSize)
-                                    } else 0.dp,
+                                    } else tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
                                 // ◀ with nothing further left in the content goes back to the rail, however the
                                 // content was entered. The D-pad search alone missed it whenever the open rail
@@ -1235,7 +1241,7 @@ fun OwnTVShell(
                                 sportsMatchRequests.pendingMatch.value = m to null
                                 onSelectSection(MainSection.SPORTS)
                             },
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 150.mpx,
+                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1280,6 +1286,8 @@ fun OwnTVShell(
                         selectedSection == MainSection.LIVE_TV && liveView == tv.own.owntv.core.settings.SettingsRepository.LiveView.GUIDE -> EpgScreen(
                             onPlayChannel = guidePlayChannel,
                             onPlayCatchup = guidePlayCatchup,
+                            onOpenSearch = { onSelectSection(MainSection.SEARCH) },
+                            onOpenSettings = { onSelectSection(MainSection.SETTINGS) },
                             onAddEpg = { openEpgAdd = true; onSelectSection(MainSection.SETTINGS) },
                             previewEnabled = playerMode == PlayerMode.NONE,
                             liveMode = true,
@@ -1289,8 +1297,6 @@ fun OwnTVShell(
                             onRestored = { restoreFocus = false },
                             modifier = Modifier
                                 .fillMaxSize()
-                                // Clear of the menu's icon strip, which stays at the left edge.
-                                .padding(start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 0.mpx else 110.mpx)
                                 .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
                                 .focusGroup(),
                         )
@@ -1330,7 +1336,7 @@ fun OwnTVShell(
                             restoreFocus = restoreFocus,
                             onRestored = { restoreFocus = false },
                             onEntryHook = { downloadsEntry = it },
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 150.mpx,
+                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1340,7 +1346,7 @@ fun OwnTVShell(
                             onChildFocused = { focusedLayer = ShellLayer.CONTENT },
                             onEntryHook = { sportsEntry = it },
                             active = playerMode == PlayerMode.NONE,
-                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 150.mpx,
+                            contentStart = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 64.mpx else 40.mpx,
                             modifier = Modifier.fillMaxSize(),
                         )
 
@@ -1348,6 +1354,8 @@ fun OwnTVShell(
                             onFullscreen = { openFullscreen() },
                             onPlayChannel = guidePlayChannel,
                             onPlayCatchup = guidePlayCatchup,
+                            onOpenSearch = { onSelectSection(MainSection.SEARCH) },
+                            onOpenSettings = { onSelectSection(MainSection.SETTINGS) },
                             previewEnabled = playerMode == PlayerMode.NONE,
                             onEntryHook = { guideEntry = it },
                             onAddEpg = { openEpgAdd = true; onSelectSection(MainSection.SETTINGS) },
@@ -1355,8 +1363,6 @@ fun OwnTVShell(
                             onRestored = { restoreFocus = false },
                             modifier = Modifier
                                 .fillMaxSize()
-                                // Clear of the menu's icon strip, which stays at the left edge.
-                                .padding(start = if (navStyle == tv.own.owntv.core.settings.SettingsRepository.NavStyle.DOCKED) 0.mpx else 110.mpx)
                                 .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
                                 .focusGroup(),
                         )
@@ -1639,7 +1645,7 @@ fun OwnTVShell(
                 }
                 PlayerHud(
                     player = if (liveOnExo) liveVm.previewEngine else mpvEngine, // HUD drives the active engine
-                    onBack = exitToGuide,
+                    onBack = exitToList,
                     onPip = dockPlayer, // PiP/dock works for live on either engine now
                     onAudioMode = toAudioMode,
                     // The channel-list overlay draws ABOVE the HUD; while it's open the HUD goes inert so
