@@ -17,6 +17,12 @@ internal object FootballReminders {
 
     class Match(val channel: ChannelEntity, val programme: XtEpgEntry)
 
+    private fun key(startMs: Long, title: String) = "$startMs|${FootballMatcher.fold(title)}"
+
+    /** True for a reminder Flutlicht set for one of the profile's teams (the prompt then asks for the remote). */
+    fun isTeamMatch(context: Context, profileId: Long, startMs: Long, title: String): Boolean =
+        key(startMs, title) in FootballSetup.prefs(context).getStringSet(doneKey(profileId), emptySet()).orEmpty()
+
     suspend fun update(context: Context, profileId: Long, matches: List<Match>, leadMinutes: Int, now: Long) {
         if (!FootballSetup.remindersOn(context)) return
         val prefs = FootballSetup.prefs(context)
@@ -27,8 +33,8 @@ internal object FootballReminders {
         val reminders = GlobalContext.get().get<ReminderManager>()
         for (m in matches) {
             val p = m.programme
-            val key = "${p.startMs}|${FootballMatcher.fold(p.title)}"
-            if (key in done || p.startMs <= now) continue
+            val id = key(p.startMs, p.title)
+            if (id in done || p.startMs <= now) continue
             val added = reminders.add(
                 profileId = profileId,
                 channelId = m.channel.id,
@@ -39,7 +45,7 @@ internal object FootballReminders {
                 stopMs = p.stopMs,
                 leadMinutes = leadMinutes,
             )
-            if (added) done += key
+            if (added) done += id
         }
         prefs.edit().putStringSet(doneKey(profileId), done).apply()
     }

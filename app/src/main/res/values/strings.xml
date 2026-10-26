@@ -35,6 +35,7 @@
     <string name="tvplayer_football_group_desc" translatable="false">Eine Gruppe ganz oben in der Senderliste und im TV-Guide mit allen Sendern, die heute Fußball deiner Teams und Ligen zeigen. Laufende Spiele stehen vorn.</string>
     <string name="tvplayer_football_reminders_setting" translatable="false">An Spiele meiner Teams erinnern</string>
     <string name="tvplayer_football_reminders_desc" translatable="false">Spiele deiner Teams im TV-Guide bekommen automatisch eine Erinnerung vor Anpfiff (Vorlauf: Spielerinnerungen weiter unten).</string>
+    <string name="tvplayer_football_remote" translatable="false">Fernbedienung an Jonathan geben!</string>
     <string name="tvplayer_scene_heading" translatable="false">Nachtszenen</string>
     <string name="tvplayer_scene_title" translatable="false">Szene</string>
     <string name="tvplayer_scene_line" translatable="false">Animierte Landschaft hinter allen Seiten, im Stil von Jonas Laterne</string>

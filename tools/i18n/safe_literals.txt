@@ -1011,7 +1011,7 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	volleyball
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	zdf
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ß
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballReminders.kt	${p.startMs}|${FootballMatcher.fold(p.title)}
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballReminders.kt	$startMs|${FootballMatcher.fold(title)}
 1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballReminders.kt	football_reminded_$profileId
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Barcelona
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Bayern Munich
