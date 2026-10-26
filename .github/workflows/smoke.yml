@@ -4,7 +4,7 @@ name: Flutlicht Starttest
 # Start ohne Fernseher sichtbar wird.
 on:
   push:
-    branches: [ "claude/**" ]
+    branches: [ "main", "claude/**" ]
   workflow_dispatch:
 
 concurrency:
@@ -12,18 +12,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  smoke:
+  # Die eigenen JVM-Tests (Fußball-Erkennung, Launcher-Zeilen); der Rest der OwnTV-Tests läuft nicht mit.
+  tests:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Unit tests
+        run: |
+          chmod +x ./gradlew
+          ./gradlew testStandardDebugUnitTest --tests 'tv.own.owntv.launcher.*' --stacktrace
+
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Build x86_64 APK
         env:
