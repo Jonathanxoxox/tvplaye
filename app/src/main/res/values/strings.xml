@@ -28,5 +28,11 @@
         <item quantity="other">+%1$d weitere Sender</item>
     </plurals>
     <string name="tvplayer_nothing_now" translatable="false">Gerade kein Fußball</string>
-    <string name="tvplayer_nothing_now_desc" translatable="false">Sobald Spiele von Real Madrid, Barça oder den großen Ligen laufen, erscheinen sie hier.</string>
+    <string name="tvplayer_nothing_now_desc" translatable="false">Sobald Spiele deiner Teams und Ligen laufen, erscheinen sie hier. Auswahl in Einstellungen → Sport.</string>
+    <string name="tvplayer_football_group" translatable="false">⚽ Fußball jetzt &amp; heute</string>
+    <string name="tvplayer_football_heading" translatable="false">Flutlicht</string>
+    <string name="tvplayer_football_group_setting" translatable="false">Gruppe „Fußball jetzt &amp; heute“</string>
+    <string name="tvplayer_football_group_desc" translatable="false">Eine Gruppe ganz oben in der Senderliste und im TV-Guide mit allen Sendern, die heute Fußball deiner Teams und Ligen zeigen. Laufende Spiele stehen vorn.</string>
+    <string name="tvplayer_football_reminders_setting" translatable="false">An Spiele meiner Teams erinnern</string>
+    <string name="tvplayer_football_reminders_desc" translatable="false">Spiele deiner Teams im TV-Guide bekommen automatisch eine Erinnerung vor Anpfiff (Vorlauf: Spielerinnerungen weiter unten).</string>
 </resources>

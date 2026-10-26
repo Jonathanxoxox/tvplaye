@@ -863,72 +863,196 @@
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	**
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	-
 2	technical	app/src/main/java/tv/own/owntv/features/update/UpdateDialog.kt	•
-2	empty	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\0
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	,
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	football_group_id_$profileId
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	football_group_members_$profileId
+4	empty	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	$folded
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	$phrase
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Atletico
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Atlético Madrid
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	BVB
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Barcelona
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Barça
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Bayer Leverkusen
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Bayern
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Bayern Munich
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Borussia Dortmund
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Borussia Mönchengladbach
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	DFB-Elf
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	DFB-Team
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Danmark
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Denmark
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Dortmund
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Dänemark
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	EM Quali
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	EM-Qualifikation
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Eintracht Frankfurt
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Europameisterschaft
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	FC Bayern
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Germany
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Gladbach
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	HSV
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Hamburg SV
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Hamburger SV
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Holland
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Inter
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Inter Mailand
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Internazionale
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Königsklasse
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	LFC
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Leipzig
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Leverkusen
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Liverpool
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Länderspiel
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Man City
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Man United
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Man Utd
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Manchester City
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Manchester United
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Netherlands
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	PSG
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Paris Saint-Germain
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Premier League
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Primera División
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	RB Leipzig
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	SGE
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Testspiel
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	WM
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	WM Quali
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	WM-Qualifikation
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Weltmeisterschaft
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Werder
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	Werder Bremen
 1	regex	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	[^a-z0-9]+
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\\S\\s+(-|–|—|vs\\.?|v|gegen)\\s+\\S
 1	regex	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	\\p{M}+
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ard
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	arena
-2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	barca
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	barcelona
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	barca
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	basket
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	basketball
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	bein
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	bundesliga
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	biathlon
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	boxen
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	boxing
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	canal
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	champions
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	champions league
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	clasico
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	club world cup
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	conference league
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	copa del rey
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	city
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	cricket
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	cup
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	darts
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	das erste
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dazn
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dfb pokal
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	el clasico
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dr 1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	dr1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	efootball
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eishockey
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eleven
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	espn
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	europa league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	esports
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eurosport
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fc barcelona
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fifa
 3	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	football
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	formel
 2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	fussball
 2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	futbol
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	futsal
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	gol
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	golf
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	handball
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	hockey
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	jornada
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	la liga
-2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	laliga
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	liga
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	liga de campeones
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ligue 1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	laliga
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	league
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	leichtathletik
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	lfctv
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	liga
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	magenta
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	matchday
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	motogp
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	movistar
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	nations league
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	premier league
-2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	real madrid
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	mutv
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	nba
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	nfl
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	nhl
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	orf
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	radsport
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	real
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	real madrid
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	rmtv
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	serie a
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	rtl
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	rugby
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	skispringen
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sky
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	snooker
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/eng.1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/esp.1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/fifa.friendly
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/fifa.world
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/fifa.worldq.uefa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/uefa.champions
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	soccer/uefa.euro
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	spieltag
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sport
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sports
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sport
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	sports
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	srf
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ss
-1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	supercopa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	team
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	tennis
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	tnt
-2	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	uefa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	tv 2
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	tv2
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	uefa
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ufc
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	united
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	utd
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	viaplay
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	volleyball
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	zdf
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	ß
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballReminders.kt	${p.startMs}|${FootballMatcher.fold(p.title)}
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballReminders.kt	football_reminded_$profileId
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Barcelona
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Bayern Munich
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Borussia Dortmund
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Denmark
+1	log	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	FootballSetup
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Germany
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Hamburg SV
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	Liverpool
+1	log	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	default teams not found yet (no network?), trying again on the next start
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	football_group_on
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	football_leagues_v1
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	football_reminders_on
+1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	football_teams_v1
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/eng.1
+2	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/esp.1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/fifa.friendly
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/fifa.world
+3	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/fifa.worldq.uefa
+4	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/ger.1
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/ger.2
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/ger.dfb_pokal
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/uefa.champions
+3	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/uefa.euro
+3	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/uefa.nations
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	tvplayer
 2	empty	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$label: ${p.title}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	${ch.name}: ${it.title}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	1080p
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	4k
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	@
+1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	LauncherRows
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	RestrictedApi
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	backup
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	empty
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}:${current?.startMs}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	fhd
+1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	football group not updated
+1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	football reminders not set
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	hd
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	open
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	owntv

@@ -1,8 +1,10 @@
-# TV Player
+# Flutlicht
 
 Private Variante von [OwnTV](https://github.com/ahXN00/OwnTV) (GPLv3) mit einer Bedienung nach Art klassischer IPTV-Player: OK öffnet im Vollbild die Senderliste mit Programm, OK halten oder Menü öffnet die Optionen, beim Umschalten erscheint unten eine Info-Leiste. Die App installiert sich als `io.github.jonathanxoxox.tvplayer` neben OwnTV.
 
-Die neueste APK baut GitHub Actions bei jedem Push: [TVPlayer.apk](https://github.com/Jonathanxoxox/tvplaye/releases/download/latest/TVPlayer.apk)
+Die neueste APK baut GitHub Actions bei jedem Push: [Flutlicht.apk](https://github.com/Jonathanxoxox/tvplayer/releases/download/latest/Flutlicht.apk). Jeder Build erscheint außerdem als Release `v1.0.<Lauf>`, das der Updater in der App findet.
+
+Fußball: „Für dich“ im Launcher, die Gruppe „Fußball jetzt & heute“ und die Erinnerungen vor Anpfiff richten sich nach Einstellungen → Sport (Ligen und Meine Teams).
 
 Darunter folgt die unveränderte Beschreibung von OwnTV.
 
