@@ -30,8 +30,6 @@ import coil3.compose.AsyncImage
 import tv.own.owntv.R
 import tv.own.owntv.core.live.EpgNowNext
 import tv.own.owntv.ui.format.rememberSystemTimeFormatter
-import tv.own.owntv.ui.theme.hudInk
-import tv.own.owntv.ui.theme.hudShade
 import tv.own.owntv.ui.theme.stageAccent
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.stageText

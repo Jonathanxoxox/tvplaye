@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -32,7 +31,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
 import org.koin.androidx.compose.koinViewModel
 import tv.own.owntv.R
-import tv.own.owntv.core.brand.AppIcon
 import tv.own.owntv.core.database.entity.SourceEntity
 import tv.own.owntv.core.setup.SourceImporter
 import tv.own.owntv.core.sync.importProgressDisplay
@@ -48,7 +46,6 @@ import tv.own.owntv.features.settings.StageFieldRow
 import tv.own.owntv.features.settings.StageSettingRow
 import tv.own.owntv.features.settings.SettingHelp
 import tv.own.owntv.features.shell.PendingShellRequest
-import tv.own.owntv.ui.components.BrandMark
 import tv.own.owntv.ui.components.BrowseMode
 import tv.own.owntv.ui.components.OwnTVAvatar
 import tv.own.owntv.ui.components.OwnTVAvatars
@@ -410,26 +407,6 @@ private fun DisplaySizeStep(onNext: () -> Unit, onBack: () -> Unit) {
             focusCancel = true,
             eyebrow = null,
         )
-    }
-}
-
-/** The app icon row's value: the first five icon colours, the chosen one ringed, then "+N". */
-@Composable
-private fun AppIconSwatches(icons: List<AppIcon>, chosen: AppIcon) {
-    val a = stageAccent
-    val shown = (icons.take(5) + chosen).distinct().take(5)
-    Row(horizontalArrangement = Arrangement.spacedBy(8.mpx), verticalAlignment = Alignment.CenterVertically) {
-        shown.forEach { icon ->
-            Box(
-                Modifier
-                    .size(34.mpx)
-                    .then(if (icon == chosen) Modifier.border(2.mpx, a.accent, RoundedCornerShape(9.mpx)) else Modifier),
-                contentAlignment = Alignment.Center,
-            ) { BrandMark(icon, 30.mpx, followAccent = false) }
-        }
-        if (icons.size > shown.size) {
-            Text("+" + localizedInteger(icons.size - shown.size, grouping = false), style = stageText(17, 700), color = StageColors.Muted)
-        }
     }
 }
 

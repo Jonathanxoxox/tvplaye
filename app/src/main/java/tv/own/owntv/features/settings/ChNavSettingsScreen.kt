@@ -2,7 +2,6 @@ package tv.own.owntv.features.settings
 
 import android.view.KeyEvent as AndroidKeyEvent
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.Composable

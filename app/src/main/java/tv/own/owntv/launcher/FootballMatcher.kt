@@ -164,15 +164,14 @@ internal class FootballMatcher(
             return channelName != null && ANY_FOOTBALL.match(channelName, null) != null
         }
 
-        fun isSportsChannel(name: String): Boolean {
-            val folded = fold(name)
-            return SPORTS_CHANNEL.any { containsPhrase(folded, fold(it)) || folded.contains(it) }
-        }
+        fun isSportsChannel(name: String): Boolean = isSportsChannelFolded(fold(name))
 
-        fun isNationalChannel(name: String): Boolean {
-            val folded = fold(name)
-            return NATIONAL_CHANNEL.any { containsPhrase(folded, it) }
-        }
+        /** [isSportsChannel] for a name already passed through [fold]; the words are folded already. */
+        fun isSportsChannelFolded(folded: String): Boolean = SPORTS_CHANNEL.any { folded.contains(it) }
+
+        fun isNationalChannel(name: String): Boolean = isNationalChannelFolded(fold(name))
+
+        fun isNationalChannelFolded(folded: String): Boolean = NATIONAL_CHANNEL.any { containsPhrase(folded, it) }
 
         private val MARKS = Regex("\\p{M}+")
         private val NON_ALNUM = Regex("[^a-z0-9]+")

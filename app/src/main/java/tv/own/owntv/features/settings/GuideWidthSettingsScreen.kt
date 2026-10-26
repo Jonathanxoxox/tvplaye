@@ -28,7 +28,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
 import org.koin.androidx.compose.koinViewModel
 import tv.own.owntv.R
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.core.settings.GuideWidthLimits
