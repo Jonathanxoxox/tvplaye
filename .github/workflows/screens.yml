@@ -7,6 +7,10 @@ on:
   push:
     branches: [ "claude/project-thread-xpoaz5" ]
   workflow_dispatch:
+    inputs:
+      parts:
+        description: "Teile der Tour (all oder z. B. scenes,player)"
+        default: all
 
 permissions:
   contents: write
@@ -62,6 +66,8 @@ jobs:
           sudo udevadm trigger --name-match=kvm
 
       - name: Tour on emulator
+        env:
+          TOUR_PARTS: ${{ inputs.parts || 'all' }}
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
