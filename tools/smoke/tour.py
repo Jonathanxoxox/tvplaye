@@ -136,7 +136,9 @@ def goto(pattern, press=True, tries=24):
                 return True
             fx, fy = (fb[0] + fb[2]) // 2, (fb[1] + fb[3]) // 2
             dx, dy = cx - fx, cy - fy
-            d = ("DPAD_RIGHT" if dx > 0 else "DPAD_LEFT") if abs(dx) > abs(dy) else ("DPAD_DOWN" if dy > 0 else "DPAD_UP")
+            # Erst die Zeile wechseln, dann seitlich: ◀ ▶ auf einer Stepper-Zeile verstellt sonst den Wert.
+            th = max(20, (fb[3] - fb[1]) // 2)
+            d = ("DPAD_DOWN" if dy > 0 else "DPAD_UP") if abs(dy) > th else ("DPAD_RIGHT" if dx > 0 else "DPAD_LEFT")
             if last == (fb, d):  # Fokus bewegt sich nicht mehr: andere Achse versuchen
                 d = ("DPAD_DOWN" if dy > 0 else "DPAD_UP") if d in ("DPAD_LEFT", "DPAD_RIGHT") else ("DPAD_RIGHT" if dx > 0 else "DPAD_LEFT")
             last = (fb, d)
