@@ -174,11 +174,12 @@ def setup():
         goto(pattern)
         shot(name)
     # Ohne Namen bleibt "Profil erstellen" gesperrt: Name-Zeile (erster Fokus) öffnen und tippen.
-    if goto(r"^Name$"):
-        time.sleep(1.2)
-        type_text("Jonathan")
-        key("ENTER", wait=1.2)
-        shot("profil-name")
+    # Der Name ist der erste Fokus; OK öffnet die Tastatur direkt in der Zeile.
+    key("DPAD_CENTER", wait=1.5)
+    shot("profil-tastatur")
+    type_text("Jonathan")
+    key("ENTER", wait=1.2)
+    shot("profil-name")
     goto(r"^Profil erstellen")
     shot("profil")
     goto(r"^Hier eingeben")
