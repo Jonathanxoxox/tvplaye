@@ -407,11 +407,21 @@ fun EpgScreen(
     DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailHold.held = false } }
 
     DisposableEffect(onEntryHook) {
-        onEntryHook?.invoke {
-            // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player.
-            (tv.own.owntv.features.shell.components.StageRailOpen.open && runCatching { groupsFocus.requestFocus() }.getOrDefault(false)) ||
-                state.channels.isNotEmpty() &&
+        val focusRows = {
+            state.channels.isNotEmpty() &&
                 runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
+        }
+        onEntryHook?.invoke {
+            // ▶ from the open menu goes to the groups beside it, as in the classic IPTV player. The list
+            // hands focus on to its selected group a frame later, so look again before giving up on it.
+            if (tv.own.owntv.features.shell.components.StageRailOpen.open) {
+                scope.launch {
+                    runCatching { groupsFocus.requestFocus() }
+                    repeat(3) { if (!groupsFocused) withFrameNanos { } }
+                    if (!groupsFocused && !runCatching { groupsFocus.requestFocus() }.getOrDefault(false)) focusRows()
+                }
+                true
+            } else focusRows()
         }
         onDispose { onEntryHook?.invoke(null) }
     }
