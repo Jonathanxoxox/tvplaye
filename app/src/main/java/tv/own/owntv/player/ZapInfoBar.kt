@@ -100,9 +100,10 @@ internal fun ZapInfoBar(
                     }
                     if (now != null) {
                         subtitle?.takeIf { it.isNotBlank() }?.let {
-                            Text(it, style = stageText(24, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Text(it, style = stageText(24, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                         }
-                        Text(title.orEmpty(), style = stageText(24, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        // The channel's name takes what the times leave and ends in … rather than past the edge.
+                        Text(title.orEmpty(), style = stageText(24, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                 }
                 guide?.next?.let { next ->
@@ -112,7 +113,7 @@ internal fun ZapInfoBar(
                             stringResource(R.string.content_live_time_range, formatTime(next.startMs), formatTime(next.stopMs)),
                             style = stageText(24, 500), color = Color.White.copy(alpha = 0.75f), maxLines = 1,
                         )
-                        Text(next.title, style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        Text(next.title, style = stageText(24, 500), color = Color.White.copy(alpha = 0.85f), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                 }
             }

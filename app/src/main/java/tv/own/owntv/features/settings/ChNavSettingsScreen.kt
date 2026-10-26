@@ -82,6 +82,8 @@ fun ChNavSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
         scroll = scrollState,
         rowsFocus = firstFocus,
     ) {
+        // Flutlicht: the fullscreen player's own keys first, the extra shortcuts below.
+        PlayerKeySettingsSection()
         val onTitle = stringResource(R.string.settings_remote_shortcuts_enabled)
         val onValue = SettingValue.Switch(enabled)
         val howItWorks = stringResource(R.string.settings_remote_shortcuts_help)

@@ -301,9 +301,6 @@ fun PlayerHud(
     val listFirst = zapInfo != null && onOpenChannelList != null
     var controlsVisible by remember { mutableStateOf(!listFirst) }
     var showOptions by remember { mutableStateOf(false) }
-    // Set by an OK press that has not been released yet: released quickly it opens the channel list,
-    // held it opens the options panel instead.
-    var okPressPending by remember { mutableStateOf(false) }
     // The options panel ignores OK until the press that opened it has been released, or the
     // auto-repeat of a held OK would choose its first row.
     var optionsOpenedByOk by remember { mutableStateOf(false) }
@@ -311,14 +308,12 @@ fun PlayerHud(
     var showPanel by remember { mutableStateOf(false) }
     var panelTick by remember { mutableIntStateOf(0) }
     val panelFocus = remember { FocusRequester() }
-    // Menu, Up and Down wait for the release too: held, they open the guide, history or search.
-    var menuPending by remember { mutableStateOf(false) }
-    var verticalPending by remember { mutableStateOf<Key?>(null) }
-    // Right switches to the channel before on release; held, it shows the programme in the info bar.
-    var rightPending by remember { mutableStateOf(false) }
+    // Which mapped key is held, to tell a short press from a long one (see PlayerKeyPress).
+    val keyPress = remember { PlayerKeyPress() }
     var showInfo by remember { mutableStateOf(false) } // stream technical-info overlay
     // Used only by "Report this stream", which writes the current readout into the playback log.
     val reportContext = androidx.compose.ui.platform.LocalContext.current
+    val keyMap by remember { PlayerKeyMap.flow(reportContext) }.collectAsStateWithLifecycle()
     var wakeTick by remember { mutableIntStateOf(0) }
     val forceShow = error != null || dialog != HudDialog.NONE
     // First Back hides the controls (instead of leaving the channel); with the controls already hidden
@@ -382,6 +377,22 @@ fun PlayerHud(
     val zap: (Int) -> Unit = { d ->
         cancelDirectTune()
         (if (d < 0) onChannelUp else onChannelDown)?.invoke(); channelFlash++
+    }
+
+    // What a mapped key does; false when this player has no such target, so the key falls through.
+    val runKeyAction: (PlayerKeyAction, PlayerKey, Boolean) -> Boolean = { action, key, long ->
+        when (action) {
+            PlayerKeyAction.NONE -> true
+            PlayerKeyAction.INFO_PANEL -> { showPanel = true; true }
+            PlayerKeyAction.OPTIONS -> { optionsOpenedByOk = key == PlayerKey.OK && long; showOptions = true; true }
+            PlayerKeyAction.GUIDE -> onOpenGuide?.let { it(); true } ?: false
+            PlayerKeyAction.CHANNEL_LIST -> onOpenChannelList?.let { it(); true } ?: false
+            PlayerKeyAction.LAST_CHANNEL -> onPreviousChannel?.let { cancelDirectTune(); it(); true } ?: false
+            PlayerKeyAction.CHANNEL_UP -> if (canZap) { zap(1); true } else false
+            PlayerKeyAction.CHANNEL_DOWN -> if (canZap) { zap(-1); true } else false
+            PlayerKeyAction.HISTORY -> onOpenHistoryList?.let { it(); true } ?: false
+            PlayerKeyAction.SEARCH -> onOpenSearch?.let { it(); true } ?: false
+        }
     }
 
     // Restartable timeout: each new digit restarts the ~2 s window. On expiry, submit.
@@ -601,84 +612,21 @@ fun PlayerHud(
                     }
                 }
             }
-            // ---- List-first OK: a short press shows the info bar and control panel, a long one the options ----
-            val isOk = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
-            if (listFirst && isOk && !controlsVisible && !inert && dialog == HudDialog.NONE && !showOptions &&
-                !showNextCard && error == null && onToastOk == null
-            ) {
-                when (e.type) {
-                    KeyEventType.KeyDown -> {
-                        if (e.nativeKeyEvent.repeatCount == 0) {
-                            okPressPending = true
-                        } else if (okPressPending) {
-                            okPressPending = false
-                            optionsOpenedByOk = true
-                            showOptions = true
-                        }
-                    }
-                    KeyEventType.KeyUp -> if (okPressPending) {
-                        okPressPending = false
-                        showPanel = true
-                    }
-                }
-                return@onPreviewKeyEvent true
-            }
-            if (listFirst && e.key == Key.Menu && !inert && dialog == HudDialog.NONE && !showOptions) {
-                when (e.type) {
-                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
-                        menuPending = true
-                    } else if (menuPending) {
-                        menuPending = false
-                        if (onOpenGuide != null) onOpenGuide() else { optionsOpenedByOk = false; showOptions = true }
-                    }
-                    KeyEventType.KeyUp -> if (menuPending) { menuPending = false; optionsOpenedByOk = false; showOptions = true }
-                }
-                return@onPreviewKeyEvent true
-            }
-            // Up/Down change channel on release; held, Up opens the history and Down the search.
-            val vertical = e.key == Key.DirectionUp || e.key == Key.DirectionDown
-            if (listFirst && vertical && canZap && isLive && !controlsVisible && !inert && dialog == HudDialog.NONE &&
-                !showOptions && !digitsActive
-            ) {
-                val up = e.key == Key.DirectionUp
-                when (e.type) {
-                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
-                        verticalPending = e.key
-                    } else if (verticalPending == e.key) {
-                        verticalPending = null
-                        val held = if (up) onOpenHistoryList else onOpenSearch
-                        if (held != null) held() else zap(if (up) 1 else -1)
-                    }
-                    KeyEventType.KeyUp -> if (verticalPending == e.key) {
-                        verticalPending = null
-                        zap(if (up) 1 else -1)
-                    }
-                }
-                return@onPreviewKeyEvent true
-            }
-            // Right: the channel before on release, the info bar with the programme when held. Left/Right
-            // keep scrubbing where the timeline owns them.
+            // ---- List-first keys: OK, Menu, the arrows, as set in Settings › Remote control ----
             val scrubsLeftRight = error == null && (if (onScrubLive != null) liveLeftRightRewinds else !isLive && duration > 0L)
-            if (listFirst && onPreviousChannel != null && !controlsVisible && !inert && dialog == HudDialog.NONE &&
-                !showOptions && !scrubsLeftRight && e.key.horizontalDirection(layoutDirection) == HorizontalDirection.END
+            val mapped = if (listFirst && !inert && dialog == HudDialog.NONE && !showOptions) playerKeyOf(e) else null
+            if (mapped != null && (mapped == PlayerKey.MENU || (!controlsVisible && !showNextCard && onToastOk == null && !digitsActive)) &&
+                (mapped != PlayerKey.UP && mapped != PlayerKey.DOWN || (canZap && isLive)) &&
+                (mapped != PlayerKey.LEFT && mapped != PlayerKey.RIGHT || !scrubsLeftRight) &&
+                (mapped != PlayerKey.OK || error == null)
             ) {
-                when (e.type) {
-                    KeyEventType.KeyDown -> if (e.nativeKeyEvent.repeatCount == 0) {
-                        rightPending = true
-                    } else if (rightPending) {
-                        rightPending = false
-                        showPanel = true
-                    }
-                    KeyEventType.KeyUp -> if (rightPending) { rightPending = false; cancelDirectTune(); onPreviousChannel() }
-                }
-                return@onPreviewKeyEvent true
+                if (keyPress.handle(e, mapped, keyMap.getValue(mapped), runKeyAction)) return@onPreviewKeyEvent true
             }
-            // The classic remote's other player keys: Info and Yellow the info bar, Guide, Red, Green and
+            // The classic remote's other player keys (Info, Guide and the colours are mapped above):
             // Backspace the guide, Record the recording, Stop leaves the picture.
             if (listFirst && !controlsVisible && !inert && dialog == HudDialog.NONE && !showOptions && !digitsActive) {
                 val action: (() -> Unit)? = when (e.key) {
-                    Key.Info, Key.ProgramYellow -> ({ showPanel = true })
-                    Key.Guide, Key.ProgramRed, Key.ProgramGreen, Key.Backspace -> onOpenGuide
+                    Key.Backspace -> onOpenGuide
                     Key.MediaRecord -> onRecordThis
                     Key.MediaStop -> onBack
                     else -> null
