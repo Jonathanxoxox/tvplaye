@@ -1042,8 +1042,6 @@
 3	empty	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$label: ${p.title}
 1	protocol	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$profileId|${MediaType.LIVE.name}|recent-live
-1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	${ch.name}: ${it.title}
-1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	${it.title}$SEPARATOR${range(it)}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	%02x
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	1080p
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	4k
@@ -1052,6 +1050,7 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	RestrictedApi
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	SHA-256
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	backup
+1	uri	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	content
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	empty
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	f:${ch.id}:${current?.startMs}
@@ -1084,10 +1083,14 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	%02x
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	SHA-1
 1	regex	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	[0-9a-f]+_[0-9]+\\.png
+1	file-path	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	_
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	content
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	image/png
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_logos
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_tiles
+1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	LauncherRows
+1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row not decorated
+1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row watcher not registered
 2	empty	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	eq
 1	technical	app/src/main/java/tv/own/owntv/player/AudioNowPlayingBar.kt	eqBar$i

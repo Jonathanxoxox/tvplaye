@@ -224,6 +224,8 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         // every channel landed exactly on the first minutes of browsing and zapping. Scheduling touches
         // WorkManager's own database, so it is done off the main thread.
         appScope.launch { runCatching { tv.own.owntv.launcher.LauncherRowsWorker.schedule(this@OwnTVApp) } }
+        // Core's "Zuletzt gesehen" row gets the programme on now as soon as core has written it.
+        tv.own.owntv.launcher.RecentRowWatcher.start(this, appScope)
         appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
         appScope.launch { runCatching { refreshLauncherRowsOnSportsChange() } }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
