@@ -1119,7 +1119,9 @@ private fun GuideTopArea(
     val shown = full ?: topProgramme
     Row(modifier) {
         GuideVideo(
-            channel = previewChannel ?: topChannel,
+            // No channel logo in the corner: it changed with every row passed. Black until a channel plays, then
+            // only its picture (Jonathan, 27 Oct 2026).
+            channel = null,
             previewEngine = previewEngine,
             showVideo = showVideo,
             shellDrawsVideo = true,
