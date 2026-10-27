@@ -639,7 +639,7 @@ private fun LiveColumnItem(
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.mpx)) {
                 Text(
                     entry.label, style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
-                    color = on ?: if (selected) a.accent else stageTone(Color(0xFFCDD7D3), StageColors.ItemText),
+                    color = on ?: stageTone(Color(0xFFCDD7D3), StageColors.ItemText),
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
                 // Tags on their own line, so a long name is never cut for them.

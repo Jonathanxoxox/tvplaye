@@ -126,6 +126,8 @@ fun StageRail(
     /** A screen's own way in, when it has one (Home returns to the exact control left from). */
     enterContent: (() -> Boolean)? = null,
     onFocused: () -> Unit,
+    /** False while the player is on screen or handing over: no item may take focus then, whatever Compose falls back to. */
+    itemsFocusable: () -> Boolean = { true },
     modifier: Modifier = Modifier,
 ) {
     // TV Player: the menu as the classic IPTV player draws it. At rest a narrow strip of icons down the
@@ -209,7 +211,8 @@ fun StageRail(
                     expanded = expanded,
                     active = section == selected,
                     onClick = { onSelect(section) },
-                    modifier = if (section == focusSection) Modifier.focusRequester(selectedItemFocusRequester) else Modifier,
+                    modifier = (if (section == focusSection) Modifier.focusRequester(selectedItemFocusRequester) else Modifier)
+                        .focusProperties { canFocus = itemsFocusable() },
                 )
             }
             Spacer(Modifier.weight(1f))
@@ -221,7 +224,8 @@ fun StageRail(
                 expanded = expanded,
                 active = selected == MainSection.MORE || selected == MainSection.SETTINGS,
                 onClick = { onSelect(MainSection.MORE) },
-                modifier = if (focusSection == MainSection.MORE) Modifier.focusRequester(selectedItemFocusRequester) else Modifier,
+                modifier = (if (focusSection == MainSection.MORE) Modifier.focusRequester(selectedItemFocusRequester) else Modifier)
+                    .focusProperties { canFocus = itemsFocusable() },
             )
         }
     }

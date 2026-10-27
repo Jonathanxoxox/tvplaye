@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
@@ -551,6 +553,15 @@ fun OwnTVShell(
     // on there, sound and all (Jonathan, 27 Oct 2026). The guide is laid out under it meanwhile, so the
     // corner it lands in is the one the guide reports.
     val livePreviewOn by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
+    // Where focus waits when the guide has no row to take it yet (it is still loading, or not built): with the
+    // player's controls gone and nobody focused, Compose hands focus to the first thing on screen, the menu.
+    var handoverParking by remember { mutableStateOf(false) }
+    val handoverFocus = remember { FocusRequester() }
+    val parkFocus = {
+        handoverParking = true
+        runCatching { handoverFocus.requestFocus() }
+        Unit
+    }
     val exitToList: () -> Unit = exit@{
         if (guideHandover) return@exit
         val toList = zapSource == MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections
@@ -561,9 +572,10 @@ fun OwnTVShell(
             // A live channel without the glide (on mpv, catch-up, no corner preview) still lands in the guide on
             // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
             // the stream on the way, and it takes the focus itself.
-            if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
             // The guide's row takes focus before the player's controls leave, so focus never falls to the menu.
-            else guideEntry?.invoke()
+            val guideFocused = selectedSection == MainSection.LIVE_TV && guideEntry?.invoke() == true
+            if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            if (!guideFocused) parkFocus()
             closePlayer(toRail = false, intoLive = true)
             return@exit
         }
@@ -577,7 +589,7 @@ fun OwnTVShell(
         }
         // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
         // focused, Compose hands focus to the first thing on screen, the top of the menu, which flashed open.
-        if (!fromScratch) guideEntry?.invoke()
+        if (fromScratch || guideEntry?.invoke() != true) parkFocus()
         guideHandover = true
         handoverGrow = false
         scope.launch {
@@ -1444,6 +1456,7 @@ fun OwnTVShell(
                     else -> null
                 },
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
+                itemsFocusable = { playerMode == PlayerMode.NONE && !guideHandover },
                 modifier = Modifier.graphicsLayer { alpha = stripAlpha.value }.onFocusChanged { railTrulyFocused = it.hasFocus },
             )
           }
@@ -1945,6 +1958,14 @@ fun OwnTVShell(
         }
       }
 
+    // An invisible place for focus to wait while the guide catches up after full screen (see parkFocus).
+    Box(
+        Modifier.size(1.dp)
+            .focusRequester(handoverFocus)
+            .focusProperties { canFocus = handoverParking }
+            .onFocusChanged { if (!it.hasFocus) handoverParking = false }
+            .focusable(),
+    )
     if (showExit) {
         ExitDialog(onConfirm = onExitApp, onDismiss = { showExit = false })
     }
