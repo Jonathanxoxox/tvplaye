@@ -32,7 +32,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -155,19 +154,8 @@ open class MainActivity : ComponentActivity() {
      * device never sits on a blank window.
      */
     private fun probeDatabase(): String? {
-        var error: String? = null
-        val worker = Thread {
-            // Core configures a SQLiteDriver, and `openHelper` throws outright
-            // once one is set. Opening a connection is what this probe was always really doing —
-            // forcing Room to run the migration chain now rather than inside the first query.
-            runCatching {
-                kotlinx.coroutines.runBlocking {
-                    get<tv.own.owntv.core.database.OwnTVDatabase>().useWriterConnection { }
-                }
-            }.onFailure { error = it.message ?: it.javaClass.simpleName }
-        }
-        worker.start()
-        worker.join(DB_PROBE_TIMEOUT_MS)
+        // Usually already finished: OwnTVApp starts it right after Koin (see DatabaseProbe).
+        val error = DatabaseProbe.await(DB_PROBE_TIMEOUT_MS)
         if (error != null) Log.e(TAG, "database probe failed: $error")
         return error
     }
