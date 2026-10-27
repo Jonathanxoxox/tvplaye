@@ -5,6 +5,7 @@ import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.draw.drawBehind
@@ -37,6 +38,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -338,15 +340,18 @@ fun EpgScreen(
             }
         }
     }
-    // The cursor stays in view: scroll only when it reaches an edge, by one slot of room.
-    LaunchedEffect(cursorTime, timelinePx) {
-        if (!gridHasFocus || timelinePx <= 0 || cursorTime <= 0L) return@LaunchedEffect
-        val x = pxAt(cursorTime)
-        val margin = GuideGridDefaults.SlotMin * ppm
-        when {
-            // Back past the left edge: that half hour becomes the edge, as on entry.
-            x < scrollPx -> scrollPx = pxAt(halfHourOf(cursorTime)).toInt().coerceIn(0, maxScroll())
-            x > scrollPx + timelinePx - margin -> scrollPx = (x - timelinePx + margin).toInt().coerceIn(0, maxScroll())
+    // The cursor stays in view: scroll only when it reaches an edge, by one slot of room. Watched in a
+    // snapshotFlow, not as an effect key, so a ◀ ▶ step does not recompose the whole guide to restart it.
+    LaunchedEffect(timelinePx) {
+        snapshotFlow { cursorTime }.collect { cursor ->
+            if (!gridHasFocus || timelinePx <= 0 || cursor <= 0L) return@collect
+            val x = pxAt(cursor)
+            val margin = GuideGridDefaults.SlotMin * ppm
+            when {
+                // Back past the left edge: that half hour becomes the edge, as on entry.
+                x < scrollPx -> scrollPx = pxAt(halfHourOf(cursor)).toInt().coerceIn(0, maxScroll())
+                x > scrollPx + timelinePx - margin -> scrollPx = (x - timelinePx + margin).toInt().coerceIn(0, maxScroll())
+            }
         }
     }
 
@@ -559,15 +564,15 @@ fun EpgScreen(
                     val formatCorner = tv.own.owntv.ui.format.rememberBestDateFormatter(
                         tv.own.owntv.ui.format.combinedDateTimeSkeleton("EEEdMMM", is24h),
                     )
+                    // The timeline's scroll is read only by the corner text, the ruler's placement, the
+                    // now-line's offset and each row's drawing: scrolling ◀ ▶ recomposes none of the guide.
                     Box(Modifier.fillMaxWidth().height(40.mpx)) {
-                        Text(
-                            formatCorner(maxOf(liveNow, timeAt(scrollPx.toFloat()))),
-                            style = stageText(tv.own.owntv.ui.theme.StageListText, 700), color = stageAccent.accent,
-                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        GuideCornerText(
+                            text = { formatCorner(maxOf(liveNow, timeAt(scrollPx.toFloat()))) },
                             modifier = Modifier.padding(start = fx(48) + 8.mpx, top = 4.mpx).width(labelW - 16.mpx),
                         )
                         GuideRuler(
-                            windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = scrollPx,
+                            windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = { scrollPx },
                             modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
                         )
                     }
@@ -595,10 +600,10 @@ fun EpgScreen(
                                     windowStart = state.windowStart,
                                     windowEnd = state.windowEnd,
                                     now = liveNow,
-                                    scrollPx = scrollPx,
+                                    scrollPx = { scrollPx },
                                     focusRequester = rowFocus(index),
                                     selectedRow = gridHasFocus && index == focusedRow,
-                                    cursorTime = cursorTime,
+                                    cursorTime = { cursorTime },
                                     cellMode = inCellMode,
                                     onEnterCell = {
                                         cursorTime = System.currentTimeMillis()
@@ -635,12 +640,18 @@ fun EpgScreen(
                             }
                         }
                     }
-                    // The now-line, 3 px with its glow, over every row.
-                    val nowX = with(density) { (pxAt(liveNow) - scrollPx).toDp() }
-                    if (liveNow in state.windowStart..state.windowEnd && nowX >= 0.mpx && nowX <= timelineW) {
+                    // The now-line, 3 px with its glow, over every row. Placed by an offset read at layout
+                    // and hidden off the timeline in its layer, so following the scroll costs no recomposition.
+                    if (liveNow in state.windowStart..state.windowEnd) {
+                        val timelineWidthPx = with(density) { timelineW.toPx() }
                         Box(
                             Modifier
-                                .padding(start = gx + nowX - 1.5.mpx, top = 38.mpx, bottom = 24.mpx)
+                                .padding(start = gx - 1.5.mpx, top = 38.mpx, bottom = 24.mpx)
+                                .offset { androidx.compose.ui.unit.IntOffset((pxAt(liveNow) - scrollPx).toInt(), 0) }
+                                .graphicsLayer {
+                                    val x = pxAt(liveNow) - scrollPx
+                                    alpha = if (x >= 0f && x <= timelineWidthPx) 1f else 0f
+                                }
                                 .width(3.mpx)
                                 .fillMaxHeight()
                                 .guideNowLine(stageAccent.accent),
@@ -907,10 +918,12 @@ private fun GuideRow(
     windowStart: Long,
     windowEnd: Long,
     now: Long,
-    scrollPx: Int,
+    /** Read only while drawing the row's programmes. */
+    scrollPx: () -> Int,
     focusRequester: FocusRequester,
     selectedRow: Boolean,
-    cursorTime: Long,
+    /** Read in composition by the focused row only, so moving the cursor recomposes that row alone. */
+    cursorTime: () -> Long,
     cellMode: Boolean,
     onEnterCell: () -> Unit,
     recordingStarts: Set<Long>,
@@ -942,7 +955,8 @@ private fun GuideRow(
     var focused by remember { mutableStateOf(false) }
     var okDown by remember { mutableStateOf(false) }
     var menuDown by remember { mutableStateOf(false) }
-    LaunchedEffect(focused, cursorTime, programmes) { if (focused) onShow(programmeAt(programmes, cursorTime)) }
+    val rowCursor = if (focused) cursorTime() else 0L
+    LaunchedEffect(focused, rowCursor, programmes) { if (focused) onShow(programmeAt(programmes, rowCursor)) }
     // Its own layer: while the list glides, the row is moved as it was drawn instead of drawn again each frame.
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight).graphicsLayer { }, verticalAlignment = Alignment.CenterVertically) {
         GuideChannelLabel(channel, number, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
@@ -960,9 +974,9 @@ private fun GuideRow(
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) okDown = true
                             // Held: on the row the channel's menu (move, hide…), in the programmes the programme's.
-                            else if (down && okDown) { okDown = false; if (cellMode) onMenu(programmeAt(progs, cursorTime)) else onChannelMenu() }
+                            else if (down && okDown) { okDown = false; if (cellMode) onMenu(programmeAt(progs, cursorTime())) else onChannelMenu() }
                             // OK watches the channel, as in the classic IPTV guide; in the programmes it acts on the one under the cursor.
-                            else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime else System.currentTimeMillis())) }
+                            else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime() else System.currentTimeMillis())) }
                             true
                         }
                         // ☰ opens the programme menu on release; held, it opens the search.
@@ -970,14 +984,14 @@ private fun GuideRow(
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) menuDown = true
                             else if (down && menuDown) { menuDown = false; onSearch() }
-                            else if (!down && menuDown) { menuDown = false; onMenu(programmeAt(progs, cursorTime)) }
+                            else if (!down && menuDown) { menuDown = false; onMenu(programmeAt(progs, cursorTime())) }
                             true
                         }
                         Key.Guide, Key.ProgramYellow -> { if (down) onGroups(); true }
                         Key.ProgramBlue -> { if (down) onSettings(); true }
                         // The classic remote's guide keys: Info and Play show the programme, Red and Stop
                         // toggle the favourite, Green the channel options, CH± and RW/FF scroll a page.
-                        Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
+                        Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime())); true }
                         Key.ProgramRed, Key.MediaStop -> { if (down) onFavorite(); true }
                         Key.ProgramGreen -> { if (down) onChannelMenu(); true }
                         Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS, false); true }
@@ -985,12 +999,12 @@ private fun GuideRow(
                         // Physical by design: the timeline runs left to right in every language.
                         // Row stage: ◀ shows the groups (◀ again reaches the menu), ▶ steps into the programmes.
                         Key.DirectionLeft -> if (!cellMode) { if (down) onGroups(); true } else {
-                            if (down) onCursor(cursorStep(progs, cursorTime, -1, windowStart, windowEnd))
+                            if (down) onCursor(cursorStep(progs, cursorTime(), -1, windowStart, windowEnd))
                             true
                         }
                         Key.DirectionRight -> {
                             if (down && !cellMode) onEnterCell()
-                            else if (down) onCursor(cursorStep(progs, cursorTime, +1, windowStart, windowEnd))
+                            else if (down) onCursor(cursorStep(progs, cursorTime(), +1, windowStart, windowEnd))
                             true
                         }
                         Key.DirectionUp -> if (down) onStep(-1, e.nativeKeyEvent.repeatCount == 0) else true
@@ -1009,7 +1023,7 @@ private fun GuideRow(
                     now = now,
                     // The row in focus lights the programme on now (its cell, dark text on the light fill);
                     // in the programmes, the one under the cursor. A whole light row hid its white titles.
-                    focusTime = if (!focused) null else if (cellMode) cursorTime else now,
+                    focusTime = if (!focused) null else if (cellMode) rowCursor else now,
                     catchupIds = catchupIds,
                     recordingStarts = recordingStarts,
                     reminderStarts = reminderStarts,
@@ -1018,6 +1032,17 @@ private fun GuideRow(
             }
         }
     }
+}
+
+/** The day and time at the guide's corner, in a scope of its own: the timeline's scroll recomposes this text alone. */
+@Composable
+private fun GuideCornerText(text: () -> String, modifier: Modifier = Modifier) {
+    Text(
+        text(),
+        style = stageText(tv.own.owntv.ui.theme.StageListText, 700), color = stageAccent.accent,
+        maxLines = 1, overflow = TextOverflow.Ellipsis,
+        modifier = modifier,
+    )
 }
 
 /**

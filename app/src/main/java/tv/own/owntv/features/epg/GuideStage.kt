@@ -226,7 +226,8 @@ internal fun GuideRuler(
     windowStart: Long,
     windowEnd: Long,
     now: Long,
-    scrollPx: Int,
+    /** Read while placing the labels only, so a scroll moves them without recomposing the ruler. */
+    scrollPx: () -> Int,
     modifier: Modifier = Modifier,
 ) {
     val formatTime = rememberSystemTimeFormatter()
@@ -254,10 +255,11 @@ internal fun GuideRuler(
         val chipShift = 34.mpx.toPx()
         val placeables = measurables.map { it.measure(Constraints()) }
         layout(constraints.maxWidth, constraints.maxHeight) {
+            val scroll = scrollPx()
             placeables.forEachIndexed { i, pl ->
                 val isChip = nowIn && i == placeables.lastIndex
                 val t = if (isChip) now else times[i]
-                val x = ((t - windowStart) / 60_000f * ppm - scrollPx - if (isChip) chipShift else 0f).toInt()
+                val x = ((t - windowStart) / 60_000f * ppm - scroll - if (isChip) chipShift else 0f).toInt()
                 if (x + pl.width < 0 || x > constraints.maxWidth) return@forEachIndexed
                 // The chip sits 4 higher than the labels (top 518 against 522).
                 pl.place(IntOffset(x, if (isChip) 0 else 4.mpx.roundToPx()))

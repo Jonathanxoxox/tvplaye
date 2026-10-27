@@ -79,8 +79,8 @@ internal fun ProgrammeStripCanvas(
     catchupIds: Set<Long>,
     recordingStarts: Set<Long>,
     reminderStarts: Set<Long>,
-    /** How far the timeline is scrolled, shared by every row and the ruler. */
-    scrollPx: Int,
+    /** How far the timeline is scrolled, shared by every row and the ruler. Read while drawing only. */
+    scrollPx: () -> Int,
 ) {
     val density = androidx.compose.ui.platform.LocalDensity.current
     val measurer = rememberTextMeasurer(cacheSize = 64)
@@ -107,7 +107,7 @@ internal fun ProgrammeStripCanvas(
     // A row with nothing in the window says so, rather than looking broken.
     val emptyText = stringResource(R.string.content_epg_no_programme)
     // Clipped at the timeline's left edge only, so a focused cell's glow still spills up and down.
-    Canvas(Modifier.fillMaxSize()) { clipRect(left = 0f, top = -size.height, right = size.width + 40 * px, bottom = size.height * 2) {
+    Canvas(Modifier.fillMaxSize()) { val scroll = scrollPx(); clipRect(left = 0f, top = -size.height, right = size.width + 40 * px, bottom = size.height * 2) {
         // The focused cell's ring. In light the focus colour is the accent, the cell's own fill, so the
         // ring stands off it with a page-coloured gap first (`.mine.light .gcell.f`: 2.5 page + 2.5 accent).
         fun focusRing(x0: Float, w: Float, h: Float, r: CornerRadius) {
@@ -131,8 +131,8 @@ internal fun ProgrammeStripCanvas(
         if (focusTime != null && programmes.none { focusTime in it.startMs until it.stopMs }) {
             val gapStart = (programmes.lastOrNull { it.stopMs <= focusTime }?.stopMs ?: windowStart).coerceAtLeast(windowStart)
             val gapEnd = (programmes.firstOrNull { it.startMs > focusTime }?.startMs ?: windowEnd).coerceAtMost(windowEnd)
-            val gx0 = (((gapStart - windowStart) / 60_000f) * pxPerMin - scrollPx + 3 * px).coerceAtLeast(0f)
-            val gx1 = (((gapEnd - windowStart) / 60_000f) * pxPerMin - scrollPx - 3 * px).coerceAtMost(viewW)
+            val gx0 = (((gapStart - windowStart) / 60_000f) * pxPerMin - scroll + 3 * px).coerceAtLeast(0f)
+            val gx1 = (((gapEnd - windowStart) / 60_000f) * pxPerMin - scroll - 3 * px).coerceAtMost(viewW)
             if (gx1 > gx0) {
                 val box = androidx.compose.ui.geometry.Rect(gx0, 0f, gx1, h)
                 if (palette.isLight) {
@@ -153,7 +153,7 @@ internal fun ProgrammeStripCanvas(
             val e0 = p.stopMs.coerceIn(windowStart, windowEnd)
             if (e0 <= s0) return@forEachIndexed
             shownUntil = e0
-            val x = ((s0 - windowStart) / 60_000f) * pxPerMin - scrollPx.toFloat() + 2 * px
+            val x = ((s0 - windowStart) / 60_000f) * pxPerMin - scroll.toFloat() + 2 * px
             val w = ((e0 - s0) / 60_000f) * pxPerMin - 4 * px
             if (w <= 0f || x + w <= 0f || x >= viewW) return@forEachIndexed
             drawnAny = true
