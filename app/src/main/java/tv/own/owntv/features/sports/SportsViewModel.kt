@@ -219,10 +219,12 @@ class SportsViewModel(
             if (w == null) return@transformLatest emit(ChannelSearch.Checking)
             if (w != WatchWindow.Open) return@transformLatest emit(ChannelSearch.Closed(w as WatchWindow))
             val found = watchReader.found(m) { SportsMemory.rememberedFor(c, it) }
+            // The channels the user watches lead the list, within each reason.
+            val order = if (found != null || asked) GuideBroadcasts.watchedOrder() else GuideBroadcasts.WatchedOrder.NONE
             when {
                 found != null -> {
-                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.cached(m)), searching = true))
-                    emitAll(GuideBroadcasts.find(m).map { g -> ChannelSearch.Found(GuideBroadcasts.merge(found, g.options), searching = !g.done) })
+                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.cached(m), order), searching = true))
+                    emitAll(GuideBroadcasts.find(m).map { g -> ChannelSearch.Found(GuideBroadcasts.merge(found, g.options, order), searching = !g.done) })
                 }
                 !asked -> emit(ChannelSearch.NotSearched)
                 else -> {
@@ -235,7 +237,7 @@ class SportsViewModel(
                     }
                     emitAll(
                         combine(core, GuideBroadcasts.find(m).onStart { emit(GuideBroadcasts.Progress(emptyList(), done = false)) }) { k, g ->
-                            val options = GuideBroadcasts.merge(k.orEmpty(), g.options)
+                            val options = GuideBroadcasts.merge(k.orEmpty(), g.options, order)
                             val searching = k == null || !g.done
                             if (searching && options.isEmpty()) ChannelSearch.Searching else ChannelSearch.Found(options, searching)
                         },
@@ -368,7 +370,7 @@ class SportsViewModel(
     suspend fun channelsFound(match: Match): List<WatchOption> {
         val c = config.first()
         val options = watchReader.found(match) { SportsMemory.rememberedFor(c, it) }
-            ?.let { GuideBroadcasts.merge(it, GuideBroadcasts.cached(match)) } ?: return emptyList()
+            ?.let { GuideBroadcasts.merge(it, GuideBroadcasts.cached(match), GuideBroadcasts.watchedOrder()) } ?: return emptyList()
         return WatchList.of(options, WatchFilter.from(c, Locale.getDefault().language, liveSources.value)).shown
     }
 

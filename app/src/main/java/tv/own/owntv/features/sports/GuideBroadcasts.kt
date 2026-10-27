@@ -18,6 +18,7 @@ import tv.own.owntv.core.database.dao.ChannelDao
 import tv.own.owntv.core.database.dao.SourceDao
 import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.entity.ContentOrderEntity
+import tv.own.owntv.core.epg.EpgMatcher
 import tv.own.owntv.core.live.EpgNowNext
 import tv.own.owntv.core.live.LiveEpgReader
 import tv.own.owntv.core.model.MediaType
@@ -118,13 +119,44 @@ internal object GuideBroadcasts {
     /** What the last [find] for [match] gave, without reading anything. */
     fun cached(match: Match): List<WatchOption> = synchronized(found) { found[match.key].orEmpty() }
 
-    /** Core's options and [guide]'s in one list, one row per channel, best tier first. */
-    fun merge(core: List<WatchOption>, guide: List<WatchOption>): List<WatchOption> {
-        if (guide.isEmpty()) return core
+    /**
+     * Core's options and [guide]'s in one list, one row per channel, best tier first and, within a tier,
+     * the channels the user watches first ([order]).
+     */
+    fun merge(core: List<WatchOption>, guide: List<WatchOption>, order: WatchedOrder = WatchedOrder.NONE): List<WatchOption> {
         val out = LinkedHashMap<Long, WatchOption>()
-        (core + guide).sortedBy { it.tier.ordinal }.forEach { out.putIfAbsent(it.channel.id, it) }
+        (core + guide).sortedWith(compareBy({ it.tier.ordinal }, { order.rank(it.channel) })).forEach { out.putIfAbsent(it.channel.id, it) }
         return out.values.toList()
     }
+
+    /**
+     * The channels the user watches, most recently watched first, and their variants right after them
+     * ("Sky Sport 3 HD (Sat)" watched puts "Sky Sport 3 HD" and its other feeds up too).
+     */
+    class WatchedOrder(private val byId: Map<Long, Int>, private val byFamily: Map<String, Int>) {
+        fun rank(ch: ChannelEntity): Int =
+            byId[ch.id]?.let { it * 2 } ?: byFamily[family(ch)]?.let { it * 2 + 1 } ?: Int.MAX_VALUE
+
+        companion object {
+            val NONE = WatchedOrder(emptyMap(), emptyMap())
+        }
+    }
+
+    /** The active profile's [WatchedOrder], from its Live TV history. */
+    suspend fun watchedOrder(): WatchedOrder {
+        val profile = activeProfile() ?: return WatchedOrder.NONE
+        val watched = runCatching { GlobalContext.get().get<ChannelDao>().recentlyWatched(profile.profileId, MAX_WATCHED).first() }
+            .getOrDefault(emptyList())
+        val byId = HashMap<Long, Int>()
+        val byFamily = HashMap<String, Int>()
+        watched.forEachIndexed { i, ch ->
+            byId.putIfAbsent(ch.id, i)
+            byFamily.putIfAbsent(family(ch), i)
+        }
+        return WatchedOrder(byId, byFamily)
+    }
+
+    private fun family(ch: ChannelEntity): String = EpgMatcher.normalizeForEpg(ch.name).ifEmpty { ch.id.toString() }
 
     private suspend fun activeProfile(): ActiveProfileSources? {
         val koin = GlobalContext.get()
@@ -161,11 +193,17 @@ internal object GuideBroadcasts {
         val now = System.currentTimeMillis()
         val favorites = channelDao.snapshotFavoritesManual(profileId, ContentOrderEntity.FAV_CONTEXT, sources, MAX_FAVORITES)
         val favoriteIds = favorites.map { it.id }.toSet()
-        // The likeliest first, so the first rows come in a second or two: favourites, then the big sports
-        // channels, then the rest in playlist order.
+        val watched = watchedOrder()
+        // The likeliest first, so the first rows come in a second or two: favourites, the channels the user
+        // watches (most recent first), the big sports channels, then the rest in playlist order.
         val channels = FootballScan.channels(channelDao, sources, favorites).all
             .filter { CustomizeKeys.channel(it) !in custom.hiddenItems }
-            .sortedBy { ch -> if (ch.id in favoriteIds) 0 else if (FootballMatcher.fold(ch.name).let { n -> FIRST.any { n.contains(it) } }) 1 else 2 }
+            .sortedWith(
+                compareBy(
+                    { ch -> if (ch.id in favoriteIds) 0 else if (watched.rank(ch) != Int.MAX_VALUE) 1 else if (FootballMatcher.fold(ch.name).let { n -> FIRST.any { n.contains(it) } }) 2 else 3 },
+                    { ch -> watched.rank(ch) },
+                ),
+            )
         val guides = FootballScan.guides(channels, onProgress = { partial.value = Snapshot(profileId, now, channels, it) }) { ch ->
             runCatching { epgReader.nowNext(ch, custom, offset) }.getOrNull()
         }
@@ -178,6 +216,7 @@ internal object GuideBroadcasts {
     /** A guide read is reused this long; a short-EPG read asks the provider. */
     private const val MAX_AGE_MS = 10 * 60_000L
     private const val MAX_FAVORITES = 40
+    private const val MAX_WATCHED = 100
     /** A programme starting this long before kick-off (Sky's build-up) to this long after counts. */
     private const val BEFORE_MS = 3 * 60 * 60_000L
     private const val AFTER_MS = 30 * 60_000L
