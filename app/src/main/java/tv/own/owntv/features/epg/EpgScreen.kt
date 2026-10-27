@@ -537,7 +537,7 @@ fun EpgScreen(
         val groupsW = fx(400)
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
         DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
-        val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
+        val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx, tv.own.owntv.ui.theme.stageSlide())
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
         // 27 Oct 2026) so the grid below shows more channels.

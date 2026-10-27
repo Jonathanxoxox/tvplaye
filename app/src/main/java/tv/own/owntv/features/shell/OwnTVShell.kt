@@ -175,9 +175,12 @@ fun OwnTVShell(
     }
     // One-shot: set when leaving the player so the returning browse screen re-focuses the item you played.
     var restoreFocus by remember { mutableStateOf(false) }
-    // The picture is on its way from full screen into the guide's preview corner (see exitToList).
+    // The picture is on its way between full screen and the guide's preview corner (see exitToList and
+    // guidePlayChannel): [handoverGrow] says which way, [handoverShrink] runs 0 → 1 either way.
     var guideHandover by remember { mutableStateOf(false) }
+    var handoverGrow by remember { mutableStateOf(false) }
     val handoverShrink = remember { androidx.compose.animation.core.Animatable(0f) }
+    val handoverSpec = tv.own.owntv.ui.theme.stageSlide<Float>(420)
     var searchReturn by remember { mutableStateOf<MainSection?>(null) }
     var restoreTrendingSearchFocus by remember { mutableStateOf(false) }
     var trendingSearchActive by remember { mutableStateOf(false) }
@@ -579,17 +582,24 @@ fun OwnTVShell(
             if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
             return@exit
         }
-        if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
-        tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
+        // Opened from the guide, the guide is still laid out behind the picture (guideBehind) and its corner
+        // known: the shrink starts on the very next frame. Building the guide afresh first is what kept the
+        // shrink from showing on the television: its first frames were spent laying the grid out.
+        val fromScratch = selectedSection != MainSection.LIVE_TV
+        if (fromScratch) {
+            onSelectSection(MainSection.LIVE_TV)
+            tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
+        }
         guideHandover = true
+        handoverGrow = false
         restoreFocus = true
         scope.launch {
             handoverShrink.snapTo(0f)
             var frames = 0
             while (tv.own.owntv.features.epg.GuidePreviewSpot.rect == null && frames++ < 30) withFrameNanos { }
-            if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) {
-                handoverShrink.animateTo(1f, androidx.compose.animation.core.tween(340, easing = androidx.compose.animation.core.FastOutSlowInEasing))
-            }
+            // A guide built just now: let its first heavy frames pass before the picture starts to move.
+            if (fromScratch) repeat(3) { withFrameNanos { } }
+            if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) handoverShrink.animateTo(1f, handoverSpec)
             closePlayer(toRail = false)
             guideHandover = false
             handoverShrink.snapTo(0f)
@@ -712,9 +722,10 @@ fun OwnTVShell(
     val guideStripRoom = androidx.compose.runtime.key(guideSection) {
         androidx.compose.animation.core.animateDpAsState(
             if (guideSection && !guideStripHidden) tv.own.owntv.features.shell.components.StageRailStripWidth else 0.mpx,
+            tv.own.owntv.ui.theme.stageSlide(),
         )
     }
-    val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f)
+    val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -1061,9 +1072,15 @@ fun OwnTVShell(
             },
     ) {
       // Browse UI — hidden while the player is fullscreen (stays visible behind the docked mini-player).
-      if (playerMode != PlayerMode.FULLSCREEN || guideHandover) {
+      // A live channel opened from the guide keeps the guide laid out behind it, unseen, so the picture can
+      // glide straight back onto its corner (exitToList). Not drawn meanwhile: the picture covers it all.
+      val guideBehind = playerMode == PlayerMode.FULLSCREEN && multiview == null && liveOnExo &&
+          zapSource == MainSection.LIVE_TV && selectedSection == MainSection.LIVE_TV
+      if (playerMode != PlayerMode.FULLSCREEN || guideHandover || guideBehind) {
+        val browseHidden = playerMode == PlayerMode.FULLSCREEN && !guideHandover
         Column(
             modifier = Modifier.fillMaxSize()
+                .graphicsLayer { alpha = if (browseHidden) 0f else 1f }
                 // One group with a restorer: leaving for the mini player and coming back lands on the
                 // exact control that was focused, without every screen having to remember its own.
                 .focusRequester(shellContentFocus)
@@ -1126,14 +1143,33 @@ fun OwnTVShell(
             ) {
                 // How the guide (Live TV) starts a channel or an archive programme: through LiveViewModel,
                 // the one live path.
-                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = { ch, _ ->
+                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = play@{ ch, _ ->
+                    if (guideHandover) return@play
+                    // The channel already playing in the corner grows from there into full screen, the same
+                    // picture, no new stream (Jonathan, 27 Oct 2026).
+                    val grow = playerMode == PlayerMode.NONE && previewChannel?.id == ch.id &&
+                        liveVm.previewEngine.state.value == tv.own.owntv.player.LivePreviewEngine.State.PLAYING &&
+                        tv.own.owntv.features.epg.GuidePreviewSpot.rect != null
                     restoreFocus = false
                     liveVm.watchFromGuide(ch)
                     zapSource = MainSection.LIVE_TV
                     homeVm.stopPreview()
                     // Live TV set to play externally → the channel went to another app;
                     // don't mount the fullscreen player over it.
-                    if (playerMode != PlayerMode.MINI && !liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
+                    if (playerMode != PlayerMode.MINI && !liveVm.externalPlayerOn.value) {
+                        if (grow && liveVm.liveOnExo.value && multiview == null) {
+                            guideHandover = true
+                            handoverGrow = true
+                            scope.launch {
+                                handoverShrink.snapTo(0f)
+                                handoverShrink.animateTo(1f, handoverSpec)
+                                guideHandover = false
+                                handoverGrow = false
+                                handoverShrink.snapTo(0f)
+                            }
+                        }
+                        playerMode = PlayerMode.FULLSCREEN
+                    }
                 }
                 val guidePlayCatchup: (ChannelEntity, tv.own.owntv.core.database.entity.EpgProgrammeEntity) -> Unit = { ch, prog ->
                     restoreFocus = false
@@ -1396,7 +1432,7 @@ fun OwnTVShell(
           }
             // The guide shows no clock and no pills at all, as in TiviMate (Jonathan, 27 Oct 2026: "unnötig").
             val clusterAside = selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV
-            val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
+            val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
                     val live = target.kind == tv.own.owntv.features.home.ContinueKind.LIVE
@@ -1558,9 +1594,9 @@ fun OwnTVShell(
         val isFull = playerMode == PlayerMode.FULLSCREEN
         Box(
             modifier = if (isFull && guideHandover) {
-                // From the whole screen to the guide's preview corner; read in layout, so only this box moves.
+                // Between the whole screen and the guide's preview corner; read in layout, so only this box moves.
                 Modifier.layout { measurable, constraints ->
-                    val f = handoverShrink.value
+                    val f = if (handoverGrow) 1f - handoverShrink.value else handoverShrink.value
                     val to = tv.own.owntv.features.epg.GuidePreviewSpot.rect
                     val fullW = constraints.maxWidth.toFloat()
                     val fullH = constraints.maxHeight.toFloat()

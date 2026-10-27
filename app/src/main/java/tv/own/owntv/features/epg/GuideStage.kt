@@ -136,7 +136,9 @@ internal fun GuideVideo(
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
-        if (channel != null) {
+        // Not behind a running picture: when full screen hands the stream back, the frame or two before this
+        // surface shows it would flash the logo.
+        if (channel != null && !playing) {
             ChannelLogoTile(logoUrl = channel.displayLogoUrl, modifier = Modifier.size(120.mpx), fill = Color.Transparent) {
                 OwnTVIcon(OwnTVIcon.LIVE_TV, tint = StageColors.Dim, modifier = Modifier.size(48.mpx))
             }

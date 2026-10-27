@@ -157,7 +157,7 @@ fun StageRail(
     val openOverPage = state == RailState.OPEN
     androidx.compose.runtime.SideEffect { StageRailOpen.open = openOverPage }
     // Opening, the menu slides in from the left edge alongside the page it pushes, as in TiviMate.
-    val openness = androidx.compose.animation.core.animateFloatAsState(if (expanded) 1f else 0f)
+    val openness = androidx.compose.animation.core.animateFloatAsState(if (expanded) 1f else 0f, tv.own.owntv.ui.theme.stageSlide())
     Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -269,7 +269,7 @@ object StageRailOpen {
  */
 @Composable
 fun rememberRailPush(state: RailState): androidx.compose.runtime.State<androidx.compose.ui.unit.Dp> =
-    androidx.compose.animation.core.animateDpAsState(if (state == RailState.OPEN) MenuWidth - StripWidth else 0.mpx)
+    androidx.compose.animation.core.animateDpAsState(if (state == RailState.OPEN) MenuWidth - StripWidth else 0.mpx, tv.own.owntv.ui.theme.stageSlide())
 
 /** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable
