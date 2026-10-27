@@ -260,6 +260,10 @@ object StageRailOpen {
     var guideGroups by mutableStateOf(false)
     /** The guide holds focus: the strip steps aside, as in TiviMate, and the guide takes its room. ◀ brings it back. */
     var guideFocused by mutableStateOf(false)
+    /** A page that takes the whole width like the guide is shown (a match page). */
+    var fullPage by mutableStateOf(false)
+    /** That page holds focus: the strip steps aside as for the guide. ◀ brings it back. */
+    var fullPageFocused by mutableStateOf(false)
 }
 
 /**

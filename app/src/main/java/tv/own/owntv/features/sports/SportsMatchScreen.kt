@@ -54,11 +54,11 @@ import tv.own.owntv.core.sports.model.MatchSummary
 import tv.own.owntv.core.sports.model.StandingsTable
 import tv.own.owntv.features.epg.GuideVideo
 import tv.own.owntv.features.live.LiveViewModel
+import tv.own.owntv.features.shell.components.StageRailOpen
 import tv.own.owntv.ui.components.ChannelLogoTile
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.stage.StageButton
 import tv.own.owntv.ui.stage.StageFocus
-import tv.own.owntv.ui.stage.StageKeyHints
 import tv.own.owntv.ui.stage.StageRow
 import tv.own.owntv.ui.stage.StageSurface
 import tv.own.owntv.ui.stage.StageTab
@@ -140,13 +140,18 @@ fun SportsMatchScreen(
     // Back from the player: focus the channel that was playing, not the first.
     val focusTarget = shown.firstOrNull { it.channel.id == vm.lastPlayedChannelId } ?: shown.firstOrNull()
 
-    Box(modifier.fillMaxSize()) {
+    // The page takes the whole width, as the guide does: while it holds focus the menu strip steps aside
+    // and the clock and pills with it, so Watch live is never cut off on the right. ◀ brings the strip back.
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        StageRailOpen.fullPage = true
+        onDispose { StageRailOpen.fullPage = false; StageRailOpen.fullPageFocused = false }
+    }
+    Box(modifier.fillMaxSize().onFocusChanged { StageRailOpen.fullPageFocused = it.hasFocus }) {
         // Up and Down stay on this page: a held ▲ must never run out of the page.
         Row(Modifier.fillMaxSize().padding(start = contentStart, end = 60.mpx, top = 39.mpx).trapVerticalFocusExit(), horizontalArrangement = Arrangement.spacedBy(39.mpx)) {
             // --- Left: the match ------------------------------------------------------------------
             // The crumb is fixed in a 75-high band, so the score box (21 below it) starts at 96, level
-            // with the right column's video box, and stays level while the list scrolls; both lists end
-            // 84 above the bottom, clear of the key hints.
+            // with the right column's video box, and stays level while the list scrolls.
             Column(Modifier.width(915.mpx).fillMaxHeight()) {
                 Box(Modifier.height(75.mpx).fillMaxWidth(), contentAlignment = Alignment.BottomStart) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.mpx)) {
@@ -160,7 +165,7 @@ fun SportsMatchScreen(
                         )
                     }
                 }
-            LazyColumn(Modifier.fillMaxWidth().weight(1f).padding(bottom = 84.mpx).focusGroup(), contentPadding = PaddingValues(bottom = 24.mpx)) {
+            LazyColumn(Modifier.fillMaxWidth().weight(1f).padding(bottom = 30.mpx).focusGroup(), contentPadding = PaddingValues(bottom = 24.mpx)) {
                 item {
                     ScoreHeader(m, state.summary, hidden = state.config.spoilerFree && !revealed, onReveal = { revealed = true })
                 }
@@ -173,7 +178,9 @@ fun SportsMatchScreen(
                         val tabs = MatchTab.entries.filter {
                             (it != MatchTab.TABLE || state.standings?.groups?.any { g -> g.rows.isNotEmpty() } == true) &&
                                 (it != MatchTab.STATS || !state.summary?.stats.isNullOrEmpty()) &&
-                                (it != MatchTab.LINEUPS || !state.summary?.lineups.isNullOrEmpty()) && (it != MatchTab.FORM || !state.summary?.form.isNullOrEmpty())
+                                (it != MatchTab.LINEUPS || !state.summary?.lineups.isNullOrEmpty()) && (it != MatchTab.FORM || !state.summary?.form.isNullOrEmpty()) &&
+                                // The user's own channels are in Watch live beside; this tab only adds ESPN's list.
+                                (it != MatchTab.BROADCASTS || m.broadcasts.isNotEmpty())
                         }
                         tabs.forEach { t ->
                             StageTab(
@@ -195,13 +202,13 @@ fun SportsMatchScreen(
                     MatchTab.LINEUPS -> item { Lineups(m, state.summary) }
                     MatchTab.TABLE -> item { TablePreview(state.standings, m, onOpenLeague) }
                     MatchTab.FORM -> item { Form(m, state.summary) }
-                    MatchTab.BROADCASTS -> item { Broadcasts(m, (state.search as? ChannelSearch.Found)?.options) }
+                    MatchTab.BROADCASTS -> item { Broadcasts(m) }
                 }
             }
             }
 
             // --- Right: Watch live ----------------------------------------------------------------
-            // Starts below the top-right status cluster (playlist pill and clock), which floats over every page.
+            // Level with the score box on the left.
             Column(Modifier.weight(1f).fillMaxSize().padding(top = 96.mpx).focusGroup()) {
                 if (!state.hasPlaylist) {
                     NoPlaylistNote(onAddPlaylist)
@@ -240,7 +247,7 @@ fun SportsMatchScreen(
                 }
                 FilterChips(state.filter, onOpenFilters)
                 // Ends above the key hints at the bottom of the screen, which would otherwise cover the last rows.
-                LazyColumn(Modifier.weight(1f).padding(top = 6.mpx, bottom = 84.mpx).focusRestorer().focusGroup()) {
+                LazyColumn(Modifier.weight(1f).padding(top = 6.mpx, bottom = 30.mpx).focusRestorer().focusGroup()) {
                     items(shown, key = { it.channel.id }) { o ->
                         ChannelRow(
                             o, m,
@@ -265,17 +272,6 @@ fun SportsMatchScreen(
                 }
             }
         }
-        if (state.hasPlaylist && shown.isNotEmpty()) {
-            StageKeyHints(
-                listOf(
-                    stringResource(R.string.common_ok) to stringResource(R.string.sports_watch_full_screen),
-                    "▲▼" to stringResource(R.string.sports_preview_another),
-                    stringResource(R.string.content_key_hold_ok) to stringResource(R.string.sports_always_use, leagueName(m)),
-                ),
-                Modifier.align(Alignment.BottomEnd).padding(end = 60.mpx, bottom = 27.mpx),
-                textSize = 18,
-            )
-        }
     }
 }
 
@@ -289,23 +285,14 @@ private val MatchTab.label: Int get() = when (this) {
 }
 
 /**
- * Who shows the match: the channels Find channels found in the user's own guide —
- * one per row, under their country, countries and names in order, any without a country last — then
- * the broadcasters ESPN lists, United States services only. The page's list scrolls, so this does too.
+ * The broadcasters ESPN lists (United States services mostly), one per row under their country. The
+ * user's own channels are not repeated here: they are in Watch live beside. The page's list scrolls, so
+ * this does too.
  */
 @Composable
-private fun Broadcasts(m: Match, found: List<WatchOption>?) {
+private fun Broadcasts(m: Match) {
     Column(Modifier.fillMaxWidth().padding(18.mpx), verticalArrangement = Arrangement.spacedBy(9.mpx)) {
-        Text(stringResource(R.string.sports_broadcasts_guide), style = stageText(20, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        val guide = found?.filter { it.tier == WatchTier.GUIDE || it.tier == WatchTier.EVENT }
-        when {
-            guide == null -> Text(stringResource(R.string.sports_broadcasts_find_first), style = stageText(18, 400), color = StageColors.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            guide.isEmpty() -> Text(stringResource(R.string.sports_broadcasts_none), style = stageText(18, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            else -> byCountry(guide.map { it.facets.country.orEmpty() to it.facets.name }).forEach { (country, names) -> BroadcastGroup(country, names) }
-        }
-        Spacer(Modifier.height(12.mpx))
         Text(stringResource(R.string.sports_broadcasts_espn), style = stageText(20, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        if (m.broadcasts.isEmpty()) Text(stringResource(R.string.sports_broadcasts_none), style = stageText(18, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
         byCountry(m.broadcasts.map { it.market?.takeIf { c -> c.length == 2 }.orEmpty() to it.name }).forEach { (country, names) -> BroadcastGroup(country, names) }
     }
 }

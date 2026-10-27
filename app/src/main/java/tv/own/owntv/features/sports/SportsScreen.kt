@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
@@ -55,6 +56,9 @@ fun SportsScreen(
     }
     val current = match
     val leagueKey = league
+    // Focus inside the league or match page is the content's, as on the hub: without this the shell took
+    // every key there for the menu's and opened it over the page, which cut Watch live off on the right.
+    val pageModifier = modifier.onFocusChanged { if (it.hasFocus) onChildFocused() }
     if (leagueKey != null) {
         SportsLeagueScreen(
             vm = vm,
@@ -62,7 +66,7 @@ fun SportsScreen(
             onBack = { openLeague(null) },
             active = active,
             contentStart = contentStart,
-            modifier = modifier,
+            modifier = pageModifier,
         )
     } else if (current == null) {
         SportsHubScreen(
@@ -91,7 +95,7 @@ fun SportsScreen(
             },
             active = active,
             contentStart = contentStart,
-            modifier = modifier,
+            modifier = pageModifier,
         )
         val page = vm.matchPage.collectAsStateWithLifecycle().value
         if (filters && page != null && page.hasPlaylist) {
