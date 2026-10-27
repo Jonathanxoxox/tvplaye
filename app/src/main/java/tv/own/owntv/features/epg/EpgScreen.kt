@@ -74,7 +74,6 @@ import tv.own.owntv.features.live.LiveViewModel
 import tv.own.owntv.core.live.ProviderTags
 import tv.own.owntv.features.shell.components.CategoryContextMenu
 import tv.own.owntv.ui.components.MoveOrderOverlay
-import tv.own.owntv.features.live.edgeScrollSpec
 import tv.own.owntv.features.live.liveCategoryEntries
 import tv.own.owntv.features.live.liveEpgShiftLabel
 import tv.own.owntv.ui.components.OwnTVIcon
@@ -237,6 +236,23 @@ fun EpgScreen(
     val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val rowListState = rememberLazyListState()
+    // How the rows scroll to a focused one: Live TV's edge scroll, but with a whole row and its gap of room,
+    // the same room the instant steps in stepTo keep, so a glide and a step end in the same place.
+    val rowGapPx = with(density) { GuideGridDefaults.RowGap.toPx() }
+    val guideScrollSpec = remember(rowGapPx) {
+        object : androidx.compose.foundation.gestures.BringIntoViewSpec {
+            override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+                val room = (size + rowGapPx).coerceAtMost((containerSize - size).coerceAtLeast(0f) / 2f)
+                val lead = offset - room
+                val trailing = offset + size + room - containerSize
+                return when {
+                    lead >= 0f && trailing <= 0f -> 0f
+                    lead < 0f || size > containerSize -> lead
+                    else -> trailing
+                }
+            }
+        }
+    }
 
     // --- The time axis: one scroll position shared by the ruler, the now-line and every row. ----------
     val ppm = with(density) { GuideGridDefaults.PxPerMin.toPx() }
@@ -279,13 +295,21 @@ fun EpgScreen(
     // from the target, and the newest press cancels the step still in flight.
     var stepTarget by remember { mutableStateOf<Int?>(null) }
     var stepJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-    fun stepTo(i: Int) {
+    fun stepTo(i: Int, glide: Boolean = false) {
         anchorId = null
         stepTarget = i
         stepJob?.cancel()
         stepJob = scope.launch {
             val info = rowListState.layoutInfo
             val row = info.visibleItemsInfo.firstOrNull { it.index == i }
+            // A single press onto a row already on screen: it lights at once and the list glides after it
+            // (guideScrollSpec), as TiviMate's does. Held keys and pages keep the instant steps below, which
+            // never outrun the list.
+            if (glide && row != null) {
+                runCatching { rowFocus(i).requestFocus() }
+                stepTarget = null
+                return@launch
+            }
             val step = ((info.visibleItemsInfo.firstOrNull()?.size ?: 0) + info.mainAxisItemSpacing).toFloat()
             val delta = when {
                 row == null -> if (i > (info.visibleItemsInfo.lastOrNull()?.index ?: 0)) step else -step
@@ -486,14 +510,6 @@ fun EpgScreen(
         val timelineW = screenW - fx(48) - labelW - fx(64)
         LaunchedEffect(timelineW) { timelinePx = with(density) { timelineW.roundToPx() } }
 
-        val top = selected ?: state.channels.getOrNull(focusedRow)?.let { ch -> ch to programmeAt(vm.cachedProgrammes(ch), liveNow) }
-        val topChannel = top?.first
-        val topProgramme = top?.second
-        val full by produceState<EpgProgrammeEntity?>(null, topProgramme?.id) {
-            value = topProgramme?.id?.takeIf { it > 0 }?.let { vm.programmeFull(it) }
-        }
-        val shown = full ?: topProgramme
-
         // With the menu open, or the groups in use, they stand at the left and the guide moves over by their width.
         val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld
         val groupsW = fx(400)
@@ -503,30 +519,16 @@ fun EpgScreen(
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
         // 27 Oct 2026) so the grid below shows more channels.
-        Row(Modifier.padding(start = fx(64), end = fx(64), top = 40.mpx).fillMaxWidth().height(240.mpx)) {
-        val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
-        // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
-        GuideVideo(
-            channel = videoChannel,
+        GuideTopArea(
+            vm = vm,
+            // Read inside the top area, so ▲ ▼ and the cursor redraw only it, not the whole guide around it.
+            top = { selected ?: state.channels.getOrNull(focusedRow)?.let { ch -> ch to programmeAt(vm.cachedProgrammes(ch), liveNow) } },
+            previewChannel = if (effectivePreview) previewChannel else null,
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
-            // Where the picture lands when full screen closes (the shell shrinks it into this corner).
-            modifier = Modifier.width(426.mpx).onGloballyPositioned { GuidePreviewSpot.rect = it.boundsInRoot() },
+            now = { liveNow },
+            modifier = Modifier.padding(start = fx(64), end = fx(64), top = 40.mpx).fillMaxWidth().height(240.mpx),
         )
-        Box(Modifier.weight(1f).fillMaxHeight()) {
-            if (topChannel != null) {
-                val chName = ProviderTags.parse(topChannel.name).name
-                GuideProgrammeBlock(
-                    eyebrow = shown?.let { programmeEyebrow(it, chName, liveNow) },
-                    title = shown?.title ?: chName,
-                    details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
-                    synopsis = shown?.description,
-                    modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
-                )
-            }
-        }
-
-        }
 
         // No control line above the grid any more (Jonathan, 27 Oct 2026: "die Filter oberhalb des Guides
         // können auch weg"): the categories are the second level, the rest lives in the menus, as in TiviMate.
@@ -569,7 +571,7 @@ fun EpgScreen(
                             modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
                         )
                     }
-                    CompositionLocalProvider(androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides edgeScrollSpec) {
+                    CompositionLocalProvider(androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides guideScrollSpec) {
                         LazyColumn(
                             state = rowListState,
                             modifier = Modifier
@@ -612,14 +614,14 @@ fun EpgScreen(
                                     },
                                     onCursor = { cursorTime = it },
                                     onShow = { p -> selected = channel to p },
-                                    onStep = { delta ->
+                                    onStep = { delta, glide ->
                                         val from = stepTarget ?: index
                                         // A page (CH+/CH−, RW/FF) stops at the first or last row instead of leaving.
                                         val to = (from + delta).let { if (kotlin.math.abs(delta) > 1) it.coerceIn(0, state.channels.size - 1) else it }
                                         when {
                                             to < 0 -> false // ▲ from the first row: up to the control line
                                             to >= state.channels.size -> true
-                                            else -> { stepTo(to); true }
+                                            else -> { stepTo(to, glide); true }
                                         }
                                     },
                                     onOk = { p -> if (previewNeeds(channel)) liveVm.onChannelFocused(channel) else onOk(channel, p) },
@@ -916,7 +918,8 @@ private fun GuideRow(
     onFocused: () -> Unit,
     onCursor: (Long) -> Unit,
     onShow: (EpgProgrammeEntity?) -> Unit,
-    onStep: (Int) -> Boolean,
+    /** Rows to move by; glide for a single ▲ ▼ press (not held, not a page). */
+    onStep: (delta: Int, glide: Boolean) -> Boolean,
     onOk: (EpgProgrammeEntity?) -> Unit,
     onMenu: (EpgProgrammeEntity?) -> Unit,
     onChannelMenu: () -> Unit,
@@ -940,7 +943,8 @@ private fun GuideRow(
     var okDown by remember { mutableStateOf(false) }
     var menuDown by remember { mutableStateOf(false) }
     LaunchedEffect(focused, cursorTime, programmes) { if (focused) onShow(programmeAt(programmes, cursorTime)) }
-    Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight), verticalAlignment = Alignment.CenterVertically) {
+    // Its own layer: while the list glides, the row is moved as it was drawn instead of drawn again each frame.
+    Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight).graphicsLayer { }, verticalAlignment = Alignment.CenterVertically) {
         GuideChannelLabel(channel, number, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
         Box(
             Modifier
@@ -976,8 +980,8 @@ private fun GuideRow(
                         Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime)); true }
                         Key.ProgramRed, Key.MediaStop -> { if (down) onFavorite(); true }
                         Key.ProgramGreen -> { if (down) onChannelMenu(); true }
-                        Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS); true }
-                        Key.ChannelDown, Key.PageDown, Key.MediaFastForward -> { if (down) onStep(GUIDE_PAGE_ROWS); true }
+                        Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS, false); true }
+                        Key.ChannelDown, Key.PageDown, Key.MediaFastForward -> { if (down) onStep(GUIDE_PAGE_ROWS, false); true }
                         // Physical by design: the timeline runs left to right in every language.
                         // Row stage: ◀ shows the groups (◀ again reaches the menu), ▶ steps into the programmes.
                         Key.DirectionLeft -> if (!cellMode) { if (down) onGroups(); true } else {
@@ -989,8 +993,8 @@ private fun GuideRow(
                             else if (down) onCursor(cursorStep(progs, cursorTime, +1, windowStart, windowEnd))
                             true
                         }
-                        Key.DirectionUp -> if (down) onStep(-1) else true
-                        Key.DirectionDown -> if (down) onStep(+1) else true
+                        Key.DirectionUp -> if (down) onStep(-1, e.nativeKeyEvent.repeatCount == 0) else true
+                        Key.DirectionDown -> if (down) onStep(+1, e.nativeKeyEvent.repeatCount == 0) else true
                         else -> false
                     }
                 }
@@ -1010,6 +1014,52 @@ private fun GuideRow(
                     recordingStarts = recordingStarts,
                     reminderStarts = reminderStarts,
                     scrollPx = scrollPx,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * The guide's top area: the video at the left, as in the classic IPTV player, and beside it the programme
+ * under the cursor ([top]: the channel and programme to show). Its own composable so that the reads of the
+ * focused row and the cursor happen here: each ▲ ▼ then rebuilds this area alone instead of the whole guide.
+ */
+@Composable
+private fun GuideTopArea(
+    vm: EpgViewModel,
+    top: () -> Pair<ChannelEntity, EpgProgrammeEntity?>?,
+    /** The preview's channel while the preview is on; else the video follows [top]. */
+    previewChannel: ChannelEntity?,
+    previewEngine: tv.own.owntv.player.LivePreviewEngine,
+    showVideo: Boolean,
+    now: () -> Long,
+    modifier: Modifier = Modifier,
+) {
+    val shownTop = top()
+    val topChannel = shownTop?.first
+    val topProgramme = shownTop?.second
+    val full by produceState<EpgProgrammeEntity?>(null, topProgramme?.id) {
+        value = topProgramme?.id?.takeIf { it > 0 }?.let { vm.programmeFull(it) }
+    }
+    val shown = full ?: topProgramme
+    Row(modifier) {
+        GuideVideo(
+            channel = previewChannel ?: topChannel,
+            previewEngine = previewEngine,
+            showVideo = showVideo,
+            // Where the picture lands when full screen closes (the shell shrinks it into this corner).
+            modifier = Modifier.width(426.mpx).onGloballyPositioned { GuidePreviewSpot.rect = it.boundsInRoot() },
+        )
+        Box(Modifier.weight(1f).fillMaxHeight()) {
+            if (topChannel != null) {
+                val chName = ProviderTags.parse(topChannel.name).name
+                GuideProgrammeBlock(
+                    eyebrow = shown?.let { programmeEyebrow(it, chName, now()) },
+                    title = shown?.title ?: chName,
+                    details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
+                    synopsis = shown?.description,
+                    modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
                 )
             }
         }
