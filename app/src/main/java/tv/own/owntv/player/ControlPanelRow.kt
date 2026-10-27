@@ -28,6 +28,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -41,8 +42,7 @@ import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.theme.LocalStagePalette
 import tv.own.owntv.ui.theme.StageFocusFill
 import tv.own.owntv.ui.theme.StageOnFocus
-import tv.own.owntv.ui.theme.mpx
-import tv.own.owntv.ui.theme.stageText
+import tv.own.owntv.ui.theme.stageAccent
 
 /** One tile of the player's control panel: a tool (icon) or a recent channel (logo plus what is on). */
 class PanelTile(
@@ -57,8 +57,10 @@ class PanelTile(
 
 /**
  * The row of tiles under the info bar that OK brings up in the live player, as the classic IPTV player
- * draws it: Guide and History first, then the channels watched last. Teal tiles, the focused one lighter
- * and a touch larger. [onActivity] keeps the panel up while the user moves along it.
+ * draws it: Guide and History first, then the channels watched last. Tiles in a see-through accent,
+ * the focused one stronger and a touch larger. Sized in frame pixels ([ScreenUnits]) so the row takes
+ * the same share of the picture as in the classic player. [onActivity] keeps the panel up while the
+ * user moves along it.
  */
 @Composable
 internal fun ControlPanelRow(
@@ -67,28 +69,29 @@ internal fun ControlPanelRow(
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val u = rememberScreenUnits()
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 86.mpx, vertical = 18.mpx),
-        horizontalArrangement = Arrangement.spacedBy(22.mpx),
+        contentPadding = PaddingValues(start = u.dp(54), end = u.dp(54), top = u.dp(22), bottom = u.dp(14)),
+        horizontalArrangement = Arrangement.spacedBy(u.dp(16)),
     ) {
         items(tiles, key = { it.key }) { tile ->
             val first = tile === tiles.first()
-            PanelTileView(tile, if (first) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
+            PanelTileView(tile, u, if (first) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
         }
     }
 }
 
 @Composable
-private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () -> Unit) {
+private fun PanelTileView(tile: PanelTile, u: ScreenUnits, modifier: Modifier, onActivity: () -> Unit) {
     var focused by remember { mutableStateOf(false) }
+    val accent = stageAccent.accent
     Box(
         modifier
-            .size(width = 317.mpx, height = 202.mpx)
-            .scale(if (focused) 1.04f else 1f)
-            .clip(RoundedCornerShape(11.mpx))
-            // The app's focus language: the near-white bar with dark ink, idle tiles in the theme's glass.
-            .background(if (focused) StageFocusFill else LocalStagePalette.current.glassTint)
+            .size(width = u.dp(236), height = u.dp(172))
+            .scale(if (focused) 1.08f else 1f)
+            .clip(RoundedCornerShape(u.dp(8)))
+            .background(accent.copy(alpha = if (focused) 0.62f else 0.3f))
             .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
             .onKeyEvent { e ->
                 val ok = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
@@ -98,29 +101,33 @@ private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () ->
         contentAlignment = Alignment.Center,
     ) {
         Column(
-            Modifier.fillMaxSize().padding(horizontal = 14.mpx, vertical = 18.mpx),
+            Modifier.fillMaxSize().padding(horizontal = u.dp(12), vertical = u.dp(14)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            when {
-                tile.icon != null -> OwnTVIcon(tile.icon, if (focused) StageOnFocus else Color.White, Modifier.size(72.mpx))
-                else -> Box(
-                    Modifier.size(width = 137.mpx, height = 86.mpx).clip(RoundedCornerShape(7.mpx)).background(Color.White),
+            if (tile.icon != null) {
+                OwnTVIcon(tile.icon, Color.White, Modifier.size(u.dp(70)))
+                Spacer(Modifier.height(u.dp(12)))
+                Text(tile.label, style = u.text(26, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+            } else {
+                Box(
+                    Modifier.size(width = u.dp(104), height = u.dp(98)).clip(RoundedCornerShape(u.dp(6))).background(Color.White),
                     contentAlignment = Alignment.Center,
                 ) {
                     if (!tile.logoUrl.isNullOrBlank()) {
-                        AsyncImage(model = tile.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(9.mpx))
+                        AsyncImage(model = tile.logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(u.dp(8)))
                     } else {
-                        Text(tile.label.take(3).uppercase(), style = stageText(20, 800), color = Color(0xFF26363A))
+                        Text(tile.label.take(3).uppercase(), style = u.text(24, 800).copy(shadow = null), color = Color(0xFF26363A), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
+                Spacer(Modifier.height(u.dp(12)))
+                // What is on, in a light accent like the classic player; the name if the guide has nothing.
+                Text(
+                    tile.caption?.takeIf { it.isNotBlank() } ?: tile.label,
+                    style = u.text(22, 600), color = lerp(accent, Color.White, 0.55f), maxLines = 1,
+                    overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
+                )
             }
-            Spacer(Modifier.height(14.mpx))
-            Text(
-                tile.caption?.takeIf { it.isNotBlank() } ?: tile.label,
-                style = stageText(tv.own.owntv.ui.theme.StageListText, 600), color = if (focused) StageOnFocus else Color.White, maxLines = 1,
-                overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-            )
         }
     }
 }
@@ -137,24 +144,25 @@ internal fun SettingsPanelRow(
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val u = rememberScreenUnits()
     LazyRow(
         modifier = modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 86.mpx, vertical = 14.mpx),
-        horizontalArrangement = Arrangement.spacedBy(14.mpx),
+        contentPadding = PaddingValues(start = u.dp(54), end = u.dp(54), top = u.dp(8), bottom = u.dp(30)),
+        horizontalArrangement = Arrangement.spacedBy(u.dp(14)),
     ) {
         items(options.size) { i ->
-            SettingChip(options[i], if (i == 0) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
+            SettingChip(options[i], u, if (i == 0) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
         }
     }
 }
 
 @Composable
-private fun SettingChip(option: LiveOption, modifier: Modifier, onActivity: () -> Unit) {
+private fun SettingChip(option: LiveOption, u: ScreenUnits, modifier: Modifier, onActivity: () -> Unit) {
     var focused by remember { mutableStateOf(false) }
     androidx.compose.foundation.layout.Row(
         modifier
-            .height(72.mpx)
-            .clip(RoundedCornerShape(11.mpx))
+            .height(u.dp(76))
+            .clip(RoundedCornerShape(u.dp(8)))
             .background(if (focused) StageFocusFill else LocalStagePalette.current.glassTint)
             .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
             .onKeyEvent { e ->
@@ -162,19 +170,19 @@ private fun SettingChip(option: LiveOption, modifier: Modifier, onActivity: () -
                 if (ok && e.type == KeyEventType.KeyUp) { option.onClick(); true } else ok
             }
             .focusable()
-            .padding(horizontal = 22.mpx),
+            .padding(horizontal = u.dp(24)),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.mpx),
+        horizontalArrangement = Arrangement.spacedBy(u.dp(12)),
     ) {
-        OwnTVIcon(option.icon, if (focused) StageOnFocus else Color.White, Modifier.size(32.mpx))
+        OwnTVIcon(option.icon, if (focused) StageOnFocus else Color.White, Modifier.size(u.dp(34)))
         Text(
             option.label,
-            style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
+            style = u.text(24, 600).copy(shadow = null),
             color = if (focused) StageOnFocus else Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
         )
         option.value?.let {
             Text(
-                it, style = stageText(tv.own.owntv.ui.theme.StageListText, 500),
+                it, style = u.text(24, 500).copy(shadow = null),
                 color = (if (focused) StageOnFocus else Color.White).copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis,
             )
         }
@@ -184,7 +192,8 @@ private fun SettingChip(option: LiveOption, modifier: Modifier, onActivity: () -
 /** The arrow under the tile row: there is more below. */
 @Composable
 internal fun MoreBelowHint(modifier: Modifier = Modifier) {
-    Box(modifier.fillMaxWidth().padding(bottom = 6.mpx), contentAlignment = Alignment.Center) {
-        OwnTVIcon(OwnTVIcon.CHEVRON_DOWN, Color.White.copy(alpha = 0.7f), Modifier.size(28.mpx))
+    val u = rememberScreenUnits()
+    Box(modifier.fillMaxWidth().padding(top = u.dp(10), bottom = u.dp(36)), contentAlignment = Alignment.Center) {
+        OwnTVIcon(OwnTVIcon.CHEVRON_DOWN, Color.White.copy(alpha = 0.8f), Modifier.size(u.dp(28)))
     }
 }
