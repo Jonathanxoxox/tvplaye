@@ -702,10 +702,13 @@ fun OwnTVShell(
     // The strip at rest, the menu with names while it holds focus.
     val railState = if (railFocused) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
-    val guideSection = selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG
+    // The guide, and a match page: pages that take the strip's room while they hold focus.
+    val fullPage = selectedSection == MainSection.SPORTS && tv.own.owntv.features.shell.components.StageRailOpen.fullPage
+    val guideSection = selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG || fullPage
     val guideStripHidden = guideSection &&
         // Behind full screen as well, so the guide is already in place when the picture shrinks onto it.
-        (tv.own.owntv.features.shell.components.StageRailOpen.guideFocused || guideHandover || playerMode == PlayerMode.FULLSCREEN) &&
+        (tv.own.owntv.features.shell.components.StageRailOpen.guideFocused || tv.own.owntv.features.shell.components.StageRailOpen.fullPageFocused ||
+            guideHandover || playerMode == PlayerMode.FULLSCREEN) &&
         railState != tv.own.owntv.features.shell.components.RailState.OPEN
     // The guide does not jump when the strip steps aside or comes back: it slides, as TiviMate's does.
     // Keyed on the section: another page keeps its padding and must not slide in from the guide's offset.
@@ -1395,7 +1398,8 @@ fun OwnTVShell(
             }
           }
             // The guide shows no clock and no pills at all, as in TiviMate (Jonathan, 27 Oct 2026: "unnötig").
-            val clusterAside = selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV
+            // A match page neither: its Watch live column needs the room.
+            val clusterAside = selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV || fullPage
             val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
