@@ -101,7 +101,7 @@ import tv.own.owntv.ui.theme.stageText
 private const val Tabular = "tnum"
 
 /**
- * The top-left video (640×360, radius 28): the focused channel through Live TV's preview player — no
+ * The top-left video (426×240, radius 20): the focused channel through Live TV's preview player — no
  * second decoder — with the LIVE badge and "259 · Sky Cinema Family · Toy Story 4" along the bottom.
  */
 @Composable
@@ -116,7 +116,7 @@ internal fun GuideVideo(
     val previewState by previewEngine.state.collectAsStateWithLifecycle()
     val playing = showVideo && previewState != tv.own.owntv.player.LivePreviewEngine.State.ERROR &&
         previewState != tv.own.owntv.player.LivePreviewEngine.State.IDLE
-    val r = 28.mpx
+    val r = 20.mpx
     val videoShadow = tv.own.owntv.ui.theme.stageShadow(0.55f)
     Box(
         modifier
@@ -127,7 +127,7 @@ internal fun GuideVideo(
         contentAlignment = Alignment.Center,
     ) {
         if (channel != null) {
-            ChannelLogoTile(logoUrl = channel.displayLogoUrl, modifier = Modifier.size(200.mpx), fill = Color.Transparent) {
+            ChannelLogoTile(logoUrl = channel.displayLogoUrl, modifier = Modifier.size(120.mpx), fill = Color.Transparent) {
                 OwnTVIcon(OwnTVIcon.LIVE_TV, tint = StageColors.Dim, modifier = Modifier.size(48.mpx))
             }
         }
@@ -136,14 +136,14 @@ internal fun GuideVideo(
         Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
         Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), r.toPx()) })
         if (channel != null) {
-            Box(Modifier.align(Alignment.TopStart).padding(start = 20.mpx, top = 18.mpx)) { StageLiveBadge(stringResource(R.string.player_live)) }
+            Box(Modifier.align(Alignment.TopStart).padding(start = 16.mpx, top = 14.mpx)) { StageLiveBadge(stringResource(R.string.player_live)) }
             Text(
                 buildAnnotatedString {
                     append(channelLine.orEmpty())
                     if (!nowTitle.isNullOrBlank()) withStyle(SpanStyle(color = StageColors.Muted, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) { append(" · $nowTitle") }
                 },
-                style = stageText(19, 700), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.align(Alignment.BottomStart).padding(start = 22.mpx, end = 22.mpx, bottom = 18.mpx),
+                style = stageText(17, 700), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.BottomStart).padding(start = 16.mpx, end = 16.mpx, bottom = 12.mpx),
             )
         }
     }
@@ -172,7 +172,7 @@ internal fun programmeDetailsLine(p: EpgProgrammeEntity): String? {
         .takeIf { it.isNotEmpty() }?.joinToString(" · ")
 }
 
-/** The programme block beside the video: eyebrow (accent, clock), title 60/800, details, 2-line synopsis. */
+/** The programme block beside the video: eyebrow (accent, clock), title 40/800, details, 2-line synopsis — sized for the low top area. */
 @Composable
 internal fun GuideProgrammeBlock(
     eyebrow: String?,
@@ -193,16 +193,16 @@ internal fun GuideProgrammeBlock(
         }
         if (title != null) {
             Text(
-                title, style = stageText(60, 800, (-1.5).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 10.mpx, bottom = 6.mpx, end = topEndClear),
+                title, style = stageText(40, 800, (-1).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 6.mpx, bottom = 4.mpx, end = topEndClear),
             )
         }
         if (details != null) Text(details, style = stageText(19, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Text(
             synopsis.orEmpty(),
-            style = stageText(19, 400).copy(lineHeight = (19 * 1.5f).mpxSp), color = stageTone(Color(0xFFCCD6D2), StageColors.Body),
+            style = stageText(19, 400).copy(lineHeight = (19 * 1.4f).mpxSp), color = stageTone(Color(0xFFCCD6D2), StageColors.Body),
             maxLines = 2, minLines = 2, overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.widthIn(max = 1000.mpx).padding(top = 12.mpx, bottom = 20.mpx),
+            modifier = Modifier.widthIn(max = 1000.mpx).padding(top = 8.mpx, bottom = 8.mpx),
         )
     }
 }
@@ -257,8 +257,8 @@ internal fun GuideRuler(
 }
 
 /**
- * A channel's label column: the playlist's 7 px dot, the number (38 wide, 17/700 dim), the
- * logo on a 58×40 plate, the name 17/700. The row the focus is in has its number and name in accent.
+ * A channel's label column: the playlist's 7 px dot, the number (dim), the logo on a 58×40 plate, the
+ * name, both at the one list size ([tv.own.owntv.ui.theme.StageListText]). The row the focus is in has its number and name in accent.
  */
 @Composable
 internal fun GuideChannelLabel(channel: ChannelEntity, name: String, dot: Color?, selected: Boolean, numberWidth: Dp, modifier: Modifier = Modifier) {
@@ -271,12 +271,12 @@ internal fun GuideChannelLabel(channel: ChannelEntity, name: String, dot: Color?
         Box(Modifier.size(7.mpx).background(dot ?: Color.Transparent, RoundedCornerShape(50)))
         Text(
             channel.number?.toString().orEmpty(),
-            style = stageText(17, 700).copy(fontFeatureSettings = Tabular), color = if (selected) a.accent else StageColors.Dim,
+            style = stageText(tv.own.owntv.ui.theme.StageListText, 600).copy(fontFeatureSettings = Tabular), color = if (selected) a.accent else StageColors.Dim,
             // Always whole: the column fits the longest number in the list; only the name is cut.
             maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(numberWidth),
         )
         LivePlate(channel.displayLogoUrl, 58.mpx, 40.mpx, radius = 10.mpx)
-        Text(name, style = stageText(17, 700), color = if (selected) a.accent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        Text(name, style = stageText(tv.own.owntv.ui.theme.StageListText, 600), color = if (selected) a.accent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
     }
 }
 

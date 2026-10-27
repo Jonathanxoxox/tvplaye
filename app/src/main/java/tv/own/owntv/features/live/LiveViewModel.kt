@@ -14,6 +14,8 @@ import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.cachedIn
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
@@ -1986,6 +1988,23 @@ class LiveViewModel(
     }
 
     /**
+     * [ensureNowPlaying] for a handful of channels that may go to the provider one by one: the player's
+     * recent-channel tiles, which show what is on under each logo (Jonathan, 27 Oct 2026). His playlist has
+     * no XMLTV, so the stored guide answers nothing and only the short EPG knows. Never for a whole list —
+     * see LiveEpgReader.nowPlayingFor for what asking in bulk did.
+     */
+    fun ensureNowPlayingFetched(few: List<ChannelEntity>) {
+        if (few.isEmpty()) return
+        viewModelScope.launch {
+            val found = HashMap(runCatching { nowPlayingFor(few) }.getOrDefault(emptyMap()))
+            few.filter { it.id !in found }.take(MAX_FETCHED_NOW).map { ch ->
+                async { ch.id to runCatching { epgReader.nowNext(ch, custom.value, epgOffset.value)?.now }.getOrNull() }
+            }.awaitAll().forEach { (id, now) -> if (now != null) found[id] = now.copy(description = null) }
+            publishNowPlaying(found + few.filter { it.id !in found }.associate { it.id to null })
+        }
+    }
+
+    /**
      * Re-read [loaded] because the programmes have turned over.
      *
      * Called on the **minute boundary** by the screen, not 60 seconds after it opened: a programme
@@ -2141,6 +2160,8 @@ class LiveViewModel(
         /** Resolved "now playing" titles kept at once. Big enough for a large category plus the
          *  overlays that share the map, small enough that it cannot grow with the catalogue. */
         const val MAX_NOW_PLAYING = 2_000
+        /** The most channels [ensureNowPlayingFetched] asks the provider about at once. */
+        const val MAX_FETCHED_NOW = 12
 
     }
 }

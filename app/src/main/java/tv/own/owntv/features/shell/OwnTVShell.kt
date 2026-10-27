@@ -1342,7 +1342,9 @@ fun OwnTVShell(
           }
             // Like TiviMate: with the menu and the groups open over the guide, the pushed guide runs to the
             // right edge and the clock and playlist pill step aside instead of sitting on top of it.
-            val clusterAside = railState == tv.own.owntv.features.shell.components.RailState.OPEN &&
+            // The groups alone count as well: they shift the guide under the cluster (27 Oct 2026 photos).
+            val clusterAside = (railState == tv.own.owntv.features.shell.components.RailState.OPEN ||
+                tv.own.owntv.features.shell.components.StageRailOpen.guideGroups) &&
                 (selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV)
             val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
@@ -1701,7 +1703,8 @@ fun OwnTVShell(
                         }
                     } else null,
                     // The bottom info bar after a channel change, and with it the list-first remote.
-                    zapInfo = if (isLiveChannel) {
+                    // Tuned live only: a catch-up programme keeps the classic controls, its seek bar.
+                    zapInfo = if (isTunedLive) {
                         { liveVm.zapGuide.collectAsStateWithLifecycle().value }
                     } else null,
                     remote = tv.own.owntv.player.LiveRemoteActions(
@@ -1719,7 +1722,7 @@ fun OwnTVShell(
                                     value = runCatching { liveVm.historyChannels(PANEL_CHANNELS + 1) }.getOrDefault(emptyList())
                                         .map { it.channel }.filter { it.id != playingId }.take(PANEL_CHANNELS)
                                 }
-                                LaunchedEffect(recent) { liveVm.ensureNowPlaying(recent) }
+                                LaunchedEffect(recent) { liveVm.ensureNowPlayingFetched(recent) }
                                 val now by liveVm.nowPlaying.collectAsStateWithLifecycle()
                                 recent.map { ch ->
                                     tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.ensurePlaying(ch) }

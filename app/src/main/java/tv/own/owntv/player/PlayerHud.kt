@@ -298,11 +298,11 @@ fun PlayerHud(
         nextCardDue && !autoNextDismissed
 
     // List-first live player (see [zapInfo]): the picture alone on entry, with just the info bar.
-    val listFirst = zapInfo != null && onOpenChannelList != null
+    // Not tied to the channel list: at app start on the last channel that list is still loading, and
+    // waiting for it showed the classic controls for a moment first (Jonathan, 27 Oct 2026). ◀ simply
+    // does nothing until the list is there.
+    val listFirst = zapInfo != null
     var controlsVisible by remember { mutableStateOf(!listFirst) }
-    // At app start on the last channel the channel's list is still loading when the player opens, so it
-    // starts without the list (the classic controls) and gets it a moment later. Switch over then too, or
-    // OK would show other options than for a channel picked in the guide.
     LaunchedEffect(listFirst) { if (listFirst) controlsVisible = false }
     var showOptions by remember { mutableStateOf(false) }
     // The options panel ignores OK until the press that opened it has been released, or the

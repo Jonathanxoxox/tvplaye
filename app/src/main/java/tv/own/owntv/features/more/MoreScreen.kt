@@ -29,7 +29,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -60,7 +63,6 @@ import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.stage.StageGroupItem
 import tv.own.owntv.ui.stage.StageKeyHints
 import tv.own.owntv.ui.stage.StageSurface
-import tv.own.owntv.ui.stage.stageGlass
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.stageAccent
@@ -136,14 +138,19 @@ fun MoreScreen(
     val logCount by produceState(0, logVersion) { value = withContext(Dispatchers.IO) { PlaybackErrorLog.read(context).size } }
 
     Box(modifier.fillMaxSize().onFocusChanged { if (it.hasFocus) onChildFocused() }) {
-        // --- The sheet (`.gsheet`, 440 wide at 24 / 24 / 24): the full height.
+        // --- The sheet: a fixed panel, 440 wide over the full height, a shade apart with a line at its edge —
+        // the same panel the guide's categories sit on (Jonathan, 27 Oct 2026: no floating card here either).
+        val palette = tv.own.owntv.ui.theme.LocalStagePalette.current
         Column(
             Modifier
-                .padding(start = 24.mpx, top = 24.mpx, bottom = 24.mpx)
                 .width(440.mpx)
                 .fillMaxHeight()
-                .stageGlass(32.mpx, overContent = true)
-                .padding(horizontal = 16.mpx, vertical = 26.mpx)
+                .background(palette.glassTint)
+                .drawBehind {
+                    val line = 2.mpx.toPx()
+                    drawRect(palette.ink.copy(alpha = 0.12f), Offset(size.width - line, 0f), Size(line, size.height))
+                }
+                .padding(start = 20.mpx, end = 20.mpx, top = 48.mpx, bottom = 32.mpx)
                 // ◀ back from the page lands on the item that page belongs to.
                 .focusProperties { onEnter = { runCatching { itemFocus.getValue(selected).requestFocus() } } }
                 .onPreviewKeyEvent { e ->
@@ -190,7 +197,7 @@ fun MoreScreen(
         // --- The page: everything right of the sheet, below the top-right cluster.
         Box(
             Modifier
-                .padding(start = 520.mpx, top = 128.mpx, end = 64.mpx)
+                .padding(start = 504.mpx, top = 128.mpx, end = 64.mpx)
                 .fillMaxSize()
                 .onFocusChanged { pageFocused = it.hasFocus },
         ) {

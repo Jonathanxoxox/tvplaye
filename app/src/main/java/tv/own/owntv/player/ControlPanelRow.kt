@@ -118,7 +118,7 @@ private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () ->
             Spacer(Modifier.height(14.mpx))
             Text(
                 tile.caption?.takeIf { it.isNotBlank() } ?: tile.label,
-                style = stageText(18, 600), color = if (focused) StageOnFocus else Color.White, maxLines = 1,
+                style = stageText(tv.own.owntv.ui.theme.StageListText, 600), color = if (focused) StageOnFocus else Color.White, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
             )
         }
