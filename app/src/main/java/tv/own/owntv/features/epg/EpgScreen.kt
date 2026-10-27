@@ -1093,6 +1093,7 @@ private fun GuideTopArea(
             channel = previewChannel ?: topChannel,
             previewEngine = previewEngine,
             showVideo = showVideo,
+            shellDrawsVideo = true,
             // Where the picture lands when full screen closes (the shell shrinks it into this corner).
             modifier = Modifier.width(426.mpx).onGloballyPositioned { GuidePreviewSpot.rect = it.boundsInRoot() },
         )

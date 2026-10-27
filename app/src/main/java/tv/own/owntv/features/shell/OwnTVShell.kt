@@ -601,6 +601,10 @@ fun OwnTVShell(
             if (fromScratch) repeat(3) { withFrameNanos { } }
             if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) handoverShrink.animateTo(1f, handoverSpec)
             closePlayer(toRail = false)
+            // The picture stays where it is until the guide claims it for its corner (inCorner), so the view
+            // showing it is never dropped in between.
+            frames = 0
+            while (!tv.own.owntv.features.epg.GuidePreviewSpot.video && frames++ < 20) withFrameNanos { }
             guideHandover = false
             handoverShrink.snapTo(0f)
         }
@@ -1590,13 +1594,29 @@ fun OwnTVShell(
           }
       }
 
-      if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || playerMode == PlayerMode.MINI)) {
+      // The guide's corner picture is drawn here as well, by the same view as full screen: between the corner
+      // and the whole screen the stream never changes surface, so it plays straight on instead of stalling
+      // and reloading (Jonathan, 27 Oct 2026: "in TiviMate spielt der Sender einfach weiter"). The guide says
+      // where (GuidePreviewSpot.rect) and whether (GuidePreviewSpot.video).
+      val inCorner = playerMode == PlayerMode.NONE && multiview == null &&
+          tv.own.owntv.features.epg.GuidePreviewSpot.video && tv.own.owntv.features.epg.GuidePreviewSpot.rect != null
+      // ExoPlayer's picture is on screen: a promoted live channel, the guide's corner, or the move between them.
+      val exoShown = liveOnExo || inCorner || guideHandover
+      if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || playerMode == PlayerMode.MINI || inCorner || guideHandover)) {
         val isFull = playerMode == PlayerMode.FULLSCREEN
+        // 0 = the whole screen, 1 = the guide's corner. Read in layout and draw only, so only this box moves.
+        val cornerness = {
+            when {
+                playerMode == PlayerMode.NONE -> 1f
+                handoverGrow -> 1f - handoverShrink.value
+                else -> handoverShrink.value
+            }
+        }
+        val cornerRadius = 20.mpx
         Box(
-            modifier = if (isFull && guideHandover) {
-                // Between the whole screen and the guide's preview corner; read in layout, so only this box moves.
+            modifier = if (guideHandover || inCorner) {
                 Modifier.layout { measurable, constraints ->
-                    val f = if (handoverGrow) 1f - handoverShrink.value else handoverShrink.value
+                    val f = cornerness()
                     val to = tv.own.owntv.features.epg.GuidePreviewSpot.rect
                     val fullW = constraints.maxWidth.toFloat()
                     val fullH = constraints.maxHeight.toFloat()
@@ -1610,7 +1630,10 @@ fun OwnTVShell(
                             (if (to == null) 0f else mix(0f, to.top)).toInt(),
                         )
                     }
-                }.background(Color.Black)
+                }
+                    // The corner's rounding, growing in as the picture lands.
+                    .graphicsLayer { clip = true; shape = RoundedCornerShape(cornerRadius * cornerness()) }
+                    .background(Color.Black)
             } else if (isFull) {
                 Modifier.fillMaxSize().background(Color.Black)
             } else {
@@ -1624,11 +1647,20 @@ fun OwnTVShell(
             // "Promote Preview": a Live channel playing on ExoPlayer renders the ExoPlayer surface — in BOTH
             // full-screen AND the docked mini-player (same call site = the surface persists across dock/
             // expand, so playback never blips). Everything else (mpv) renders mpv's surface.
-            if (liveOnExo) {
+            if (exoShown) {
                 tv.own.owntv.player.ExoPreviewSurface(
                     engine = liveVm.previewEngine, modifier = Modifier.fillMaxSize(),
-                    keepAwake = true, autoFrameRate = isFull && autoFrameRate,
+                    keepAwake = playerMode != PlayerMode.NONE,
+                    // Kept through the corner too: a display mode switched back and forth on every Back
+                    // is a black screen each way.
+                    autoFrameRate = (isFull || inCorner || guideHandover) && autoFrameRate,
                 )
+                if (inCorner) {
+                    val cornerState by liveVm.previewEngine.state.collectAsStateWithLifecycle()
+                    if (cornerState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) {
+                        tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 24, modifier = Modifier.align(Alignment.Center))
+                    }
+                }
             } else {
                 MpvVideoSurface(
                     player = player, modifier = Modifier.fillMaxSize(), autoFrameRate = isFull && autoFrameRate,
@@ -1638,7 +1670,7 @@ fun OwnTVShell(
             // The item has no video track of its own (a radio channel, a music-only "movie"). Playing it is
             // correct — but a black screen with sound reads as a broken player, so name what is happening.
             // Read from whichever engine is on screen; only ever composed when there is no video to lose.
-            val audioOnlyMedia by if (liveOnExo) {
+            val audioOnlyMedia by if (exoShown) {
                 liveVm.previewEngine.audioOnlyMedia.collectAsStateWithLifecycle()
             } else {
                 player.audioOnlyMedia.collectAsStateWithLifecycle()
@@ -1649,7 +1681,7 @@ fun OwnTVShell(
             // Direct render mode: mpv can't draw subtitles on the decoder-owned surface — the app does.
             // Also drawn docked: the mini-player is a real watching mode for a subtitled film, and
             // dropping the only line of dialogue there made subtitles look broken. Scaled to the box.
-            if (!liveOnExo) {
+            if (!exoShown) {
                 tv.own.owntv.player.SubtitleOverlay(
                     player = player, modifier = Modifier.fillMaxSize(),
                     // Tied to the chosen mini size, but nudged up and floored: a strictly proportional
@@ -2009,7 +2041,7 @@ fun OwnTVShell(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
-            } else {
+            } else if (playerMode == PlayerMode.MINI) {
                 MiniPlayer(
                     player = if (liveOnExo) liveVm.previewEngine else mpvEngine,
                     onExpand = expandPlayer,
