@@ -1,0 +1,7 @@
+# Mayo TV: compile all of the app's own code ahead of time.
+#
+# The recorded profile next door (generated/baselineProfiles) was taken on OwnTV's old screens: it has no
+# entry at all for the guide, the rail, the player's controls or the Stage components, so on the TV box
+# those ran interpreted (and janky) until the JIT caught up. Compose, Media3 and the other libraries bring
+# their own profiles; this rule covers the app and the OwnTV core library, which share the package.
+HSPLtv/own/owntv/**->**(**)**
