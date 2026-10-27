@@ -511,9 +511,14 @@ fun OwnTVShell(
     // open felt slow. So warm EPG in the background shortly after the shell renders — opening the Guide is then
     // instant, matching how it behaved before. (EpgScreen also calls load() on mount, so this is a pure pre-warm
     // and is skipped if the user is already on EPG.)
+    val sectionNow by rememberUpdatedState(selectedSection)
     LaunchedEffect(Unit) {
         kotlinx.coroutines.delay(1_200)
-        if (selectedSection != MainSection.EPG) { tv.own.owntv.core.util.Perf.stamp("epg-preload"); epgVm.load() }
+        // Live TV is the guide now: it loads itself, and a second load() would cancel that one and start over.
+        val guide = epgVm.state.value
+        if (sectionNow != MainSection.EPG && sectionNow != MainSection.LIVE_TV && guide.channels.isEmpty() && !guide.loading) {
+            tv.own.owntv.core.util.Perf.stamp("epg-preload"); epgVm.load()
+        }
     }
 
     // Opening content from a browse screen goes fullscreen — UNLESS the player is already docked as a
@@ -546,7 +551,9 @@ fun OwnTVShell(
     val expandPlayer = { resumeVideo(); restoreFocus = false; playerMode = PlayerMode.FULLSCREEN }
     // [toRail] false: the guide takes focus itself (its row, the channel carrying on in its corner), so the
     // menu does not flash open on the way.
-    fun closePlayer(toRail: Boolean) {
+    // [intoLive]: the caller has just chosen Live TV, but this function still sees the section it was composed
+    // with, so it must not take that for "leaving Live TV" and tear the live stream down.
+    fun closePlayer(toRail: Boolean, intoLive: Boolean = false) {
         // Flush the resume position BEFORE the stream is torn down — stop() drops the loaded item's
         // identity, after which neither view model can tell the position was theirs. Both calls are
         // no-ops unless the player is on that section's item.
@@ -560,7 +567,7 @@ fun OwnTVShell(
         liveVm.onFullscreenExited() // no longer full-screen on ExoPlayer → let the preview re-take the engine
         player.stop()
         subtitleController.clear() // leaving the player drops the OpenSubtitles item context
-        if (selectedSection != MainSection.LIVE_TV) liveVm.clearLiveOnExo()
+        if (!intoLive && selectedSection != MainSection.LIVE_TV) liveVm.clearLiveOnExo()
         restoreFocus = true
         if (toRail) focusRail()
     }
@@ -582,7 +589,7 @@ fun OwnTVShell(
             // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
             // the stream on the way, and it takes the focus itself.
             if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
-            closePlayer(toRail = false)
+            closePlayer(toRail = false, intoLive = true)
             return@exit
         }
         // Opened from the guide, the guide is still laid out behind the picture (guideBehind) and its corner
@@ -595,7 +602,6 @@ fun OwnTVShell(
         }
         guideHandover = true
         handoverGrow = false
-        restoreFocus = true
         scope.launch {
             handoverShrink.snapTo(0f)
             var frames = 0
@@ -603,13 +609,23 @@ fun OwnTVShell(
             // A guide built just now: let its first heavy frames pass before the picture starts to move.
             if (fromScratch) repeat(3) { withFrameNanos { } }
             if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) handoverShrink.animateTo(1f, handoverSpec)
-            closePlayer(toRail = false)
+            closePlayer(toRail = false, intoLive = true)
             // The picture stays where it is until the guide claims it for its corner (inCorner), so the view
             // showing it is never dropped in between.
             frames = 0
             while (!tv.own.owntv.features.epg.GuidePreviewSpot.video && frames++ < 20) withFrameNanos { }
             guideHandover = false
             handoverShrink.snapTo(0f)
+            // The guide could not take the picture (its preview is off, the stream failed): a stream still
+            // running with no corner to show it would play on as sound alone. Given time first, as a guide
+            // built from scratch on a slow box can take a while to claim it.
+            kotlinx.coroutines.delay(2_500)
+            if (playerMode == PlayerMode.NONE && sectionNow == MainSection.LIVE_TV &&
+                !tv.own.owntv.features.epg.GuidePreviewSpot.video) {
+                val engineState = liveVm.previewEngine.state.value
+                if (engineState == tv.own.owntv.player.LivePreviewEngine.State.PLAYING ||
+                    engineState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) liveVm.stopPreview()
+            }
         }
     }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
@@ -999,6 +1015,9 @@ fun OwnTVShell(
     Box(
         modifier = modifier.fillMaxSize().background(shellBase)
             .onPreviewKeyEvent { e ->
+                // The picture is gliding between full screen and the guide's corner: the guide behind it is
+                // not on screen, so a key now would move or open something nobody can see.
+                if (guideHandover) return@onPreviewKeyEvent true
                 if (e.type == KeyEventType.KeyDown) {
                     if (e.key == Key.DirectionLeft || e.key == Key.DirectionRight) railKeyAt = android.os.SystemClock.uptimeMillis()
                     // A key pressed on the rail is the user using it, however focus got there.
