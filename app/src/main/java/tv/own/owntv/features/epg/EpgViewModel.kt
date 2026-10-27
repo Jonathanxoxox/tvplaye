@@ -26,6 +26,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
@@ -407,11 +409,11 @@ class EpgViewModel(
             .distinctUntilChanged()
             .onEach { hidden -> if (loadedHidden != null && hidden != loadedHidden) load() }
             .launchIn(viewModelScope)
-        // Reload when the category filter changes (#8).
+        // Reload when the category filter changes (#8), from the channels already read.
         _categoryFilter
             .drop(1)
             .distinctUntilChanged()
-            .onEach { load() }
+            .onEach { load(reuseChannels = true) }
             .launchIn(viewModelScope)
         // Reload the guide when the active-playlist filter (Settings "Default" / Browse picker) changes,
         // so the grid narrows to the chosen playlist's channels (or back to all). drop(1): initial load
@@ -861,7 +863,8 @@ class EpgViewModel(
      * an OutOfMemoryError. Cancelling the one in progress makes the answer the latest one rather than
      * a race between six stale ones, and the mutex closes the gap while a cancelled load unwinds.
      */
-    fun load() {
+    fun load(reuseChannels: Boolean = false) {
+        if (!reuseChannels) base = null
         val previous = loadJob
         loadJob = viewModelScope.launch {
             previous?.cancelAndJoin()
@@ -909,86 +912,16 @@ class EpgViewModel(
         // 48-hour horizon this replaced is the reason the guide appeared to "run dry" at all.
         val windowEnd = nowAligned + settings.guideDaysToKeep.first() * DAY_MS
 
-        // Respect customizations: hidden channels stay out of the guide, renames show.
-        val cust = customize.observe(pid, MediaType.LIVE).first()
-        loadedHidden = cust.hiddenItems.keys to cust.hiddenCategories
         val q = _query.value.trim()
         val showAll = settings.guideShowEmpty.first()
-        val rawChannels = if (showAll) channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS)
-            else channelDao.channelsWithGuide(ids, q, MAX_CHANNELS)
-        val favoriteIds = favoriteDao.observeFavoriteIds(pid, MediaType.LIVE).first().toSet()
-        val sortGuideMode = settings.sortGuide.first()
-        // Hidden categories keep their channels out of the guide too (parity with Live TV), and a
-        // filter pointing at a now-hidden category falls back to "All" instead of an empty grid.
-    val isKidsProfile = profileDao.getById(pid)?.isKids == true
-    val hiddenCatIds = if (cust.hiddenCategories.isEmpty() && !isKidsProfile) {
-        emptySet()
-    } else {
-        tv.own.owntv.core.content.AdultCategoryClassifier.hiddenCategoryIds(
-            categoryDao.observe(ids, MediaType.LIVE).first(),
-            cust.hiddenCategories,
-            isKidsProfile,
-        )
-    }
-        val filter = _categoryFilter.value
-        // A provider folder keeps out the channels the user moved from it into a custom category.
-        val folderKey = (filter as? tv.own.owntv.core.live.LiveKey.Folder)
-            ?.let { categoryDao.getById(it.id) }?.let(CustomizeKeys::category)
-        val memberIds: Set<Long>? = when (filter) {
-            is tv.own.owntv.core.live.LiveKey.Custom -> customCategoryDao.itemIds(pid, MediaType.LIVE, filter.id).toSet()
-            tv.own.owntv.core.live.LiveKey.Favorites -> favoriteIds
-            tv.own.owntv.core.live.LiveKey.History ->
-                historyDao.getForProfileType(pid, MediaType.LIVE).mapTo(HashSet()) { it.itemId }
-            else -> null
-        }
-        // A group's own order (Hold OK › Move channel, as Live TV's list had it) in the provider's order mode;
-        // channels without a place keep the provider's order after the placed ones.
-        val manualOrder: Map<Long, Int>? = if (sortGuideMode != SettingsRepository.GuideSort.PROVIDER &&
-            sortGuideMode != SettingsRepository.GuideSort.LIVE_TV) null else when (filter) {
-            is tv.own.owntv.core.live.LiveKey.Folder -> folderKey?.let { channelDao.snapshotByCategoryManual(filter.id, pid, it, MAX_CHANNELS) }
-            is tv.own.owntv.core.live.LiveKey.Custom -> customCategoryDao.snapshotChannels(pid, filter.id, playlistIds, MAX_CHANNELS)
-            tv.own.owntv.core.live.LiveKey.Favorites ->
-                channelDao.snapshotFavoritesManual(pid, tv.own.owntv.core.database.entity.ContentOrderEntity.FAV_CONTEXT, playlistIds, MAX_CHANNELS)
-            else -> null
-        }?.withIndex()?.associate { it.value.id to it.index }
-        // Heavy work — filter hidden, apply renames + manual EPG matches, sort, category-filter — runs off
-        // the main thread (#3/#5) so a 50k-channel playlist never freezes the UI building the guide list.
-        suspend fun shape(rawChannels: List<ChannelEntity>) = withContext(Dispatchers.Default) {
-            val auto = rawChannels
-                .filter { CustomizeKeys.channel(it) !in cust.hiddenItems }
-                .filter {
-                    memberIds != null || it.categoryId == null || it.categoryId !in hiddenCatIds
-                }
-                .map { ch -> cust.itemNames[CustomizeKeys.channel(ch)]?.let { ch.copy(name = it) } ?: ch }
-            val matched = applyEpgMatches(auto, cust, playlistIds, q)
-            // The Order menu: Provider (also the old stored LIVE_TV value), A–Z,
-            // Catch-up first, Favourites first. The last two only float those channels to the top.
-            val byAlpha = compareBy<ChannelEntity> { it.name.lowercase() }
-            val byProvider = compareBy<ChannelEntity>({ it.sourceId }, { it.sortOrder }, { it.name.lowercase() })
-            when (sortGuideMode) {
-                SettingsRepository.GuideSort.ALPHA -> matched.sortedWith(byAlpha)
-                SettingsRepository.GuideSort.PROVIDER -> matched.sortedWith(byProvider)
-                SettingsRepository.GuideSort.CATCHUP -> matched.sortedWith(compareByDescending<ChannelEntity> { it.catchup }.then(byProvider))
-                SettingsRepository.GuideSort.FAVORITES -> matched.sortedWith(compareByDescending<ChannelEntity> { it.id in favoriteIds }.then(byProvider))
-                // LIVE_TV, the old default, is the provider's order too (Channel number was the same thing).
-                SettingsRepository.GuideSort.LIVE_TV -> matched.sortedWith(byProvider)
-            }.let { sorted ->
-                when (filter) {
-                    null, tv.own.owntv.core.live.LiveKey.All -> sorted
-                    tv.own.owntv.core.live.LiveKey.Catchup -> sorted.filter { it.catchup }
-                    is tv.own.owntv.core.live.LiveKey.Folder -> sorted.filter { ch ->
-                        ch.categoryId == filter.id && (folderKey == null || cust.movedFromOrigin[CustomizeKeys.channel(ch)] != folderKey)
-                    }
-                    else -> sorted.filter { it.id in memberIds.orEmpty() }
-                }
-            }.let { shown -> if (manualOrder.isNullOrEmpty()) shown else shown.sortedBy { manualOrder[it.id] ?: Int.MAX_VALUE } }
-        }
-        // A category none of whose channels has a stored guide (the provider's own EPG only, as on Jonathan's
-        // playlist) still lists them all: each row reads the provider's programmes itself, as the channel list
-        // does. It said "No EPG added" instead.
-        val channels = shape(rawChannels).ifEmpty {
-            if (showAll) emptyList() else shape(channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS))
-        }
+        // The channel table is read once and reused while only the category moves: a switch used to read up
+        // to 20,000 channels again, twice on a playlist without XMLTV (Jonathan, 27 Oct 2026: switching groups
+        // was slow). Anything else that reloads — opening the guide, a sort, a hidden channel — reads afresh.
+        val baseKey = listOf(pid, playlistIds, ids, q, showAll)
+        val reusedBase = base?.takeIf { it.key == baseKey }
+        val b = reusedBase ?: buildBase(baseKey, pid, playlistIds, ids, q, showAll).also { base = it }
+        loadedHidden = b.cust.hiddenItems.keys to b.cust.hiddenCategories
+        val channels = channelsFor(b, _categoryFilter.value)
 
         val stored = epgDao.countForSources(ids)
 
@@ -1034,7 +967,7 @@ class EpgViewModel(
         )
 
         tv.own.owntv.core.CorePerf.log {
-            "guide_load channels=${channels.size} rawChannels=${rawChannels.size} " +
+            "guide_load channels=${channels.size} rawChannels=${b.withGuide.size} reused=${b === reusedBase} " +
                 "stored=$stored sources=${ids.size} " +
                 "rebuilt=$windowChanged reason=$rebuildReason cachedRows=${cachedRowCount()} " +
                 "lookbackH=${lookbackMs / 3_600_000} " +
@@ -1044,6 +977,151 @@ class EpgViewModel(
         // A second background pass used to merge the older catch-up history in afterwards, because
         // the blocking pass could not afford the whole lookback. Both are gone: a row is read for
         // the full window in one query, so the history is simply there when the row is drawn.
+    }
+
+    /**
+     * What every category's list is cut from: the channel table read once, with hidden channels, renames,
+     * manual EPG matches and the chosen order already applied. [withGuide] holds the channels with stored
+     * guide data; [allSorted] every channel, read only when a category has none of those (a playlist with
+     * the provider's own EPG only, as Jonathan's).
+     */
+    private class GuideBase(
+        val key: List<Any?>,
+        val pid: Long,
+        val playlistIds: List<Long>,
+        val q: String,
+        val showAll: Boolean,
+        val cust: tv.own.owntv.core.customize.SectionCustomizations,
+        val favoriteIds: Set<Long>,
+        val sortMode: SettingsRepository.GuideSort,
+        val hiddenCatIds: Set<Long>,
+    ) {
+        var withGuide: List<ChannelEntity> = emptyList()
+        @Volatile var allSorted: List<ChannelEntity>? = null
+    }
+
+    @Volatile private var base: GuideBase? = null
+
+    private suspend fun buildBase(
+        key: List<Any?>, pid: Long, playlistIds: List<Long>, ids: List<Long>, q: String, showAll: Boolean,
+    ): GuideBase {
+        // Respect customizations: hidden channels stay out of the guide, renames show.
+        val cust = customize.observe(pid, MediaType.LIVE).first()
+        val favoriteIds = favoriteDao.observeFavoriteIds(pid, MediaType.LIVE).first().toSet()
+        val sortMode = settings.sortGuide.first()
+        // Hidden categories keep their channels out of the guide too (parity with Live TV).
+        val isKidsProfile = profileDao.getById(pid)?.isKids == true
+        val hiddenCatIds = if (cust.hiddenCategories.isEmpty() && !isKidsProfile) {
+            emptySet()
+        } else {
+            tv.own.owntv.core.content.AdultCategoryClassifier.hiddenCategoryIds(
+                categoryDao.observe(ids, MediaType.LIVE).first(),
+                cust.hiddenCategories,
+                isKidsProfile,
+            )
+        }
+        val raw = if (showAll) channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS)
+            else channelDao.channelsWithGuide(ids, q, MAX_CHANNELS)
+        return GuideBase(key, pid, playlistIds, q, showAll, cust, favoriteIds, sortMode, hiddenCatIds).apply {
+            withGuide = sortShape(this, raw)
+            if (showAll) allSorted = withGuide
+        }
+    }
+
+    /** Hidden channels out, renames and manual EPG matches in, then the Order menu's order. Heavy on a big
+     *  playlist, so off the main thread (#3/#5): a 50k-channel playlist never freezes the UI. */
+    private suspend fun sortShape(b: GuideBase, raw: List<ChannelEntity>): List<ChannelEntity> = withContext(Dispatchers.Default) {
+        val cust = b.cust
+        val auto = raw
+            .filter { CustomizeKeys.channel(it) !in cust.hiddenItems }
+            .map { ch -> cust.itemNames[CustomizeKeys.channel(ch)]?.let { ch.copy(name = it) } ?: ch }
+        val matched = applyEpgMatches(auto, cust, b.playlistIds, b.q)
+        // The Order menu: Provider (also the old stored LIVE_TV value), A–Z,
+        // Catch-up first, Favourites first. The last two only float those channels to the top.
+        val byAlpha = compareBy<ChannelEntity> { it.name.lowercase() }
+        val byProvider = compareBy<ChannelEntity>({ it.sourceId }, { it.sortOrder }, { it.name.lowercase() })
+        when (b.sortMode) {
+            SettingsRepository.GuideSort.ALPHA -> matched.sortedWith(byAlpha)
+            SettingsRepository.GuideSort.PROVIDER -> matched.sortedWith(byProvider)
+            SettingsRepository.GuideSort.CATCHUP -> matched.sortedWith(compareByDescending<ChannelEntity> { it.catchup }.then(byProvider))
+            SettingsRepository.GuideSort.FAVORITES -> matched.sortedWith(compareByDescending<ChannelEntity> { it.id in b.favoriteIds }.then(byProvider))
+            // LIVE_TV, the old default, is the provider's order too (Channel number was the same thing).
+            SettingsRepository.GuideSort.LIVE_TV -> matched.sortedWith(byProvider)
+        }
+    }
+
+    /** One category's channels, cut from [b]. */
+    private suspend fun channelsFor(b: GuideBase, filter: tv.own.owntv.core.live.LiveKey?): List<ChannelEntity> {
+        val pid = b.pid
+        // A provider folder keeps out the channels the user moved from it into a custom category.
+        val folderKey = (filter as? tv.own.owntv.core.live.LiveKey.Folder)
+            ?.let { categoryDao.getById(it.id) }?.let(CustomizeKeys::category)
+        val memberIds: Set<Long>? = when (filter) {
+            is tv.own.owntv.core.live.LiveKey.Custom -> customCategoryDao.itemIds(pid, MediaType.LIVE, filter.id).toSet()
+            tv.own.owntv.core.live.LiveKey.Favorites -> b.favoriteIds
+            tv.own.owntv.core.live.LiveKey.History ->
+                historyDao.getForProfileType(pid, MediaType.LIVE).mapTo(HashSet()) { it.itemId }
+            else -> null
+        }
+        // A group's own order (Hold OK › Move channel, as Live TV's list had it) in the provider's order mode;
+        // channels without a place keep the provider's order after the placed ones.
+        val manualOrder: Map<Long, Int>? = if (b.sortMode != SettingsRepository.GuideSort.PROVIDER &&
+            b.sortMode != SettingsRepository.GuideSort.LIVE_TV) null else when (filter) {
+            is tv.own.owntv.core.live.LiveKey.Folder -> folderKey?.let { channelDao.snapshotByCategoryManual(filter.id, pid, it, MAX_CHANNELS) }
+            is tv.own.owntv.core.live.LiveKey.Custom -> customCategoryDao.snapshotChannels(pid, filter.id, b.playlistIds, MAX_CHANNELS)
+            tv.own.owntv.core.live.LiveKey.Favorites ->
+                channelDao.snapshotFavoritesManual(pid, tv.own.owntv.core.database.entity.ContentOrderEntity.FAV_CONTEXT, b.playlistIds, MAX_CHANNELS)
+            else -> null
+        }?.withIndex()?.associate { it.value.id to it.index }
+        suspend fun cut(sorted: List<ChannelEntity>) = withContext(Dispatchers.Default) {
+            sorted
+                .filter { memberIds != null || it.categoryId == null || it.categoryId !in b.hiddenCatIds }
+                .let { list ->
+                    when (filter) {
+                        null, tv.own.owntv.core.live.LiveKey.All -> list
+                        tv.own.owntv.core.live.LiveKey.Catchup -> list.filter { it.catchup }
+                        is tv.own.owntv.core.live.LiveKey.Folder -> list.filter { ch ->
+                            ch.categoryId == filter.id && (folderKey == null || b.cust.movedFromOrigin[CustomizeKeys.channel(ch)] != folderKey)
+                        }
+                        else -> list.filter { it.id in memberIds.orEmpty() }
+                    }
+                }
+                .let { shown -> if (manualOrder.isNullOrEmpty()) shown else shown.sortedBy { manualOrder[it.id] ?: Int.MAX_VALUE } }
+        }
+        // A category none of whose channels has a stored guide (the provider's own EPG only, as on Jonathan's
+        // playlist) still lists them all: each row reads the provider's programmes itself, as the channel list
+        // does. It said "No EPG added" instead.
+        return cut(b.withGuide).ifEmpty {
+            if (b.showAll) emptyList() else cut(
+                b.allSorted ?: sortShape(b, channelDao.channelsForGuide(b.playlistIds, b.q, MAX_CHANNELS)).also { b.allSorted = it },
+            )
+        }
+    }
+
+    private var categoryPrefetchJob: kotlinx.coroutines.Job? = null
+
+    /**
+     * Read the first rows of [key] while the cursor rests on it in the categories column, so the guide has
+     * them when the category opens a moment later instead of filling in row by row. Only a screen's worth,
+     * a few at a time, and the newest category wins.
+     */
+    fun prefetchCategory(key: tv.own.owntv.core.live.LiveKey) {
+        categoryPrefetchJob?.cancel()
+        categoryPrefetchJob = viewModelScope.launch {
+            val b = base ?: return@launch
+            val s = _state.value
+            if (s.windowEnd <= s.windowStart) return@launch
+            val ahead = runCatching { channelsFor(b, key) }.getOrDefault(emptyList()).take(CATEGORY_PREFETCH)
+                .filter { cachedRow(cacheKey(it, shiftFor(it))) == null }
+            ahead.chunked(CATEGORY_PREFETCH_PARALLEL).forEach { batch ->
+                batch.map { ch ->
+                    async {
+                        runCatching { guideReader.row(ch, custom.value, epgOffset.value, s.windowStart, s.windowEnd) }
+                            .getOrNull()?.takeIf { it.isNotEmpty() }?.let { putRow(cacheKey(ch, shiftFor(ch)), it) }
+                    }
+                }.awaitAll()
+            }
+        }
     }
 
     /** Apply per-channel manual EPG overrides to the auto-matched guide list. */
@@ -1120,6 +1198,9 @@ class EpgViewModel(
         // Rows read ahead of the one that came into view. Roughly a screen's worth on a television,
         // measure before making it two screens; do not raise it on a hunch.
         private const val PREFETCH_AHEAD = 10
+        // Rows read ahead for the category under the cursor (a screen and a bit), and how many at once.
+        private const val CATEGORY_PREFETCH = 12
+        private const val CATEGORY_PREFETCH_PARALLEL = 4
         private const val DAY_MS = 24L * 60 * 60 * 1000
         // How far back the Guide may extend for catch-up (must stay within EpgRepository's retention).
         private const val CATCHUP_LOOKBACK_CAP_MS = 7L * 24 * 60 * 60 * 1000
