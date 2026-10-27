@@ -107,11 +107,13 @@ private const val Tabular = "tnum"
 @Composable
 internal fun GuideVideo(
     channel: ChannelEntity?,
-    channelLine: String?,
-    nowTitle: String?,
     previewEngine: tv.own.owntv.player.LivePreviewEngine,
     showVideo: Boolean,
     modifier: Modifier = Modifier,
+    /** The LIVE badge and a channel line over the picture. The guide leaves both out — the picture alone, as
+     *  in TiviMate (Jonathan, 27 Oct 2026); the Sports Hub, listing several channels, keeps them. */
+    channelLine: String? = null,
+    nowTitle: String? = null,
 ) {
     val previewState by previewEngine.state.collectAsStateWithLifecycle()
     val playing = showVideo && previewState != tv.own.owntv.player.LivePreviewEngine.State.ERROR &&
@@ -133,13 +135,13 @@ internal fun GuideVideo(
         }
         if (playing) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
         if (showVideo && previewState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) OwnTVSpinner(sizeDp = 24)
-        Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
+        if (channelLine != null) Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
         Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), r.toPx()) })
-        if (channel != null) {
+        if (channel != null && channelLine != null) {
             Box(Modifier.align(Alignment.TopStart).padding(start = 16.mpx, top = 14.mpx)) { StageLiveBadge(stringResource(R.string.player_live)) }
             Text(
                 buildAnnotatedString {
-                    append(channelLine.orEmpty())
+                    append(channelLine)
                     if (!nowTitle.isNullOrBlank()) withStyle(SpanStyle(color = StageColors.Muted, fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)) { append(" · $nowTitle") }
                 },
                 style = stageText(17, 700), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,

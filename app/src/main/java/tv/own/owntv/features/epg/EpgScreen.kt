@@ -502,8 +502,6 @@ fun EpgScreen(
         // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
         GuideVideo(
             channel = videoChannel,
-            channelLine = videoChannel?.let { listOfNotNull(listNumber(it)?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
-            nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
             modifier = Modifier.width(426.mpx),
