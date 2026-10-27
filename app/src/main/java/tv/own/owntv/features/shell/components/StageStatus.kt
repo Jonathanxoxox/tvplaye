@@ -64,7 +64,6 @@ data class ContinuePill(val icon: OwnTVIcon, val iconFilled: Boolean, val action
 @Composable
 fun StageStatusCluster(
     continuePill: ContinuePill?,
-    audioBar: (@Composable () -> Unit)?,
     playlistLabel: String,
     playlistInteractive: Boolean,
     onPlaylistClick: () -> Unit,
@@ -82,10 +81,9 @@ fun StageStatusCluster(
         // The pills' top lines up with the top of the clock's digits, not with the block's middle.
         verticalAlignment = Alignment.Top,
     ) {
-        // Top, not centred: a taller audio bar (focused / open) must not push the playlist pill down.
+        // Top, not centred, so a taller pill does not push the playlist pill down.
         Row(Modifier.padding(top = 6.mpx), horizontalArrangement = Arrangement.spacedBy(12.mpx), verticalAlignment = Alignment.Top) {
             when {
-                audioBar != null -> audioBar()
                 continuePill != null -> StagePill(
                     text = continuePill.title,
                     small = continuePill.action,

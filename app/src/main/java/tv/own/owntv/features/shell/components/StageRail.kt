@@ -85,12 +85,6 @@ enum class RailState {
     PINNED,
 }
 
-/**
- * What the rail's "Now Playing" item shows: the docked channel's logo, or the equalizer while Audio
- * Mode is running (there is no picture to stand for then).
- */
-data class NowPlayingRail(val logoUrl: String?, val audioMode: Boolean, val playing: Boolean)
-
 /** The menu order: Home on top (Jonathan's start page), then Search and TV (which opens as the guide), More last. */
 private val StageRailOrder = listOf(
     MainSection.HOME, MainSection.SEARCH, MainSection.LIVE_TV, MainSection.SPORTS,
@@ -132,8 +126,6 @@ fun StageRail(
     /** A screen's own way in, when it has one (Home returns to the exact control left from). */
     enterContent: (() -> Boolean)? = null,
     onFocused: () -> Unit,
-    nowPlaying: NowPlayingRail?,
-    onNowPlaying: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     // TV Player: the menu as the classic IPTV player draws it. At rest a narrow strip of icons down the
@@ -209,16 +201,6 @@ fun StageRail(
         ) {
             MenuLogo(expanded)
             Spacer(Modifier.weight(0.55f))
-            if (nowPlaying != null) {
-                RailItem(
-                    icon = if (nowPlaying.audioMode) OwnTVIcon.EQ else OwnTVIcon.PLAY,
-                    label = stringResource(R.string.shell_now_playing),
-                    trailing = if (nowPlaying.audioMode && counts) stringResource(R.string.shell_now_playing_audio) else null,
-                    expanded = expanded,
-                    active = false,
-                    onClick = onNowPlaying,
-                )
-            }
             items.forEach { section ->
                 RailItem(
                     icon = section.stageIcon,

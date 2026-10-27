@@ -364,9 +364,6 @@ fun SettingsScreen(
     // stale. From the entries there is nothing to keep in step. ROOT gets one it never uses, which
     // is cheaper than a list that can be wrong.
     val rowFocus = remember { SettingsTab.entries.associateWith { FocusRequester() } }
-    // Mini player is a popup on the Watching & recording page, not a screen of its own. The settings
-    // search still lists it by name, so it needs a way to say "open that popup on arrival".
-    var openMiniPlayer by rememberSaveable { mutableStateOf(false) }
     // A Quick pin or a search result that jumps to a Video player row: the row to focus on its page,
     // and — for the way back — the Quick row it came from.
     var videoRowKey by rememberSaveable { mutableStateOf<String?>(null) }
@@ -383,7 +380,6 @@ fun SettingsScreen(
     // Back from a page reached through a Quick pin returns to that pin on Quick.
     BackHandler(enabled = tab == SettingsTab.ROOT && deepReturnKey != null && selectedGroup != 0 && searchQuery.isBlank()) {
         videoRowKey = null
-        openMiniPlayer = false
         selectedGroup = 0
     }
     // Opening a sub-screen the ordinary way cancels any pending Quick-shortcut return, or the Back
@@ -1143,7 +1139,6 @@ fun SettingsScreen(
                 group.video != null -> {
                     VideoPlayerGroupRows(
                         group.video, pageScroll,
-                        openMiniPlayer = openMiniPlayer,
                         focusRowKey = videoRowKey,
                     )
                     if (group == SettingsGroup.WATCHING) tv.own.owntv.features.settings.RecordingSettingsRows(pageScroll)
