@@ -54,6 +54,7 @@ class SearchViewModel(
     private val settings: SettingsRepository,
     private val searchReader: SearchReader,
     private val metadata: MetadataRepository,
+    private val moodSearch: MoodSearch,
 ) : ViewModel() {
 
     // Observe the active profile's sources reactively so adding/removing a playlist refreshes Search
@@ -77,6 +78,21 @@ class SearchViewModel(
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchResults())
+
+    /**
+     * Search by description ("Stonermovie"): Jev decides whether the text describes what to watch and
+     * which playlist titles fit it (see [MoodSearch]). Waits a little longer than the plain search so
+     * half-typed words cost nothing; a title or channel name ends as [MoodState.Off].
+     */
+    val mood: StateFlow<MoodState> = combine(_query.map { it.trim() }.debounce(800).distinctUntilChanged(), ctx) { q, c -> q to c }
+        .transformLatest { (q, c) ->
+            if (!moodSearch.available || q.length < MoodSearch.MIN_LENGTH || c.profileId < 0) { emit(MoodState.Off); return@transformLatest }
+            moodSearch.cached(q)?.let { emit(if (it.isEmpty) MoodState.Off else MoodState.Found(q, it)); return@transformLatest }
+            emit(MoodState.Searching(q))
+            val found = moodSearch.search(q, c)
+            emit(if (found == null || found.isEmpty) MoodState.Off else MoodState.Found(q, found))
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MoodState.Off)
 
     fun setQuery(q: String) {
         if (q.trim() != _query.value.trim()) lastFocusKey = null
@@ -135,9 +151,11 @@ class SearchViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /** Category names for the movie and series rows ("2005 · ★ 6.2 · Disney+ Movies"). */
-    val categoryNames: StateFlow<Map<Long, String>> = combine(results, curatedResults) { a, b ->
+    val categoryNames: StateFlow<Map<Long, String>> = combine(results, curatedResults, mood) { a, b, m ->
+        val found = (m as? MoodState.Found)?.results ?: MoodResults()
         (a.movies.mapNotNull { it.categoryId } + a.series.mapNotNull { it.categoryId } +
-            b.movies.mapNotNull { it.categoryId } + b.series.mapNotNull { it.categoryId }).toSet()
+            b.movies.mapNotNull { it.categoryId } + b.series.mapNotNull { it.categoryId } +
+            found.movies.mapNotNull { it.categoryId } + found.series.mapNotNull { it.categoryId }).toSet()
     }
         .distinctUntilChanged()
         .mapLatest { ids -> ids.mapNotNull { id -> categoryDao.getById(id)?.let { id to it.name } }.toMap() }
@@ -168,4 +186,11 @@ class SearchViewModel(
         val preferred = settings.activeProfileId.first()
         return if (preferred >= 0) profileDao.resolveExistingProfileId(preferred) else null
     }
+}
+
+/** The described-search section of the results: nothing, a "Jev is looking" line, or what fits. */
+sealed interface MoodState {
+    data object Off : MoodState
+    data class Searching(val query: String) : MoodState
+    data class Found(val query: String, val results: MoodResults) : MoodState
 }

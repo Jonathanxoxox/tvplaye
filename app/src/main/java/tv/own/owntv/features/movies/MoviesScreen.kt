@@ -1194,6 +1194,8 @@ private fun buildMovieDetails(
         genres = jsonList(meta?.genresJson),
         plot = plot,
         cast = tv.own.owntv.core.metadata.MetadataCast.parse(meta?.castJson),
+        tmdbType = meta?.type?.takeIf { it == "movie" },
+        tmdbId = meta?.tmdbId,
     )
 }
 

@@ -134,8 +134,11 @@ private sealed interface Entry {
     val key: String
     data class Heading(val text: String, override val key: String) : Entry
     data class Channel(val row: ChannelSearchResult) : Entry { override val key = "c${row.channel.id}" }
-    data class Movie(val movie: MovieEntity) : Entry { override val key = "m${movie.id}" }
-    data class Series(val series: SeriesEntity) : Entry { override val key = "s${series.id}" }
+    /** [tag] keeps a title found by description apart from the same title found by name. */
+    data class Movie(val movie: MovieEntity, val tag: String = "m") : Entry { override val key = "$tag${movie.id}" }
+    data class Series(val series: SeriesEntity, val tag: String = "s") : Entry { override val key = "$tag${series.id}" }
+    /** A line that is not a result, such as "Jev is looking…". */
+    data class Note(val text: String, override val key: String) : Entry
     data class Programme(val found: ProgrammeSearchResult) : Entry {
         override val key = "p${found.programme.id}-${found.channel.id}"
     }
@@ -177,6 +180,7 @@ fun SearchScreen(
     val categoryNames by vm.categoryNames.collectAsStateWithLifecycle()
     val focusedMeta by vm.focusedMeta.collectAsStateWithLifecycle()
     val metadataMode by vm.metadataMode.collectAsStateWithLifecycle()
+    val mood by vm.mood.collectAsStateWithLifecycle()
     val nowPlaying by liveVm.nowPlaying.collectAsStateWithLifecycle()
     val nowNext by liveVm.nowNext.collectAsStateWithLifecycle()
     val livePreviewSetting by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
@@ -194,7 +198,18 @@ fun SearchScreen(
     val shown = if (searching) results.only(kinds) else curated
     // One filter button on lists that kind alone, uncapped; otherwise the kinds are grouped under headings.
     val singleKind = searching && kinds.size == 1
-    val entries = searchEntries(shown, grouped = !singleKind, capChannels = searching && !singleKind)
+    // Search by description: what Jev found goes on top, its "looking" line at the bottom (so rows
+    // under the cursor never jump for a query that turns out to be a name).
+    val wantsMovies = kinds.isEmpty() || SearchKind.MOVIES in kinds
+    val wantsSeries = kinds.isEmpty() || SearchKind.SERIES in kinds
+    val moodFound = (mood as? MoodState.Found)?.takeIf { searching && it.query == query.trim() }?.results
+        ?.let { MoodResults(if (wantsMovies) it.movies else emptyList(), if (wantsSeries) it.series else emptyList()) }
+        ?: MoodResults()
+    val moodSearching = searching && (wantsMovies || wantsSeries) && (mood as? MoodState.Searching)?.query == query.trim()
+    val moodNote = stringResource(R.string.search_mood_searching)
+    val entries = moodEntries(moodFound, query.trim()) +
+        searchEntries(shown, grouped = !singleKind, capChannels = searching && !singleKind) +
+        (if (moodSearching) listOf(Entry.Note(moodNote, "mood-note")) else emptyList())
     // ▼ from the field and ▲ out of the results land on the first button that is on, else the first.
     val filterEntry = filterFocus.getValue(kinds.minOrNull() ?: SearchKind.entries.first())
     var filterFocused by remember { mutableStateOf<SearchKind?>(null) }
@@ -284,7 +299,8 @@ fun SearchScreen(
         // Title band: "Search" + "“sky” · 12 results".
         val titleModifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(826))
         if (showingResults) {
-            val total = shown.channels.size + shown.movies.size + shown.series.size + shown.programmes.size
+            val total = shown.channels.size + shown.movies.size + shown.series.size + shown.programmes.size +
+                moodFound.movies.size + moodFound.series.size
             VodHeader(
                 section = stringResource(R.string.search_title),
                 category = if (searching) stringResource(R.string.search_query_quoted, query.trim()) else intent?.displayLabel().orEmpty(),
@@ -317,7 +333,7 @@ fun SearchScreen(
                 modifier = Modifier.padding(start = listX, top = 192.mpx).width(listW),
             )
             LauncherCard(Modifier.padding(start = panelX, top = 200.mpx).width(panelW))
-        } else if (shown.isEmpty) {
+        } else if (shown.isEmpty && moodFound.isEmpty && !moodSearching) {
             NothingFound(
                 title = if (searching) stringResource(R.string.search_nothing_found, query.trim())
                 else stringResource(R.string.search_nothing_in_list, intent?.displayLabel().orEmpty()),
@@ -331,7 +347,13 @@ fun SearchScreen(
                 SearchKind.entries.forEach { k ->
                     StageTab(
                         label = k.label(),
-                        count = localizedInteger(results.count(k)),
+                        count = localizedInteger(
+                            results.count(k) + when (k) {
+                                SearchKind.MOVIES -> (mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.movies?.size ?: 0
+                                SearchKind.SERIES -> (mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.series?.size ?: 0
+                                else -> 0
+                            },
+                        ),
                         selected = k in kinds,
                         onClick = { vm.toggleKind(k) },
                         modifier = Modifier
@@ -342,7 +364,7 @@ fun SearchScreen(
             }
         }
 
-        if (showingResults && !shown.isEmpty) {
+        if (showingResults && entries.isNotEmpty()) {
             val sep = dotSeparator()
             LazyColumn(
                 state = listState,
@@ -369,6 +391,7 @@ fun SearchScreen(
                         .onFocusChanged { if (it.isFocused) focusedKey = e.key }
                     when (e) {
                         is Entry.Heading -> GroupHeading(e.text, Modifier.padding(top = if (i == 0) 0.mpx else 18.mpx))
+                        is Entry.Note -> GroupHeading(e.text, Modifier.padding(top = if (i == 0) 0.mpx else 18.mpx))
                         is Entry.AllChannels -> StageTool(
                             text = pluralStringResource(R.plurals.search_all_channels, e.count, e.count),
                             icon = OwnTVIcon.LIST,
@@ -462,11 +485,11 @@ fun SearchScreen(
                     modifier = panelModifier.onFocusChanged { scheduleHasFocus = it.hasFocus },
                 )
                 active is Entry.Movie -> PosterPanel(
-                    movieTitleInfo(active.movie, focusedMeta?.takeIf { it.first == active.key }?.second, metadataMode.tmdbWins),
+                    movieTitleInfo(active.movie, focusedMeta?.takeIf { it.first == "m${active.movie.id}" }?.second, metadataMode.tmdbWins),
                     series = false, modifier = panelModifier,
                 )
                 active is Entry.Series -> PosterPanel(
-                    seriesTitleInfo(active.series, focusedMeta?.takeIf { it.first == active.key }?.second, metadataMode.tmdbWins),
+                    seriesTitleInfo(active.series, focusedMeta?.takeIf { it.first == "s${active.series.id}" }?.second, metadataMode.tmdbWins),
                     series = true, modifier = panelModifier,
                 )
                 else -> Unit
@@ -546,6 +569,22 @@ private fun searchEntries(results: SearchResults, grouped: Boolean, capChannels:
                     results.series.forEach { add(Entry.Series(it)) }
                 }
             }
+        }
+    }
+}
+
+/** What a described search found: one heading ("FITS “STONERMOVIE” · 7"), movies, then series. */
+@Composable
+private fun moodEntries(found: MoodResults, query: String): List<Entry> {
+    val label = stringResource(R.string.search_mood_heading, query)
+    val sep = dotSeparator()
+    return remember(found, label, sep) {
+        if (found.isEmpty) emptyList()
+        else buildList {
+            val n = found.movies.size + found.series.size
+            add(Entry.Heading(label.uppercase(java.util.Locale.getDefault()) + sep + n.toString(), "h-mood"))
+            found.movies.forEach { add(Entry.Movie(it, tag = "jm")) }
+            found.series.forEach { add(Entry.Series(it, tag = "js")) }
         }
     }
 }

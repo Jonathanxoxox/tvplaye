@@ -107,6 +107,13 @@ android {
             ?: ""
         buildConfigField("String", "FLUTLICHT_TMDB_KEY", "\"${flutlichtTmdbKey.filter { it.isLetterOrDigit() }}\"")
 
+        // Mayo TV: TypeSafe API key for Jev (search by description, see MoodSearch) — GitHub secret
+        // TYPESAFE_API_KEY → env MAYO_TYPESAFE_KEY. Blank switches the feature off.
+        val typesafeKey = System.getenv("MAYO_TYPESAFE_KEY")
+            ?: providers.gradleProperty("mayo.typesafeKey").orNull
+            ?: ""
+        buildConfigField("String", "TYPESAFE_API_KEY", "\"${typesafeKey.filter { it.isLetterOrDigit() || it in "_-." }}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -23,6 +23,8 @@ import tv.own.owntv.features.live.LiveViewModel
 import tv.own.owntv.features.movies.MovieViewModel
 import tv.own.owntv.features.profiles.ProfileGateSessionViewModel
 import tv.own.owntv.features.profiles.ProfilesViewModel
+import tv.own.owntv.features.search.MoodSearch
+import tv.own.owntv.features.shell.components.WatchProviders
 import tv.own.owntv.features.search.SearchViewModel
 import tv.own.owntv.features.series.SeriesViewModel
 import tv.own.owntv.features.settings.LocalSyncViewModel
@@ -106,6 +108,9 @@ val appModule = module {
     viewModelOf(::SportsViewModel)
     viewModelOf(::SportsSettingsViewModel)
     viewModelOf(::SeriesViewModel)
+    // Search by description (Jev + TMDB); off without a TypeSafe key.
+    singleOf(::MoodSearch)
+    singleOf(::WatchProviders)
     viewModelOf(::SearchViewModel)
     viewModelOf(::ProfilesViewModel)
     // Activity-scoped session state for the profile gate (configuration-only retention, no saved
