@@ -3,6 +3,7 @@
 package tv.own.owntv.features.vod
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -165,6 +167,8 @@ internal class VodCategories(
                 }
             }
         }
+        // Classifying every category runs off the main thread (hundreds on a big playlist).
+        .flowOn(Dispatchers.Default)
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), emptySet())
 
     val custResolved: StateFlow<VodCustState> = combine(custom, hiddenCategoryIds) { c, h -> VodCustState(c, h) }
@@ -202,6 +206,8 @@ internal class VodCategories(
                 }
             }
         }
+        // Sorting and rebuilding every category folder runs off the main thread.
+        .flowOn(Dispatchers.Default)
         .stateIn(scope, SharingStarted.WhileSubscribed(5_000), DEFAULT_RAIL)
 
     val selected = MutableStateFlow<LiveKey>(LiveKey.All)
