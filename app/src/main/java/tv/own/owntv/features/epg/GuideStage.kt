@@ -109,6 +109,15 @@ object GuidePreviewSpot {
 
     /** The guide wants its picture: the shell then draws it on [rect], with the very view full screen uses. */
     var video by androidx.compose.runtime.mutableStateOf(false)
+
+    /**
+     * The slides the corner moves with, in pixels: the open menu's push (the shell's) and the groups column
+     * (the guide's). [rect] leaves them out and the shell adds them while drawing, so the picture moves in
+     * the same frame as the guide around it instead of one behind.
+     */
+    var shellShift: () -> Float = { 0f }
+    var guideShift: () -> Float = { 0f }
+    fun shift(): Float = shellShift() + guideShift()
 }
 
 /**

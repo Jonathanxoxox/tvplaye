@@ -550,7 +550,15 @@ fun EpgScreen(
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
         DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx, tv.own.owntv.ui.theme.stageSlide())
-        Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
+        val groupsTarget = if (showGroups) groupsW else 0.mpx
+        androidx.compose.runtime.SideEffect { GuidePreviewSpot.guideShift = { with(density) { groupsShift.value.toPx() } } }
+        androidx.compose.runtime.DisposableEffect(Unit) { onDispose { GuidePreviewSpot.guideShift = { 0f } } }
+        Column(
+            Modifier.fillMaxSize().graphicsLayer {
+                translationX = groupsShift.value.toPx()
+                compositingStrategy = tv.own.owntv.ui.theme.slideCompositing(groupsShift.value != groupsTarget)
+            },
+        ) {
         // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
         // 27 Oct 2026) so the grid below shows more channels.
         GuideTopArea(
@@ -1108,7 +1116,9 @@ private fun GuideTopArea(
             showVideo = showVideo,
             shellDrawsVideo = true,
             // Where the picture lands when full screen closes (the shell shrinks it into this corner).
-            modifier = Modifier.width(426.mpx).onGloballyPositioned { GuidePreviewSpot.rect = it.boundsInRoot() },
+            modifier = Modifier.width(426.mpx).onGloballyPositioned {
+                GuidePreviewSpot.rect = it.boundsInRoot().translate(-GuidePreviewSpot.shift(), 0f)
+            },
         )
         Box(Modifier.weight(1f).fillMaxHeight()) {
             if (topChannel != null) {
