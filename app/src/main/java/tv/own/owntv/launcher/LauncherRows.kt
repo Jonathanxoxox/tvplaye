@@ -2,7 +2,9 @@ package tv.own.owntv.launcher
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
+import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -24,19 +26,24 @@ import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.entity.ContentOrderEntity
 import tv.own.owntv.core.epg.EpgMatcher
 import tv.own.owntv.core.epg.displayLogoUrl
+import tv.own.owntv.core.launcher.LauncherDeepLink
 import tv.own.owntv.core.live.LiveEpgReader
 import tv.own.owntv.core.model.MediaType
 import tv.own.owntv.core.parser.XtEpgEntry
 import tv.own.owntv.core.repository.activeProfileSources
 import tv.own.owntv.core.settings.SettingsRepository
+import java.security.MessageDigest
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
+import java.util.Locale
 
 /**
  * The app's own rows on the launcher home screen (Projectivity, Google TV, the stock launcher):
  * "Für dich" with football on now or soon, the user's teams first, and "Favoriten" with what the
- * favourite channels show right now. A tile opens the channel straight in the player.
+ * favourite channels show right now. A tile opens the channel straight in the player. Every row,
+ * core's "Zuletzt gesehen" included (see [decorateRecent]), shows the same tile: the channel logo
+ * large, what is on below it.
  *
  * Written to the system TvProvider, where launchers read them. Rows are replaced as a whole, new
  * tiles first and old ones after, so a row never flashes empty.
@@ -52,7 +59,6 @@ internal class LauncherRows(private val context: Context) {
         val title: String,
         val description: String,
         val poster: Uri?,
-        val logo: Uri?,
         val intent: Uri,
         val type: Int,
         val live: Boolean,
@@ -81,6 +87,10 @@ internal class LauncherRows(private val context: Context) {
         val guides = HashMap<Long, tv.own.owntv.core.live.EpgNowNext?>()
         suspend fun guide(ch: ChannelEntity) = guides.getOrPut(ch.id) { runCatching { epgReader.nowNext(ch, custom, offset) }.getOrNull() }
 
+        // First, as it is the cheapest: at most ten channels.
+        runCatching { decorateRecent(profile.profileId, channelDao, ::guide, tiles, now) }
+            .onFailure { android.util.Log.w(TAG, "recent row not decorated", it) }
+
         // Favourites first: they also count for "Für dich", and their guide is read once.
         val favoriteTiles = favorites.map { ch ->
             val g = guide(ch)
@@ -94,7 +104,6 @@ internal class LauncherRows(private val context: Context) {
                 title = current?.let { "${ch.name}: ${it.title}" } ?: ch.name,
                 description = description,
                 poster = tiles.tile("f:${ch.id}:${current?.startMs}", content(ch, current, now)),
-                logo = ch.displayLogoUrl?.let(Uri::parse),
                 intent = playUri(ch),
                 type = TvContractCompat.PreviewPrograms.TYPE_CHANNEL,
                 live = current != null,
@@ -184,7 +193,6 @@ internal class LauncherRows(private val context: Context) {
                 title = "$label: ${p.title}",
                 description = pick.channel.name + SEPARATOR + range(p) + more,
                 poster = tiles.tile("s:${pick.channel.id}:${p.startMs}", content(pick.channel, p, now)),
-                logo = pick.channel.displayLogoUrl?.let(Uri::parse),
                 intent = playUri(pick.channel),
                 type = TvContractCompat.PreviewPrograms.TYPE_EVENT,
                 live = running,
@@ -196,7 +204,7 @@ internal class LauncherRows(private val context: Context) {
                 Tile(
                     id = "empty", title = context.getString(R.string.tvplayer_nothing_now),
                     description = context.getString(R.string.tvplayer_nothing_now_desc),
-                    poster = null, logo = null, intent = OPEN_APP,
+                    poster = null, intent = OPEN_APP,
                     type = TvContractCompat.PreviewPrograms.TYPE_CLIP, live = false, start = null, end = null,
                 )
             )
@@ -206,6 +214,50 @@ internal class LauncherRows(private val context: Context) {
         if (favoriteTiles.isEmpty()) removeChannel(KEY_FAVORITES)
         else publish(KEY_FAVORITES, context.getString(R.string.tvplayer_row_favorites), favoriteTiles, LOGO_FAVORITES)
         tiles.cleanup()
+    }
+
+    /**
+     * "Zuletzt gesehen" is OwnTV core's row (TvHomeRepository), published with the bare channel logo as
+     * art. Its programmes keep their place, id and link; only the art and the description are replaced,
+     * by the tile the other rows use, so the row also shows what is on. The core writes the bare logo
+     * back when it republishes the row (on zapping, while the app is in front); the next refresh, when
+     * the app is left, draws the tiles again.
+     */
+    private suspend fun decorateRecent(
+        profileId: Long,
+        channelDao: ChannelDao,
+        guide: suspend (ChannelEntity) -> tv.own.owntv.core.live.EpgNowNext?,
+        tiles: LauncherTiles,
+        now: Long,
+    ) {
+        val channelId = channelIds()[coreRecentKey(profileId)] ?: return
+        val programmes = ArrayList<Pair<Long, LauncherDeepLink.Live>>()
+        resolver.query(
+            TvContractCompat.buildPreviewProgramsUriForChannel(channelId),
+            arrayOf(TvContractCompat.PreviewPrograms._ID, TvContractCompat.PreviewPrograms.COLUMN_INTENT_URI), null, null, null,
+        )?.use { c ->
+            while (c.moveToNext()) {
+                val intent = c.getString(1) ?: continue
+                val link = runCatching { Intent.parseUri(intent, Intent.URI_INTENT_SCHEME).data }.getOrNull()
+                (LauncherDeepLink.parse(link) as? LauncherDeepLink.Live)?.let { programmes += c.getLong(0) to it }
+            }
+        }
+        if (programmes.isEmpty()) return
+        val recent = channelDao.recentlyWatched(profileId, MAX_RECENT).first()
+        for ((programmeId, link) in programmes) {
+            val ch = recent.firstOrNull { it.sourceId == link.sourceId && it.remoteId == link.remoteId }
+                ?: recent.firstOrNull { it.sourceId == link.sourceId && it.name == link.name }
+                ?: continue
+            val g = guide(ch)
+            val current = g?.now?.takeIf { it.startMs <= now && it.stopMs > now }
+            val poster = tiles.tile("r:${ch.id}:${current?.startMs}", content(ch, current, now)) ?: continue
+            val values = ContentValues().apply {
+                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_URI, poster.toString())
+                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_ASPECT_RATIO, TvContractCompat.PreviewPrograms.ASPECT_RATIO_16_9)
+                put(TvContractCompat.PreviewPrograms.COLUMN_SHORT_DESCRIPTION, current?.let { "${it.title}$SEPARATOR${range(it)}" } ?: ch.name)
+            }
+            runCatching { resolver.update(TvContractCompat.buildPreviewProgramUri(programmeId), values, null, null) }
+        }
     }
 
     private fun content(ch: ChannelEntity, p: XtEpgEntry?, now: Long): LauncherTiles.Content {
@@ -284,8 +336,8 @@ internal class LauncherRows(private val context: Context) {
                 .setContentId(t.id)
                 .setLive(t.live)
                 .setWeight(items.size - index)
+            // No logo URI: launchers draw it small over the tile's corner, and the tile shows it large.
             t.poster?.let { builder.setPosterArtUri(it) }
-            t.logo?.let { builder.setLogoUri(it) }
             t.start?.let { builder.setStartTimeUtcMillis(it) }
             t.end?.let { builder.setEndTimeUtcMillis(it) }
             resolver.insert(TvContractCompat.PreviewPrograms.CONTENT_URI, builder.build().toContentValues())
@@ -356,6 +408,8 @@ internal class LauncherRows(private val context: Context) {
         private const val LOGO_FOR_YOU = "⚽"
         private const val LOGO_FAVORITES = "★"
         private const val MAX_FAVORITES = 40
+        /** Twice core's ten: it skips hidden channels before taking its ten. */
+        private const val MAX_RECENT = 20
         private const val TAG = "LauncherRows"
         private const val MAX_FOR_YOU = 15
         private const val MAX_GROUP = 250
@@ -371,6 +425,12 @@ internal class LauncherRows(private val context: Context) {
             TvContractCompat.Channels._ID,
             TvContractCompat.Channels.COLUMN_INTERNAL_PROVIDER_ID,
         )
+
+        /** The internal id core gives its "Zuletzt gesehen" row (TvHomeRepository.platformInternalId). */
+        private fun coreRecentKey(profileId: Long): String {
+            val digest = MessageDigest.getInstance("SHA-256").digest("$profileId|${MediaType.LIVE.name}|recent-live".toByteArray(Charsets.UTF_8))
+            return "owntv:recent_live:" + digest.joinToString("") { "%02x".format(Locale.ROOT, it) }
+        }
 
         /** owntv://open?tvplayer_channel=…&tvplayer_source=…, read back by [channelFrom]. */
         fun playUri(ch: ChannelEntity): Uri = Uri.Builder().scheme(SCHEME).authority(HOST_OPEN)

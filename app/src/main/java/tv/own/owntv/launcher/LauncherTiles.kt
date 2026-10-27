@@ -5,7 +5,6 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.LinearGradient
@@ -19,20 +18,23 @@ import android.text.Layout
 import android.text.StaticLayout
 import android.text.TextPaint
 import android.text.TextUtils
+import coil3.SingletonImageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.request.allowHardware
+import coil3.toBitmap
 import tv.own.owntv.R
 import java.io.File
 import java.io.FileNotFoundException
-import java.net.HttpURLConnection
-import java.net.URL
 import java.security.MessageDigest
 
 /**
- * Draws the 16:9 launcher tiles: channel logo, the programme on air, its times and progress, so the
- * home screen already shows what is on. [LauncherTileProvider] hands the files to the launcher.
+ * Draws the 16:9 launcher tiles, one look for every row: the channel logo large at the top, and below
+ * it what is on (or coming up), its badge, times and progress. [LauncherTileProvider] hands the files
+ * to the launcher.
  */
 internal class LauncherTiles(private val context: Context) {
     private val tilesDir = File(context.filesDir, DIR).apply { mkdirs() }
-    private val logoDir = File(context.cacheDir, LOGO_DIR).apply { mkdirs() }
     private val logoCache = HashMap<String, Bitmap?>()
     private val stamp = System.currentTimeMillis()
 
@@ -47,9 +49,9 @@ internal class LauncherTiles(private val context: Context) {
     )
 
     /** The tile's address, or the channel logo when drawing fails. */
-    fun tile(id: String, content: Content): Uri? = runCatching {
+    suspend fun tile(id: String, content: Content): Uri? = runCatching {
         val name = "${hash(id)}_$stamp.png"
-        val bitmap = draw(content)
+        val bitmap = draw(content, content.logoUrl?.let { loadLogo(it) })
         File(tilesDir, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
         Uri.Builder().scheme("content").authority(LauncherTileProvider.authority(context)).appendPath(name).build()
@@ -62,10 +64,11 @@ internal class LauncherTiles(private val context: Context) {
             val t = f.name.substringAfter('_').substringBefore('.').toLongOrNull() ?: 0L
             if (t < cutoff) f.delete()
         }
-        logoDir.listFiles()?.filter { stamp - it.lastModified() > 7 * 24 * 3_600_000L }?.forEach { it.delete() }
+        // Logos used to be downloaded into a folder of their own; they now come from the app's image cache.
+        File(context.cacheDir, OLD_LOGO_DIR).takeIf { it.exists() }?.deleteRecursively()
     }
 
-    private fun draw(c: Content): Bitmap {
+    private fun draw(c: Content, logo: Bitmap?): Bitmap {
         val bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val bg = Paint().apply {
@@ -73,109 +76,98 @@ internal class LauncherTiles(private val context: Context) {
         }
         canvas.drawRect(0f, 0f, W.toFloat(), H.toFloat(), bg)
 
-        // The logo on a light plate, so dark logos stay readable.
-        val box = RectF(PAD, PAD, PAD + LOGO_W, PAD + LOGO_H)
-        canvas.drawRoundRect(box, 14f, 14f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(235, 245, 246, 250) })
-        val logo = c.logoUrl?.let { loadLogo(it) }
+        // The logo large on a light plate, so dark logos stay readable.
+        val box = RectF((W - LOGO_W) / 2, PAD, (W + LOGO_W) / 2, PAD + LOGO_H)
+        canvas.drawRoundRect(box, 18f, 18f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(240, 245, 246, 250) })
         if (logo != null) {
-            val scale = minOf((LOGO_W - 16) / logo.width, (LOGO_H - 16) / logo.height)
+            val scale = minOf((LOGO_W - 2 * LOGO_INSET) / logo.width, (LOGO_H - 2 * LOGO_INSET) / logo.height)
             val w = logo.width * scale
             val h = logo.height * scale
             val dst = RectF(box.centerX() - w / 2, box.centerY() - h / 2, box.centerX() + w / 2, box.centerY() + h / 2)
             canvas.drawBitmap(logo, null, dst, Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG))
         } else {
-            val initials = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = Color.rgb(0x26, 0x29, 0x30); textSize = 44f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER
+            // No logo: the channel's name in its place, never a pair of letters.
+            val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(0x26, 0x29, 0x30); textSize = 40f; typeface = Typeface.DEFAULT_BOLD
             }
-            val text = c.channelName.split(' ').filter { w -> w.any { it.isLetterOrDigit() } }
-                .take(2).joinToString("") { it.take(1) }.uppercase()
-            canvas.drawText(text, box.centerX(), box.centerY() + 16f, initials)
+            val width = (LOGO_W - 2 * LOGO_INSET).toInt()
+            val layout = StaticLayout.Builder.obtain(c.channelName, 0, c.channelName.length, namePaint, width)
+                .setMaxLines(2).setEllipsize(TextUtils.TruncateAt.END).setAlignment(Layout.Alignment.ALIGN_CENTER)
+                .build()
+            canvas.save()
+            canvas.translate(box.left + LOGO_INSET, box.centerY() - layout.height / 2f)
+            layout.draw(canvas)
+            canvas.restore()
         }
 
-        val nameX = box.right + 20f
-        val namePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(0xC8, 0xCC, 0xD3); textSize = 26f }
-        val name = TextUtils.ellipsize(c.channelName, namePaint, W - nameX - PAD, TextUtils.TruncateAt.END)
-        canvas.drawText(name, 0, name.length, nameX, PAD + 34f, namePaint)
-
-        if (c.badge != null) {
-            val p = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 24f; typeface = Typeface.DEFAULT_BOLD }
-            val r = RectF(nameX, PAD + 54f, nameX + p.measureText(c.badge) + 24f, PAD + 90f)
-            canvas.drawRoundRect(r, 8f, 8f, Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                color = if (c.live) Color.rgb(0xE5, 0x39, 0x35) else Color.rgb(0x2F, 0x6F, 0xE4)
-            })
-            canvas.drawText(c.badge, r.left + 12f, r.bottom - 10f, p)
+        // What is on, centred under the logo; without a guide the channel's name, dimmed.
+        val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = if (c.title != null) Color.WHITE else Color.rgb(0xA4, 0xA9, 0xB1); textSize = 32f; typeface = Typeface.DEFAULT_BOLD
         }
-
-        val titlePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 38f; typeface = Typeface.DEFAULT_BOLD }
-        val title = c.title ?: context.getString(R.string.tvplayer_no_guide)
+        val title = c.title ?: if (logo != null) c.channelName else context.getString(R.string.tvplayer_no_guide)
         val layout = StaticLayout.Builder.obtain(title, 0, title.length, titlePaint, (W - 2 * PAD).toInt())
-            .setMaxLines(2).setEllipsize(TextUtils.TruncateAt.END).setAlignment(Layout.Alignment.ALIGN_NORMAL)
+            .setMaxLines(if (c.timeRange != null || c.badge != null) 1 else 2)
+            .setEllipsize(TextUtils.TruncateAt.END).setAlignment(Layout.Alignment.ALIGN_CENTER)
             .build()
         canvas.save()
-        canvas.translate(PAD, box.bottom + 22f)
+        canvas.translate(PAD, box.bottom + 14f)
         layout.draw(canvas)
         canvas.restore()
 
-        c.timeRange?.let {
-            val timePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(0xA4, 0xA9, 0xB1); textSize = 24f }
-            canvas.drawText(it, PAD, H - 30f, timePaint)
+        // Badge (LIVE, "In 20 Min.") and times on one centred line.
+        val badgePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 22f; typeface = Typeface.DEFAULT_BOLD }
+        val timePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(0xC8, 0xCC, 0xD3); textSize = 24f }
+        val badgeW = c.badge?.let { badgePaint.measureText(it) + 20f } ?: 0f
+        val gap = if (c.badge != null && c.timeRange != null) 14f else 0f
+        val timeW = c.timeRange?.let { timePaint.measureText(it) } ?: 0f
+        var x = (W - badgeW - gap - timeW) / 2
+        val baseline = H - 26f
+        if (c.badge != null) {
+            val r = RectF(x, baseline - 25f, x + badgeW, baseline + 8f)
+            canvas.drawRoundRect(r, 8f, 8f, Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = if (c.live) Color.rgb(0xE5, 0x39, 0x35) else Color.rgb(0x2F, 0x6F, 0xE4)
+            })
+            canvas.drawText(c.badge, r.left + 10f, baseline, badgePaint)
+            x = r.right + gap
         }
+        c.timeRange?.let { canvas.drawText(it, x, baseline, timePaint) }
+
         c.progress?.let { frac ->
-            canvas.drawRect(0f, H - 8f, W.toFloat(), H.toFloat(), Paint().apply { color = Color.argb(70, 255, 255, 255) })
-            canvas.drawRect(0f, H - 8f, W * frac.coerceIn(0f, 1f), H.toFloat(), Paint().apply { color = Color.rgb(0x2F, 0x6F, 0xE4) })
+            canvas.drawRect(0f, H - 6f, W.toFloat(), H.toFloat(), Paint().apply { color = Color.argb(70, 255, 255, 255) })
+            canvas.drawRect(0f, H - 6f, W * frac.coerceIn(0f, 1f), H.toFloat(), Paint().apply { color = Color.rgb(0x2F, 0x6F, 0xE4) })
         }
         return bmp
     }
 
-    private fun loadLogo(url: String): Bitmap? = logoCache.getOrPut(url) {
-        runCatching {
-            val file = File(logoDir, hash(url))
-            val bytes = if (file.exists()) file.readBytes() else download(url)?.also { file.writeBytes(it) }
-            bytes?.let { decode(it) }
+    /**
+     * The logo through the app's image loader: its disk cache already holds the logos the guide has
+     * shown, and its client sends the player User-Agent and follows redirects that some logo hosts need.
+     */
+    private suspend fun loadLogo(url: String): Bitmap? {
+        if (logoCache.containsKey(url)) return logoCache[url]
+        val request = ImageRequest.Builder(context)
+            .data(url)
+            .size(LOGO_W.toInt(), LOGO_H.toInt())
+            .allowHardware(false)
+            .build()
+        val bitmap = runCatching {
+            val image = (SingletonImageLoader.get(context).execute(request) as? SuccessResult)?.image?.toBitmap()
+            // A software canvas cannot draw a hardware bitmap (one the guide left in the memory cache).
+            if (image?.config == Bitmap.Config.HARDWARE) image.copy(Bitmap.Config.ARGB_8888, false) else image
         }.getOrNull()
-    }
-
-    private fun download(url: String): ByteArray? {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        return try {
-            conn.connectTimeout = 8_000
-            conn.readTimeout = 8_000
-            conn.instanceFollowRedirects = true
-            if (conn.responseCode !in 200..299) return null
-            conn.inputStream.use { input ->
-                val out = java.io.ByteArrayOutputStream()
-                val buf = ByteArray(16 * 1024)
-                while (true) {
-                    val n = input.read(buf)
-                    if (n < 0) break
-                    out.write(buf, 0, n)
-                    if (out.size() > MAX_LOGO_BYTES) return null
-                }
-                out.toByteArray()
-            }
-        } finally {
-            conn.disconnect()
-        }
-    }
-
-    private fun decode(bytes: ByteArray): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
-        if (bounds.outWidth <= 0) return null
-        var sample = 1
-        while (bounds.outWidth / (sample * 2) >= LOGO_W && bounds.outHeight / (sample * 2) >= LOGO_H) sample *= 2
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.size, BitmapFactory.Options().apply { inSampleSize = sample })
+        logoCache[url] = bitmap
+        return bitmap
     }
 
     companion object {
         const val DIR = "launcher_tiles"
-        private const val LOGO_DIR = "launcher_logos"
+        private const val OLD_LOGO_DIR = "launcher_logos"
         private const val W = 640
         private const val H = 360
-        private const val PAD = 28f
-        private const val LOGO_W = 200f
-        private const val LOGO_H = 112f
-        private const val MAX_LOGO_BYTES = 2 * 1024 * 1024
+        private const val PAD = 24f
+        private const val LOGO_W = 400f
+        private const val LOGO_H = 225f
+        private const val LOGO_INSET = 18f
 
         fun hash(s: String): String =
             MessageDigest.getInstance("SHA-1").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }.take(20)
