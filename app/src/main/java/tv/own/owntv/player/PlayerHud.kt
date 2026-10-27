@@ -616,8 +616,12 @@ fun PlayerHud(
             }
             // The control panel's tiles own the D-pad while it is up; every press keeps it up.
             if (showPanel) {
-                if (e.type == KeyEventType.KeyDown) panelTick++
-                return@onPreviewKeyEvent false
+                // Menu closes the tile bar and goes on to what the Menu key does (the options), as it does without the bar.
+                if (e.key != Key.Menu) {
+                    if (e.type == KeyEventType.KeyDown) panelTick++
+                    return@onPreviewKeyEvent false
+                }
+                if (e.type == KeyEventType.KeyDown) showPanel = false
             }
             // Configured player shortcuts run inside this original, stable preview handler. Direct
             // tune above has first priority, so number keys keep changing live channels fullscreen.
