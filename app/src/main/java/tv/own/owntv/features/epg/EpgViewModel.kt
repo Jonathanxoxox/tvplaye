@@ -248,6 +248,9 @@ class EpgViewModel(
     private val epgOffset: StateFlow<Int> = settings.epgOffsetMinutes
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
+    /** The hidden channels and groups the grid was last built with (null before the first load). */
+    @Volatile private var loadedHidden: Pair<Set<String>, Set<String>>? = null
+
     /** Guide category filter, from the same list as Live TV: null = All channels. */
     private val _categoryFilter = MutableStateFlow<tv.own.owntv.core.live.LiveKey?>(null)
     val categoryFilter: StateFlow<tv.own.owntv.core.live.LiveKey?> = _categoryFilter.asStateFlow()
@@ -396,6 +399,13 @@ class EpgViewModel(
             .drop(1)
             .distinctUntilChanged()
             .onEach { load() }
+            .launchIn(viewModelScope)
+        // Reload when a channel or group is hidden from the guide's own long-press menus (or restored in
+        // Settings › Customize) — only when that differs from what the grid was built with.
+        custom
+            .map { it.hiddenItems.keys to it.hiddenCategories }
+            .distinctUntilChanged()
+            .onEach { hidden -> if (loadedHidden != null && hidden != loadedHidden) load() }
             .launchIn(viewModelScope)
         // Reload when the category filter changes (#8).
         _categoryFilter
@@ -901,6 +911,7 @@ class EpgViewModel(
 
         // Respect customizations: hidden channels stay out of the guide, renames show.
         val cust = customize.observe(pid, MediaType.LIVE).first()
+        loadedHidden = cust.hiddenItems.keys to cust.hiddenCategories
         val q = _query.value.trim()
         val showAll = settings.guideShowEmpty.first()
         val rawChannels = if (showAll) channelDao.channelsForGuide(playlistIds, q, MAX_CHANNELS)
@@ -930,6 +941,16 @@ class EpgViewModel(
                 historyDao.getForProfileType(pid, MediaType.LIVE).mapTo(HashSet()) { it.itemId }
             else -> null
         }
+        // A group's own order (Hold OK › Move channel, as Live TV's list had it) in the provider's order mode;
+        // channels without a place keep the provider's order after the placed ones.
+        val manualOrder: Map<Long, Int>? = if (sortGuideMode != SettingsRepository.GuideSort.PROVIDER &&
+            sortGuideMode != SettingsRepository.GuideSort.LIVE_TV) null else when (filter) {
+            is tv.own.owntv.core.live.LiveKey.Folder -> folderKey?.let { channelDao.snapshotByCategoryManual(filter.id, pid, it, MAX_CHANNELS) }
+            is tv.own.owntv.core.live.LiveKey.Custom -> customCategoryDao.snapshotChannels(pid, filter.id, playlistIds, MAX_CHANNELS)
+            tv.own.owntv.core.live.LiveKey.Favorites ->
+                channelDao.snapshotFavoritesManual(pid, tv.own.owntv.core.database.entity.ContentOrderEntity.FAV_CONTEXT, playlistIds, MAX_CHANNELS)
+            else -> null
+        }?.withIndex()?.associate { it.value.id to it.index }
         // Heavy work — filter hidden, apply renames + manual EPG matches, sort, category-filter — runs off
         // the main thread (#3/#5) so a 50k-channel playlist never freezes the UI building the guide list.
         suspend fun shape(rawChannels: List<ChannelEntity>) = withContext(Dispatchers.Default) {
@@ -960,7 +981,7 @@ class EpgViewModel(
                     }
                     else -> sorted.filter { it.id in memberIds.orEmpty() }
                 }
-            }
+            }.let { shown -> if (manualOrder.isNullOrEmpty()) shown else shown.sortedBy { manualOrder[it.id] ?: Int.MAX_VALUE } }
         }
         // A category none of whose channels has a stored guide (the provider's own EPG only, as on Jonathan's
         // playlist) still lists them all: each row reads the provider's programmes itself, as the channel list

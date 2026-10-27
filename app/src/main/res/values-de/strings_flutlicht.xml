@@ -69,4 +69,9 @@
     <string name="update_ready">Mayo TV v<xliff:g id="available">%1$s</xliff:g> ist bereit (du verwendest v<xliff:g id="current">%2$s</xliff:g>).</string>
     <string name="settings_navigation_description">Was das Menü links zeigt</string>
     <string name="settings_help_navigation">Das Menü ruht als schmale Symbolleiste am linken Rand und öffnet sich mit Namen, wenn du nach links gehst. Die Größe bestimmt, wie viel es zeigt; Menüpunkte, welche Bereiche es listet.</string>
+    <string name="voice_search_listening">Sprich jetzt…</string>
+    <string name="voice_search_not_understood">Nicht verstanden – Mikrofon nochmal drücken</string>
+    <string name="voice_search_no_microphone">Mikrofon nicht erlaubt</string>
+    <string name="voice_search_unavailable">Keine Spracherkennung auf diesem Gerät</string>
+    <string name="content_move_in_group_only">nur in einer Gruppe</string>
 </resources>

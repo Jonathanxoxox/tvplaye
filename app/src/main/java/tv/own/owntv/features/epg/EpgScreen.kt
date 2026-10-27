@@ -69,6 +69,8 @@ import tv.own.owntv.core.settings.SettingsRepository
 import tv.own.owntv.features.live.LiveCategories
 import tv.own.owntv.features.live.LiveViewModel
 import tv.own.owntv.core.live.ProviderTags
+import tv.own.owntv.features.shell.components.CategoryContextMenu
+import tv.own.owntv.ui.components.MoveOrderOverlay
 import tv.own.owntv.features.live.edgeScrollSpec
 import tv.own.owntv.features.live.liveCategoryEntries
 import tv.own.owntv.features.live.liveEpgShiftLabel
@@ -330,6 +332,16 @@ fun EpgScreen(
     var matchingChannel by remember { mutableStateOf<ChannelEntity?>(null) }
     var offsetChannel by remember { mutableStateOf<ChannelEntity?>(null) }
     var orderOpen by remember { mutableStateOf(false) }
+    // Hold OK on a group: hide or move it; Hold OK on a channel row: its menu, with move and hide.
+    var groupMenuFor by remember { mutableStateOf<Pair<LiveKey, String>?>(null) }
+    val channelMove by liveVm.moveState.collectAsStateWithLifecycle()
+    val groupMove by liveVm.categoryMoveState.collectAsStateWithLifecycle()
+    // The menus stay up until their move list is loaded, then hand over to it.
+    LaunchedEffect(channelMove != null) { if (channelMove != null) channelMenuFor = null }
+    LaunchedEffect(groupMove != null) { if (groupMove != null) groupMenuFor = null }
+    // The groups stay out while their menu is up, and focus goes back to the group it was opened on.
+    var groupsHeld by remember { mutableStateOf(false) }
+    var groupsFocusIndex by remember { mutableStateOf<Int?>(null) }
     var dayOpen by remember { mutableStateOf(false) }
     var searchOpen by remember { mutableStateOf(false) }
     // The field reports "not focused" when it first attaches; it only closes after it has had focus (playbook 10).
@@ -337,7 +349,7 @@ fun EpgScreen(
     // Where focus goes back to when an overlay closes: the control or button that opened it.
     var returnTo by remember { mutableStateOf<(() -> Unit)?>(null) }
     val anyOverlay = menuFor != null || channelMenuFor != null || recordMenuFor != null || askPlayerFor != null || matchingChannel != null ||
-        offsetChannel != null || orderOpen || dayOpen || review.isNotEmpty()
+        offsetChannel != null || orderOpen || dayOpen || review.isNotEmpty() || groupMenuFor != null || channelMove != null || groupMove != null
     var hadOverlay by remember { mutableStateOf(false) }
     LaunchedEffect(anyOverlay) {
         if (anyOverlay) { hadOverlay = true; return@LaunchedEffect }
@@ -468,7 +480,7 @@ fun EpgScreen(
         val shown = full ?: topProgramme
 
         // With the menu open, or the groups in use, they stand at the left and the guide moves over by their width.
-        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter
+        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld
         val groupsW = fx(400)
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
@@ -699,10 +711,23 @@ fun EpgScreen(
                     scope.launch { runCatching { rowListState.scrollToItem(0) } }
                     focusGrid(0)
                 },
-                onLongSelect = {},
+                onLongSelect = { idx ->
+                    val key = railItems.getOrNull(idx)?.key
+                    if (key != null && (key is LiveKey.Folder || key is LiveKey.Custom)) {
+                        groupsHeld = true
+                        returnTo = {
+                            val at = liveVm.railItems.value.indexOfFirst { it.key == key }
+                            if (at >= 0) groupsFocusIndex = at else enterGroups()
+                            scope.launch { delay(400); groupsFocusIndex = null; groupsHeld = false }
+                            returnTo = null
+                        }
+                        groupMenuFor = key to groupEntries.getOrNull(idx)?.label.orEmpty()
+                    }
+                },
                 onNavigateRight = { focusGrid() },
                 focusRequester = groupsFocus,
-                focusRowIndex = if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
+                focusRowIndex = groupsFocusIndex
+                    ?: if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
                 modifier = Modifier
                     .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
                     .width(groupsW - fx(40))
@@ -744,9 +769,10 @@ fun EpgScreen(
             onDismiss = { orderOpen = false },
         )
     }
-    channelMenuFor?.let { ch ->
+    channelMenuFor?.takeIf { channelMove == null }?.let { ch ->
         GuideChannelMenu(
             channel = ch,
+            subtitle = categoryLabel,
             isFavorite = ch.id in vm.favoriteChannelIds.collectAsStateWithLifecycle().value,
             epgOffsetValue = vm.currentEpgShift(ch)?.let { liveEpgShiftLabel(it) } ?: stringResource(R.string.content_epg_offset_global_short),
             onWatch = { watch(ch) },
@@ -754,7 +780,49 @@ fun EpgScreen(
             onAutoMatch = { vm.autoMatchOne(ch) },
             onPickEpg = { matchingChannel = ch },
             onEpgOffset = { offsetChannel = ch },
+            // Only a group has an order of its own to move in (All and Recently watched follow the provider).
+            onMove = categoryKey.takeIf { it is LiveKey.Folder || it is LiveKey.Custom || it == LiveKey.Favorites }?.let { key ->
+                { liveVm.enterMoveMode(ch, key) }
+            },
+            onHide = { liveVm.hideChannel(ch) },
             onDismiss = { channelMenuFor = null },
+        )
+    }
+    channelMove?.let { ms ->
+        MoveOrderOverlay(
+            title = stringResource(R.string.content_reorder_channel),
+            itemNames = ms.items.map { ProviderTags.parse(it.name).name },
+            activeIndex = ms.activeIndex,
+            onMove = liveVm::move,
+            onCommit = {
+                val at = ms.activeIndex
+                returnTo = { focusGrid(at); returnTo = null }
+                // The group's own order shows in the provider's order mode.
+                if (sortGuide != SettingsRepository.GuideSort.PROVIDER && sortGuide != SettingsRepository.GuideSort.LIVE_TV) {
+                    vm.setGuideSort(SettingsRepository.GuideSort.PROVIDER)
+                }
+                liveVm.commitMove(onSaved = vm::load)
+            },
+            onCancel = liveVm::cancelMove,
+        )
+    }
+    groupMenuFor?.takeIf { groupMove == null }?.let { (key, label) ->
+        CategoryContextMenu(
+            categoryName = label,
+            canHide = true,
+            onHide = { liveVm.hideCategory(key); groupMenuFor = null },
+            onMove = { liveVm.enterCategoryMoveMode(key) },
+            onDismiss = { groupMenuFor = null },
+        )
+    }
+    groupMove?.let { ms ->
+        MoveOrderOverlay(
+            title = stringResource(R.string.content_move),
+            itemNames = ms.items,
+            activeIndex = ms.activeIndex,
+            onMove = liveVm::moveCategory,
+            onCommit = liveVm::commitCategoryMove,
+            onCancel = liveVm::cancelCategoryMove,
         )
     }
     if (dayOpen) {
@@ -880,7 +948,8 @@ private fun GuideRow(
                         Key.DirectionCenter, Key.Enter, Key.NumPadEnter -> {
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) okDown = true
-                            else if (down && okDown) { okDown = false; onMenu(programmeAt(progs, cursorTime)) }
+                            // Held: on the row the channel's menu (move, hide…), in the programmes the programme's.
+                            else if (down && okDown) { okDown = false; if (cellMode) onMenu(programmeAt(progs, cursorTime)) else onChannelMenu() }
                             // OK watches the channel, as in the classic IPTV guide; in the programmes it acts on the one under the cursor.
                             else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime else System.currentTimeMillis())) }
                             true
