@@ -3,9 +3,8 @@ name: Mayo TV Bildschirm-Tour
 # Richtet die App im Emulator (1920×1080, Deutsch) mit einer Test-Playlist ein, läuft per
 # Fernbedienungstasten durch Menüs, TV-Guide, Player und Einstellungen und legt die Fotos im Zweig
 # screens/<Arbeitszweig> ab. So lassen sich Darstellungsfehler ohne Fernseher prüfen.
+# Läuft nur per Start (workflow_dispatch), nicht bei jedem Push.
 on:
-  push:
-    branches: [ "claude/project-thread-xpoaz5" ]
   workflow_dispatch:
     inputs:
       parts:
@@ -15,14 +14,12 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: screens-${{ github.ref }}
-  cancel-in-progress: true
+# Kein cancel-in-progress: ein abgebrochener Lauf schickt eine Mail. Ein zweiter Start läuft daneben.
 
 jobs:
   tour:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
 

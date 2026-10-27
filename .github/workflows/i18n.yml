@@ -35,13 +35,32 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# Kein cancel-in-progress: jeder abgebrochene Lauf schickt eine Mail. Überholte Pushes erkennt
+# der Job "current" und überspringt den Rest.
 
 jobs:
+  # Überholte Pushes: ist der Zweig schon weiter, bleibt dieser Lauf still grün statt zu prüfen.
+  current:
+    runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.head.outputs.stale }}
+    steps:
+      - id: head
+        env:
+          REF: ${{ github.event_name == 'pull_request' && format('refs/heads/{0}', github.head_ref) || github.ref }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          HEAD=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY" "$REF" | cut -f1)
+          if [ -n "$HEAD" ] && [ "$HEAD" != "$SHA" ]; then
+            echo "::notice::Überholt von ${HEAD::7}, dieser Lauf prüft nichts."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
   baseline:
-    if: ${{ !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
+    needs: current
+    if: ${{ needs.current.outputs.stale != 'true' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout PR head
@@ -55,9 +74,12 @@ jobs:
         with:
           python-version: '3.12'
 
+      # Ohne --depth: ein flacher Fetch auf diesen vollen Checkout kappt die Historie an der Spitze
+      # von main. Ist main seit dem Abzweigen weiter, findet merge-base dann nichts mehr und der
+      # Check fiel ohne Meldung mit Exit 1 aus.
       - name: Fetch base branch
         if: ${{ github.event_name == 'pull_request' }}
-        run: git fetch --no-tags --depth=1 origin "${GITHUB_BASE_REF}"
+        run: git fetch --no-tags origin "${GITHUB_BASE_REF}"
 
       - name: Hardcoded-literal ratchet
         env:
@@ -66,14 +88,18 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$EVENT_NAME" = "pull_request" ]; then
-            BASE_SHA="$(git merge-base HEAD "origin/${GITHUB_BASE_REF}")"
+            if ! BASE_SHA="$(git merge-base HEAD "origin/${GITHUB_BASE_REF}")"; then
+              echo "::error::Kein gemeinsamer Vorfahr mit origin/${GITHUB_BASE_REF} gefunden"
+              exit 1
+            fi
             python3 tools/i18n/check_hardcoded_strings.py verify-ci --base-sha "$BASE_SHA"
           else
             python3 tools/i18n/check_hardcoded_strings.py verify --bootstrap
           fi
 
   validate:
-    if: ${{ !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
+    needs: current
+    if: ${{ needs.current.outputs.stale != 'true' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -86,10 +112,11 @@ jobs:
         run: python3 tools/i18n/check_text_overflow.py
 
   pseudo:
+    needs: current
     # Builds the debug + release standard APKs and inspects their resource tables. Heavier than the
     # other two jobs, so it is its own job rather than piggy-backed on android.yml — and skipped on
     # push, where android.yml already assembles main.
-    if: ${{ github.event_name != 'push' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
+    if: ${{ needs.current.outputs.stale != 'true' && github.event_name != 'push' && !(github.event_name == 'pull_request' && startsWith(github.head_ref, 'bump/core-')) }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
