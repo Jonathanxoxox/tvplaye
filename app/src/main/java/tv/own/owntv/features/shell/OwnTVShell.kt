@@ -741,11 +741,10 @@ fun OwnTVShell(
     // The guide, and a match page: pages that take the strip's room while they hold focus.
     val fullPage = selectedSection == MainSection.SPORTS && tv.own.owntv.features.shell.components.StageRailOpen.fullPage
     val guideSection = selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG || fullPage
+    // Only the strip itself brings the strip back: with nobody focused (the moment after full screen shrinks
+    // onto the guide) it must stay out, or it flashes in for the frames before a guide row takes focus.
     val guideStripHidden = guideSection &&
-        // Behind full screen as well, so the guide is already in place when the picture shrinks onto it.
-        (tv.own.owntv.features.shell.components.StageRailOpen.guideFocused || tv.own.owntv.features.shell.components.StageRailOpen.fullPageFocused ||
-            guideHandover || playerMode == PlayerMode.FULLSCREEN) &&
-        railState != tv.own.owntv.features.shell.components.RailState.OPEN
+        railState != tv.own.owntv.features.shell.components.RailState.OPEN && !railTrulyFocused
     // The guide does not jump when the strip steps aside or comes back: it slides, as TiviMate's does.
     // Keyed on the section: another page keeps its padding and must not slide in from the guide's offset.
     val guideStripRoom = androidx.compose.runtime.key(guideSection) {
