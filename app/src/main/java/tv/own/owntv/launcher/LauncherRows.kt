@@ -35,6 +35,7 @@ import tv.own.owntv.core.model.MediaType
 import tv.own.owntv.core.parser.XtEpgEntry
 import tv.own.owntv.core.repository.activeProfileSources
 import tv.own.owntv.core.settings.SettingsRepository
+import tv.own.owntv.features.sports.GuideBroadcasts
 import java.security.MessageDigest
 import java.text.DateFormat
 import java.util.Calendar
@@ -123,6 +124,8 @@ internal class LauncherRows(private val context: Context) {
         val scan = FootballScan.channels(channelDao, sources, favorites)
         val sportsIds = scan.sportsIds
         val channelGuides = FootballScan.guides(scan.all) { ch -> runCatching { epgReader.nowNext(ch, custom, offset) }.getOrNull() }
+        // The match page lists a match's channels from this read at once, instead of reading every guide again.
+        GuideBroadcasts.remember(profile.profileId, scan.all, channelGuides)
         // Today's football: up to midnight, and at least the launcher row's look-ahead.
         val horizon = maxOf(now + LOOKAHEAD_MS, endOfDay(now))
         val picks = ArrayList<Pick>()

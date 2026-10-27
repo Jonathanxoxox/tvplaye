@@ -3,6 +3,7 @@ package tv.own.owntv.launcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import tv.own.owntv.core.database.dao.ChannelDao
@@ -41,40 +42,72 @@ internal object FootballScan {
      * once, and by name, so "Sky Sport Bundesliga 1", its HD, FHD, UHD and backup feeds and another
      * country's copy are one family. A variant without a guide of its own shows its family's, so every
      * variant of a match is found. Reads run a few at a time: a short-EPG read is a request to the provider.
+     * They start in [channels]' order, so the caller puts the likeliest first. [onProgress], when given,
+     * gets the guides read so far about every [PROGRESS_MS] while the reads run, so a screen can show
+     * what is found before the last channel has answered.
      */
-    suspend fun guides(channels: List<ChannelEntity>, read: suspend (ChannelEntity) -> EpgNowNext?): Map<Long, EpgNowNext> {
+    suspend fun guides(
+        channels: List<ChannelEntity>,
+        onProgress: (suspend (Map<Long, EpgNowNext>) -> Unit)? = null,
+        read: suspend (ChannelEntity) -> EpgNowNext?,
+    ): Map<Long, EpgNowNext> {
         val families = channels.groupBy { EpgMatcher.normalizeForEpg(it.name).ifEmpty { it.id.toString() } }.values
         val gate = Semaphore(PARALLEL_READS)
-        var budget = MAX_GUIDE_READS
+        val keyed = ConcurrentHashMap<String, EpgNowNext>()
+        val own = ConcurrentHashMap<Long, EpgNowNext>()
+
+        fun assemble(): Map<Long, EpgNowNext> {
+            val out = HashMap<Long, EpgNowNext>()
+            for (family in families) {
+                val familyGuide = family.firstNotNullOfOrNull { ch -> key(ch)?.let(keyed::get) }
+                for (ch in family) (key(ch)?.let(keyed::get) ?: familyGuide ?: own[ch.id])?.let { out[ch.id] = it }
+            }
+            return out
+        }
+
+        val progressLock = Mutex()
+        var lastProgress = System.currentTimeMillis()
+        suspend fun progress() {
+            if (onProgress == null || System.currentTimeMillis() - lastProgress < PROGRESS_MS) return
+            if (!progressLock.tryLock()) return
+            try {
+                if (System.currentTimeMillis() - lastProgress >= PROGRESS_MS) {
+                    lastProgress = System.currentTimeMillis()
+                    onProgress(assemble())
+                }
+            } finally {
+                progressLock.unlock()
+            }
+        }
 
         // First every guide id once.
-        val byKey = channels.filter { key(it) != null }.distinctBy { key(it) }.take(budget)
-        budget -= byKey.size
-        val keyed = coroutineScope {
-            byKey.map { ch -> async { key(ch)!! to gate.withPermit { read(ch) } } }.awaitAll()
-        }.filter { it.second != null }.associate { it.first to it.second!! }
-
-        val out = ConcurrentHashMap<Long, EpgNowNext>()
-        val unread = ArrayList<List<ChannelEntity>>()
-        for (family in families) {
-            val familyGuide = family.firstNotNullOfOrNull { ch -> key(ch)?.let(keyed::get) }
-            for (ch in family) (key(ch)?.let(keyed::get) ?: familyGuide)?.let { out[ch.id] = it }
-            if (familyGuide == null) unread += family.filter { key(it) == null }
-        }
-        // Then families that have no guide id at all: the provider is asked by the channel itself.
-        val ownReads = unread.filter { it.isNotEmpty() }.take(budget.coerceAtLeast(0))
+        val byKey = channels.filter { key(it) != null }.distinctBy { key(it) }.take(MAX_GUIDE_READS)
         coroutineScope {
-            ownReads.map { family ->
+            byKey.map { ch ->
                 async {
-                    for (ch in family) {
-                        val g = gate.withPermit { read(ch) } ?: continue
-                        family.forEach { out[it.id] = g }
-                        break
-                    }
+                    gate.withPermit { read(ch) }?.let { keyed[key(ch)!!] = it }
+                    progress()
                 }
             }.awaitAll()
         }
-        return out
+        // Then families that have no guide id at all: the provider is asked by the channel itself.
+        val unread = families.filter { family -> family.none { ch -> key(ch)?.let(keyed::get) != null } }
+            .map { family -> family.filter { key(it) == null } }
+            .filter { it.isNotEmpty() }
+            .take((MAX_GUIDE_READS - byKey.size).coerceAtLeast(0))
+        coroutineScope {
+            unread.map { family ->
+                async {
+                    for (ch in family) {
+                        val g = gate.withPermit { read(ch) } ?: continue
+                        family.forEach { own[it.id] = g }
+                        break
+                    }
+                    progress()
+                }
+            }.awaitAll()
+        }
+        return assemble()
     }
 
     private fun key(ch: ChannelEntity): String? = ch.epgChannelId?.trim()?.lowercase()?.takeIf { it.isNotEmpty() }
@@ -84,4 +117,5 @@ internal object FootballScan {
     /** Guides read per scan; variants that share a guide id cost one read. */
     private const val MAX_GUIDE_READS = 800
     private const val PARALLEL_READS = 8
+    private const val PROGRESS_MS = 700L
 }
