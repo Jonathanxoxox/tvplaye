@@ -349,8 +349,8 @@ class SportsViewModel(
      */
     val lastPlayedChannelId: Long? get() = playback.lastPlayedChannelId
 
-    /** The channel just watched full screen from the match page, once (see [SportsPlayback.returnedChannelId]). */
-    fun takeReturnedChannelId(): Long? = playback.returnedChannelId.also { playback.returnedChannelId = null }
+    /** Whether the match page is opened again on Back from the player, once (see [SportsPlayback.returnedFromPlayer]). */
+    fun takeReturnedFromPlayer(): Boolean = playback.returnedFromPlayer.also { playback.returnedFromPlayer = false }
 
     fun playedFrom(match: Match, channels: List<WatchOption>, playing: ChannelEntity? = null) {
         playback.lastPlayedChannelId = playing?.id

@@ -116,8 +116,8 @@ fun SportsMatchScreen(
     var tab by remember { mutableStateOf(MatchTab.TIMELINE) }
     var revealed by remember(m.key) { mutableStateOf(false) }
     // The channel in the preview: none until one is picked with OK, or the one just watched full screen.
-    var picked by remember(m.key) { mutableStateOf<ChannelEntity?>(null) }
-    var returned by remember(m.key) { mutableStateOf(vm.takeReturnedChannelId()) }
+    // Back from the player: the channel on screen there, which CH± may have taken off this list.
+    var picked by remember(m.key) { mutableStateOf(if (vm.takeReturnedFromPlayer()) liveVm.previewChannel.value else null) }
     val firstRow = remember { FocusRequester() }
     val tabFocus = remember { FocusRequester() }
 
@@ -141,10 +141,6 @@ fun SportsMatchScreen(
     val play: (WatchOption) -> Unit = { o -> vm.playedFrom(m, shown, o.channel); onPlayChannel(o.channel, zap) }
     // Back from the player: focus the channel that was playing, not the first.
     val focusTarget = shown.firstOrNull { it.channel.id == vm.lastPlayedChannelId } ?: shown.firstOrNull()
-    LaunchedEffect(returned, shown) {
-        val id = returned ?: return@LaunchedEffect
-        shown.firstOrNull { it.channel.id == id }?.let { picked = it.channel; returned = null }
-    }
 
     // The page takes the whole width, as the guide does: while it holds focus the menu strip steps aside
     // and the clock and pills with it, so Watch live is never cut off on the right. ◀ brings the strip back.
