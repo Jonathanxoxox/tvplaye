@@ -16,10 +16,13 @@ import androidx.tvprovider.media.tv.ChannelLogoUtils
 import androidx.tvprovider.media.tv.PreviewProgram
 import androidx.tvprovider.media.tv.TvContractCompat
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 import org.koin.core.context.GlobalContext
 import tv.own.owntv.R
 import tv.own.owntv.core.customize.CustomizationStore
+import tv.own.owntv.core.customize.CustomizeKeys
 import tv.own.owntv.core.database.dao.ChannelDao
 import tv.own.owntv.core.database.dao.SourceDao
 import tv.own.owntv.core.database.entity.ChannelEntity
@@ -65,6 +68,8 @@ internal class LauncherRows(private val context: Context) {
         val end: Long?,
     )
 
+    private class RecentCard(val id: Long, val link: LauncherDeepLink.Live, val poster: String?, val weight: Int, val title: String?)
+
     private class Pick(val channel: ChannelEntity, val programme: XtEpgEntry, val score: Int, val hit: FootballMatcher.Hit)
 
     suspend fun refresh() {
@@ -86,8 +91,8 @@ internal class LauncherRows(private val context: Context) {
         val guides = HashMap<Long, tv.own.owntv.core.live.EpgNowNext?>()
         suspend fun guide(ch: ChannelEntity) = guides.getOrPut(ch.id) { runCatching { epgReader.nowNext(ch, custom, offset) }.getOrNull() }
 
-        // First, as it is the cheapest: at most ten channels.
-        runCatching { decorateRecent(profile.profileId, channelDao, ::guide, tiles, now) }
+        // First, as it is the cheapest: at most ten channels. Forced, since programmes change with time.
+        runCatching { decorateRecent(force = true) }
             .onFailure { android.util.Log.w(TAG, "recent row not decorated", it) }
 
         // Favourites first: they also count for "Für dich", and their guide is read once.
@@ -95,12 +100,13 @@ internal class LauncherRows(private val context: Context) {
             val g = guide(ch)
             val current = g?.now?.takeIf { it.startMs <= now && it.stopMs > now }
             val description = listOfNotNull(
+                ch.name,
                 current?.let { range(it) },
                 g?.next?.let { context.getString(R.string.tvplayer_next_at, time.format(Date(it.startMs))) + " " + it.title },
             ).joinToString(SEPARATOR)
             Tile(
                 id = "f:${ch.id}",
-                title = current?.let { "${ch.name}: ${it.title}" } ?: ch.name,
+                title = current?.title ?: ch.name,
                 description = description,
                 poster = tiles.tile("f:${ch.id}:${current?.startMs}", content(ch, current, now)),
                 intent = playUri(ch),
@@ -192,45 +198,70 @@ internal class LauncherRows(private val context: Context) {
 
     /**
      * "Zuletzt gesehen" is OwnTV core's row (TvHomeRepository), published with the bare channel logo as
-     * art. Its programmes keep their place, id and link; only the art and the description are replaced,
-     * by the tile the other rows use, so the row also shows what is on. The core writes the bare logo
-     * back when it republishes the row (on zapping, while the app is in front); the next refresh, when
-     * the app is left, draws the tiles again.
+     * art and the channel's name as title. Its programmes keep their place, id and link; the art becomes
+     * the tile the other rows use, the title the programme on now, the description channel and times.
+     * The playlist holds many channels more than once ("DE: RTL HD (Kabel)" three times), so a channel
+     * shows once: the most recent card of each family stays, the others go.
+     *
+     * Core writes its bare cards back whenever it republishes the row (zapping, a sync, the app's start);
+     * [RecentRowWatcher] calls this right after, so only cards core has just written are redone. [force]
+     * (the 15-minute refresh) redraws all of them, as programmes end.
      */
-    private suspend fun decorateRecent(
-        profileId: Long,
-        channelDao: ChannelDao,
-        guide: suspend (ChannelEntity) -> tv.own.owntv.core.live.EpgNowNext?,
-        tiles: LauncherTiles,
-        now: Long,
-    ) {
-        val channelId = channelIds()[coreRecentKey(profileId)] ?: return
-        val programmes = ArrayList<Pair<Long, LauncherDeepLink.Live>>()
+    suspend fun decorateRecent(force: Boolean): Unit = recentLock.withLock {
+        val koin = GlobalContext.get()
+        val settings = koin.get<SettingsRepository>()
+        val profileId = settings.activeProfileId.first().takeIf { it >= 0 } ?: return@withLock
+        val channelId = channelIds()[coreRecentKey(profileId)] ?: return@withLock
+        val cards = ArrayList<RecentCard>()
         resolver.query(
             TvContractCompat.buildPreviewProgramsUriForChannel(channelId),
-            arrayOf(TvContractCompat.PreviewPrograms._ID, TvContractCompat.PreviewPrograms.COLUMN_INTENT_URI), null, null, null,
+            RECENT_PROJECTION, null, null, null,
         )?.use { c ->
             while (c.moveToNext()) {
                 val intent = c.getString(1) ?: continue
                 val link = runCatching { Intent.parseUri(intent, Intent.URI_INTENT_SCHEME).data }.getOrNull()
-                (LauncherDeepLink.parse(link) as? LauncherDeepLink.Live)?.let { programmes += c.getLong(0) to it }
+                val live = LauncherDeepLink.parse(link) as? LauncherDeepLink.Live ?: continue
+                cards += RecentCard(c.getLong(0), live, c.getString(2), c.getInt(3), c.getString(4))
             }
         }
-        if (programmes.isEmpty()) return
+        val ours = Uri.Builder().scheme("content").authority(LauncherTileProvider.authority(context)).build().toString()
+        // Core rewrites the title too, and keeps our art when a channel has no logo: both must be ours.
+        fun RecentCard.decorated() = poster?.startsWith(ours) == true && title != null && decoratedTitles[id] == title
+        // Nothing core has written since the last pass (another app's row changed, or our own writes).
+        if (cards.isEmpty() || (!force && cards.all { it.decorated() })) return@withLock
+
+        val channelDao = koin.get<ChannelDao>()
+        val epgReader = koin.get<LiveEpgReader>()
+        val custom = koin.get<CustomizationStore>().observe(profileId, MediaType.LIVE).first()
+        val offset = settings.epgOffsetMinutes.first()
         val recent = channelDao.recentlyWatched(profileId, MAX_RECENT).first()
-        for ((programmeId, link) in programmes) {
-            val ch = recent.firstOrNull { it.sourceId == link.sourceId && it.remoteId == link.remoteId }
-                ?: recent.firstOrNull { it.sourceId == link.sourceId && it.name == link.name }
+        val tiles = LauncherTiles(context)
+        val now = System.currentTimeMillis()
+        val families = HashSet<String>()
+        for (card in cards.sortedByDescending { it.weight }) {
+            val ch = recent.firstOrNull { it.sourceId == card.link.sourceId && it.remoteId == card.link.remoteId }
+                ?: recent.firstOrNull { it.sourceId == card.link.sourceId && it.name == card.link.name }
                 ?: continue
-            val g = guide(ch)
-            val current = g?.now?.takeIf { it.startMs <= now && it.stopMs > now }
-            val poster = tiles.tile("r:${ch.id}:${current?.startMs}", content(ch, current, now)) ?: continue
-            val values = ContentValues().apply {
-                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_URI, poster.toString())
-                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_ASPECT_RATIO, TvContractCompat.PreviewPrograms.ASPECT_RATIO_16_9)
-                put(TvContractCompat.PreviewPrograms.COLUMN_SHORT_DESCRIPTION, current?.let { "${it.title}$SEPARATOR${range(it)}" } ?: ch.name)
+            if (!families.add(EpgMatcher.normalizeForEpg(ch.name).ifEmpty { ch.name })) {
+                runCatching { resolver.delete(TvContractCompat.buildPreviewProgramUri(card.id), null, null) }
+                continue
             }
-            runCatching { resolver.update(TvContractCompat.buildPreviewProgramUri(programmeId), values, null, null) }
+            if (!force && card.decorated()) continue
+            val g = runCatching { epgReader.nowNext(ch, custom, offset) }.getOrNull()
+            val current = g?.now?.takeIf { it.startMs <= now && it.stopMs > now }
+            // Not forced, a tile drawn a few minutes ago for the same programme is used again: zapping
+            // back and forth then draws only the channel just watched.
+            val poster = tiles.tile("r:${ch.id}:${current?.startMs}", content(ch, current, now), reuse = !force)
+                ?.toString()?.takeIf { it.startsWith(ours) } ?: continue
+            val name = custom.itemNames[CustomizeKeys.channel(ch)] ?: ch.name
+            val values = ContentValues().apply {
+                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_URI, poster)
+                put(TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_ASPECT_RATIO, TvContractCompat.PreviewPrograms.ASPECT_RATIO_16_9)
+                put(TvContractCompat.PreviewPrograms.COLUMN_TITLE, current?.title ?: name)
+                put(TvContractCompat.PreviewPrograms.COLUMN_SHORT_DESCRIPTION, current?.let { name + SEPARATOR + range(it) } ?: name)
+            }
+            runCatching { resolver.update(TvContractCompat.buildPreviewProgramUri(card.id), values, null, null) }
+                .onSuccess { decoratedTitles[card.id] = values.getAsString(TvContractCompat.PreviewPrograms.COLUMN_TITLE) }
         }
     }
 
@@ -390,6 +421,19 @@ internal class LauncherRows(private val context: Context) {
         private const val LOOKAHEAD_MS = 6 * 3_600_000L
         private const val FIVE_MINUTES = 5 * 60_000L
         private val OPEN_APP: Uri = Uri.Builder().scheme(SCHEME).authority(HOST_OPEN).build()
+
+        /** One pass at a time: the watcher's and the 15-minute refresh's. */
+        private val recentLock = Mutex()
+        /** The title each card got from the last pass, to tell core's rewrite from our own. */
+        private val decoratedTitles = java.util.concurrent.ConcurrentHashMap<Long, String>()
+
+        private val RECENT_PROJECTION = arrayOf(
+            TvContractCompat.PreviewPrograms._ID,
+            TvContractCompat.PreviewPrograms.COLUMN_INTENT_URI,
+            TvContractCompat.PreviewPrograms.COLUMN_POSTER_ART_URI,
+            TvContractCompat.PreviewPrograms.COLUMN_WEIGHT,
+            TvContractCompat.PreviewPrograms.COLUMN_TITLE,
+        )
 
         private val CHANNEL_PROJECTION = arrayOf(
             TvContractCompat.Channels._ID,

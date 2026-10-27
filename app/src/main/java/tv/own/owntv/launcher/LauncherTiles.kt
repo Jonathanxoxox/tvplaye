@@ -48,14 +48,29 @@ internal class LauncherTiles(private val context: Context) {
         val progress: Float?,
     )
 
-    /** The tile's address, or the channel logo when drawing fails. */
-    suspend fun tile(id: String, content: Content): Uri? = runCatching {
+    /**
+     * The tile's address, or the channel logo when drawing fails. With [reuse], a tile drawn for the
+     * same [id] in the last minutes is handed out again instead of drawing it once more.
+     */
+    suspend fun tile(id: String, content: Content, reuse: Boolean = false): Uri? = runCatching {
+        if (reuse) recent(id)?.let { return@runCatching uriOf(it.name) }
         val name = "${hash(id)}_$stamp.png"
         val bitmap = draw(content, content.logoUrl?.let { loadLogo(it) })
         File(tilesDir, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
-        Uri.Builder().scheme("content").authority(LauncherTileProvider.authority(context)).appendPath(name).build()
+        uriOf(name)
     }.getOrElse { content.logoUrl?.let(Uri::parse) }
+
+    private fun uriOf(name: String): Uri =
+        Uri.Builder().scheme("content").authority(LauncherTileProvider.authority(context)).appendPath(name).build()
+
+    /** The newest tile drawn for [id] within [REUSE_MS], if any. */
+    private fun recent(id: String): File? {
+        val prefix = hash(id) + "_"
+        return tilesDir.listFiles { f -> f.name.startsWith(prefix) }
+            ?.maxByOrNull { it.name.substringAfter('_').substringBefore('.').toLongOrNull() ?: 0L }
+            ?.takeIf { stamp - (it.name.substringAfter('_').substringBefore('.').toLongOrNull() ?: 0L) < REUSE_MS }
+    }
 
     /** Drops tiles of earlier runs, with an hour's slack in case a launcher is still loading one. */
     fun cleanup() {
@@ -168,6 +183,8 @@ internal class LauncherTiles(private val context: Context) {
         private const val LOGO_W = 400f
         private const val LOGO_H = 225f
         private const val LOGO_INSET = 18f
+        /** Well inside [cleanup]'s hour, so a reused tile is never deleted while a card shows it. */
+        private const val REUSE_MS = 20 * 60_000L
 
         fun hash(s: String): String =
             MessageDigest.getInstance("SHA-1").digest(s.toByteArray()).joinToString("") { "%02x".format(it) }.take(20)
