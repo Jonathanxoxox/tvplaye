@@ -578,8 +578,12 @@ fun OwnTVShell(
         val intoGuide = toList && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
             livePreviewOn && multiview == null
         if (!intoGuide) {
-            exitPlayer()
-            if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            if (!toList) { exitPlayer(); return@exit }
+            // A live channel without the glide (on mpv, catch-up, no corner preview) still lands in the guide on
+            // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
+            // the stream on the way, and it takes the focus itself.
+            if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            closePlayer(toRail = false)
             return@exit
         }
         // Opened from the guide, the guide is still laid out behind the picture (guideBehind) and its corner
@@ -961,6 +965,9 @@ fun OwnTVShell(
                 liveVm.watchFromGuide(ch)
                 zapSource = MainSection.LIVE_TV
                 homeVm.stopPreview()
+                // Back out of it lands in the guide on this channel, wherever Back was held (Jonathan, 27 Oct
+                // 2026): the guide is put behind the picture now, so it is there when the picture glides back.
+                if (selectedSection != MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections) onSelectSection(MainSection.LIVE_TV)
                 if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
             }
         }
