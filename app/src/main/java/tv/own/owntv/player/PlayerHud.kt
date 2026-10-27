@@ -319,7 +319,10 @@ fun PlayerHud(
     val reportContext = androidx.compose.ui.platform.LocalContext.current
     val keyMap by remember { PlayerKeyMap.flow(reportContext) }.collectAsStateWithLifecycle()
     var wakeTick by remember { mutableIntStateOf(0) }
-    val forceShow = error != null || dialog != HudDialog.NONE
+    // A stream error brought the classic controls up over the list-first live player: a provider hiccup
+    // looked like the old player appearing out of nowhere (Jonathan, 27 Oct 2026). There the error screen
+    // with its Retry stands alone, and ▲▼ still zap away from a dead channel.
+    val forceShow = (error != null && !listFirst) || dialog != HudDialog.NONE
     // First Back hides the controls (instead of leaving the channel); with the controls already hidden
     // this handler is disabled, so Back falls through to the shell, which exits the player. Also disabled
     // while an error/dialog is up (a dialog handles its own Back; an error should exit).
@@ -508,6 +511,8 @@ fun PlayerHud(
                 toSeek -> runCatching { seekFocus.requestFocus() }.onFailure { runCatching { playFocus.requestFocus() } }
                 else -> runCatching { playFocus.requestFocus() }
             }
+        } else if (error != null && listFirst) {
+            runCatching { retryFocus.requestFocus() }
         } else runCatching { catchFocus.requestFocus() }
     }
 
@@ -696,7 +701,12 @@ fun PlayerHud(
         if (!controlsVisible && !showNextCard && !showPanel) {
             Box(
                 Modifier.fillMaxSize().focusRequester(catchFocus).focusable()
-                    .onKeyEvent { e -> if (e.type == KeyEventType.KeyDown && e.key != Key.Back) { controlsVisible = true; true } else false },
+                    // Any other key brings the controls up, except in the list-first live player: there a key
+                    // with nothing to do (▲▼ before the channel list is in, say) does nothing, rather than
+                    // show the classic controls. They stay one row away in the options panel.
+                    .onKeyEvent { e ->
+                        if (e.type == KeyEventType.KeyDown && e.key != Key.Back && !listFirst) { controlsVisible = true; true } else false
+                    },
             )
         }
 
