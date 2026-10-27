@@ -1296,6 +1296,7 @@ class LiveViewModel(
      */
     private fun zapTo(channel: ChannelEntity) {
         _previewChannel.value = channel
+        _previewArmed.value = true
         val now = android.os.SystemClock.elapsedRealtime()
         val delayMs = zapTuneDelayMs(lastZapPressMs, now)
         // Logged only: single-connection panels follow the same rule (see ZAP_ISOLATED_PRESS_MS).
@@ -1551,6 +1552,9 @@ class LiveViewModel(
         // carries a licence URL, so the external player would open it and fail immediately.
         if (externalPlayerOn.value && channel.drmConfig == null) { playExternal(channel); return }
         _previewChannel.value = channel
+        // A channel that plays is a channel the guide's corner may show: without this a start from Home, a
+        // launcher tile or "last channel" left the corner empty (and the sound running) after Back.
+        _previewArmed.value = true
         clearTimeshift() // normal live = not timeshifted
         _catchupActive.value = false // tuning live ends any archive playback the HUD was showing
         // Core routes it (DRM, the pin, a learned panel refusal, the playlist, the setting), arms the
