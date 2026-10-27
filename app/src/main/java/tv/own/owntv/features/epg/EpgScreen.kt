@@ -351,12 +351,27 @@ fun EpgScreen(
     }
 
     // Back from a channel tuned in the guide: its row again, once the reload has the grid on screen.
+    // The channel playing is the one to land on (Jonathan, 27 Oct 2026: "genau auf dem Sender"), not the row
+    // last browsed: one zapped to or picked from the player's list counts too. If it is not in the category on
+    // screen, its own category opens (or all channels), and the row is focused once that list is in.
+    var restoreTo by remember { mutableStateOf<Long?>(null) }
     LaunchedEffect(restoreFocus, state.loading, state.channels.size) {
         if (!restoreFocus || state.loading || state.channels.isEmpty()) return@LaunchedEffect
-        // The channel that was just playing first: Back from full screen lands here from anywhere.
-        val idx = listOfNotNull(previewChannel?.id, vm.lastTunedChannelId)
-            .map { id -> state.channels.indexOfFirst { it.id == id } }
-            .firstOrNull { it >= 0 } ?: 0
+        val playingId = previewChannel?.id ?: vm.lastTunedChannelId
+        val found = playingId?.let { id -> state.channels.indexOfFirst { it.id == id } } ?: -1
+        val playing = previewChannel
+        if (found < 0 && liveMode && playing != null) {
+            val own = playing.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
+            val target = own ?: LiveKey.All
+            if (target != liveSelected) {
+                anchorId = playing.id
+                restoreTo = playing.id
+                liveVm.select(target)
+                onRestored()
+                return@LaunchedEffect
+            }
+        }
+        val idx = found.coerceAtLeast(0)
         focusedRow = idx
         anchorId = state.channels.getOrNull(idx)?.id
         delay(80)
@@ -372,7 +387,9 @@ fun EpgScreen(
         if (state.channels.isEmpty()) return@LaunchedEffect
         focusedRow = idx
         runCatching { rowListState.scrollToItem((idx - 2).coerceAtLeast(0)) }
-        if (gridHasFocus) focusGrid(idx)
+        val pending = restoreTo == id && idx >= 0 && state.channels.getOrNull(idx)?.id == id
+        if (pending) restoreTo = null
+        if (gridHasFocus || pending) focusGrid(idx)
     }
 
     // --- Overlays --------------------------------------------------------------------------------------
