@@ -154,6 +154,10 @@ fun OwnTVShell(
     val contentLtr = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Ltr
     val homeFirstRowFocus = remember { FocusRequester() }
     var focusedLayer by remember { mutableStateOf(ShellLayer.SIDEBAR) }
+    // Whether the rail really holds focus right now. [focusedLayer] is only the last place focus was seen, so
+    // it still says SIDEBAR after focus has been lost (a list that came up empty), and Back would then ask
+    // "Quit?" without the user having been on the rail.
+    var railTrulyFocused by remember { mutableStateOf(false) }
     var showExit by remember { mutableStateOf(false) }
     var showAvatarPicker by remember { mutableStateOf(false) }
     var showAvatarChooser by remember { mutableStateOf(false) }
@@ -867,7 +871,8 @@ fun OwnTVShell(
     LaunchedEffect(sidebarFocus) {
         tv.own.owntv.core.util.Perf.stamp("shell-composed")
         withFrameNanos { }
-        focusRail()
+        // Focus only: [focusRail] would stamp railKeyAt and open the menu with its names on every start.
+        runCatching { sidebarFocus.requestFocus() }
     }
 
     LaunchedEffect(pendingDeepLink, activeProfileId) {
@@ -957,7 +962,7 @@ fun OwnTVShell(
             selectedSection == MainSection.SETTINGS -> { restoreFocus = true; onSelectSection(MainSection.MORE) }
             // Reached from a Search result: Back returns to Search once, its query, tab and row kept.
             searchReturn == selectedSection && focusedLayer != ShellLayer.SIDEBAR -> returnToSearch()
-            focusedLayer == ShellLayer.SIDEBAR -> showExit = true
+            focusedLayer == ShellLayer.SIDEBAR && railTrulyFocused -> showExit = true
             else -> focusRail()
         }
     }
@@ -981,6 +986,14 @@ fun OwnTVShell(
     // the one in the preview, else the last one this session, else the newest in the history.
     var lastLiveChannel by remember { mutableStateOf<tv.own.owntv.core.database.entity.ChannelEntity?>(null) }
     LaunchedEffect(previewChannel) { previewChannel?.let { lastLiveChannel = it } }
+    // Back in Live TV after a visit elsewhere: the corner shows the channel watched last again, as it was,
+    // instead of staying black until OK (leaving stops the preview). Nothing else moves: not the focus, not
+    // the channel, so this is the previous state coming back, not zapping.
+    LaunchedEffect(selectedSection) {
+        if (selectedSection == MainSection.LIVE_TV && playerMode == PlayerMode.NONE) {
+            lastLiveChannel?.let { liveVm.restorePreview(it) }
+        }
+    }
     val backToChannelArmed = playerMode == PlayerMode.NONE && !showExit && !showAvatarPicker && !showPlaylistPicker
     val backToChannel: () -> Unit = {
         scope.launch {
@@ -1538,7 +1551,7 @@ fun OwnTVShell(
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
                 nowPlaying = nowPlayingRail,
                 onNowPlaying = enterNowPlaying,
-                modifier = Modifier.graphicsLayer { alpha = stripAlpha.value },
+                modifier = Modifier.graphicsLayer { alpha = stripAlpha.value }.onFocusChanged { railTrulyFocused = it.hasFocus },
             )
           }
         }
