@@ -239,8 +239,13 @@ fun SportsMatchScreen(
                 Row(Modifier.fillMaxWidth().padding(top = 18.mpx), verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         pluralStringResource(R.plurals.sports_watch_live_count, state.list.total, state.list.total),
-                        style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f),
+                        style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
                     )
+                    // More channels are still coming in: the list grows below while the guides answer.
+                    if ((state.search as? ChannelSearch.Found)?.searching == true) {
+                        tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 18, modifier = Modifier.padding(start = 12.mpx))
+                    }
+                    Spacer(Modifier.weight(1f))
                     state.preferredLanguages.firstOrNull()?.let { lang ->
                         Text(stringResource(R.string.sports_language_first, languageName(lang)), style = stageText(18, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }

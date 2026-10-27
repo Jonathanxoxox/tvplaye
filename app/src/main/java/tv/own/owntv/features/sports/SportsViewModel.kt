@@ -58,7 +58,8 @@ sealed interface ChannelSearch {
     data class Closed(val window: WatchWindow) : ChannelSearch
     data object NotSearched : ChannelSearch
     data object Searching : ChannelSearch
-    data class Found(val options: List<WatchOption>) : ChannelSearch
+    /** [searching]: more channels may still come (the guides are being read); the list shows meanwhile. */
+    data class Found(val options: List<WatchOption>, val searching: Boolean = false) : ChannelSearch
 }
 
 /** The match page: the match, its summary and table from the board, and "Watch live" once searched. */
@@ -127,6 +128,11 @@ class SportsViewModel(
     /** This device's live playlist ids: a Settings playlist filter only counts these (core `WatchFilter.from`). */
     private val liveSources = playlists.map { l -> l.map { it.first } }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    init {
+        // Opening Sports reads the football channels' guides ahead, so Find channels on a match is quick.
+        viewModelScope.launch(Dispatchers.Default) { if (hasPlaylist.first()) GuideBroadcasts.warm() }
+    }
 
     /** The hub's ⟳ (and Settings → Sports → Refresh sports data now): the whole board built again. */
     fun rebuild() = repository.rebuild()
@@ -215,15 +221,25 @@ class SportsViewModel(
             val found = watchReader.found(m) { SportsMemory.rememberedFor(c, it) }
             when {
                 found != null -> {
-                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.cached(m))))
-                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.find(m))))
+                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.cached(m)), searching = true))
+                    emitAll(GuideBroadcasts.find(m).map { g -> ChannelSearch.Found(GuideBroadcasts.merge(found, g.options), searching = !g.done) })
                 }
                 !asked -> emit(ChannelSearch.NotSearched)
                 else -> {
                     emit(ChannelSearch.Searching)
-                    // Core's search and the guides "Für dich" reads, which find what core misses.
-                    val core = watchReader.watchFor(listOf(m)) { SportsMemory.rememberedFor(c, it) }[m.key].orEmpty()
-                    emit(ChannelSearch.Found(GuideBroadcasts.merge(core, GuideBroadcasts.find(m))))
+                    // Core's search and the guides "Für dich" reads, which find what core misses, side by side:
+                    // whatever either has found shows at once, and the list grows while the guides answer.
+                    val core = flow<List<WatchOption>?> {
+                        emit(null)
+                        emit(watchReader.watchFor(listOf(m)) { SportsMemory.rememberedFor(c, it) }[m.key].orEmpty())
+                    }
+                    emitAll(
+                        combine(core, GuideBroadcasts.find(m).onStart { emit(GuideBroadcasts.Progress(emptyList(), done = false)) }) { k, g ->
+                            val options = GuideBroadcasts.merge(k.orEmpty(), g.options)
+                            val searching = k == null || !g.done
+                            if (searching && options.isEmpty()) ChannelSearch.Searching else ChannelSearch.Found(options, searching)
+                        },
+                    )
                 }
             }
         }.flowOn(Dispatchers.Default)
