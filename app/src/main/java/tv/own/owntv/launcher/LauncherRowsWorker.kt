@@ -11,16 +11,23 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit
 
 /**
  * Keeps the launcher rows current: every 15 minutes (the shortest period Android allows), after a
- * reboot, when the launcher asks for the app's rows, and whenever the app starts or a favourite changes.
+ * reboot, when the launcher asks for the app's rows, and whenever the app goes to the background.
  * Reads only the local database and guide, so it costs no playlist download.
+ *
+ * The launcher shows the rows only while the app is NOT on screen, and a refresh scans up to 20,000
+ * channels and their guide. So while the app is in front (zapping, watching a match) a run that is not
+ * forced does nothing; leaving the app refreshes at once, so the rows are fresh exactly when they show.
  */
 class LauncherRowsWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result = try {
-        LauncherRows(applicationContext).refresh()
+        if (!AppVisibility.foreground || inputData.getBoolean(KEY_FORCE, false)) {
+            LauncherRows(applicationContext).refresh()
+        }
         Result.success()
     } catch (e: Exception) {
         Log.w(TAG, "launcher rows not refreshed", e)
@@ -31,15 +38,22 @@ class LauncherRowsWorker(context: Context, params: WorkerParameters) : Coroutine
         private const val TAG = "LauncherRows"
         private const val PERIODIC = "tvplayer-launcher-rows"
         private const val NOW = "tvplayer-launcher-rows-now"
+        private const val KEY_FORCE = "force"
 
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<LauncherRowsWorker>(15, TimeUnit.MINUTES).build()
             WorkManager.getInstance(context).enqueueUniquePeriodicWork(PERIODIC, ExistingPeriodicWorkPolicy.KEEP, request)
         }
 
-        /** A refresh soon; calls in quick succession collapse into the last one. */
-        fun refreshSoon(context: Context, delaySeconds: Long = 5) {
-            val request = OneTimeWorkRequestBuilder<LauncherRowsWorker>().setInitialDelay(delaySeconds, TimeUnit.SECONDS).build()
+        /**
+         * A refresh soon; calls in quick succession collapse into the last one. Not [force]d, it waits
+         * while the app is on screen and happens when the app is left (see [AppVisibility]).
+         */
+        fun refreshSoon(context: Context, delaySeconds: Long = 5, force: Boolean = false) {
+            val request = OneTimeWorkRequestBuilder<LauncherRowsWorker>()
+                .setInitialDelay(delaySeconds, TimeUnit.SECONDS)
+                .setInputData(workDataOf(KEY_FORCE to force))
+                .build()
             WorkManager.getInstance(context).enqueueUniqueWork(NOW, ExistingWorkPolicy.REPLACE, request)
         }
     }
@@ -49,6 +63,28 @@ class LauncherRowsWorker(context: Context, params: WorkerParameters) : Coroutine
 class LauncherRowsReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         LauncherRowsWorker.schedule(context)
-        LauncherRowsWorker.refreshSoon(context, delaySeconds = 0)
+        LauncherRowsWorker.refreshSoon(context, delaySeconds = 0, force = true)
+    }
+}
+
+/**
+ * Whether the app is on screen, set by MainActivity's onStart/onStop. Per process, so a fresh process
+ * (boot, a worker woken in the background) starts as "not on screen" and refreshes normally.
+ */
+object AppVisibility {
+    @Volatile var foreground = false
+
+    /** MainActivity.onStart. */
+    fun entered() {
+        foreground = true
+    }
+
+    /**
+     * MainActivity.onStop: the launcher is about to show, so bring the rows up to date now. A quick
+     * return within the delay collapses into one run (REPLACE), which then still runs: it is forced.
+     */
+    fun left(context: Context) {
+        foreground = false
+        LauncherRowsWorker.refreshSoon(context, delaySeconds = 2, force = true)
     }
 }

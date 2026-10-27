@@ -210,10 +210,11 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                 }
             }
         }
-        // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and
-        // whenever the favourites change, in whichever screen that happened.
-        tv.own.owntv.launcher.LauncherRowsWorker.schedule(this)
-        tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this, delaySeconds = 20)
+        // The launcher rows ("Für dich", "Favoriten"): every 15 minutes while the app is not on screen,
+        // and each time it is left (MainActivity.onStop). Not right after a start any more: that scan of
+        // every channel landed exactly on the first minutes of browsing and zapping. Scheduling touches
+        // WorkManager's own database, so it is done off the main thread.
+        appScope.launch { runCatching { tv.own.owntv.launcher.LauncherRowsWorker.schedule(this@OwnTVApp) } }
         appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
         appScope.launch { runCatching { refreshLauncherRowsOnSportsChange() } }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
