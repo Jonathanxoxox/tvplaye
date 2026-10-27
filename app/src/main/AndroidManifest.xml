@@ -51,13 +51,13 @@
     <application
         android:name=".OwnTVApp"
         android:allowBackup="false"
-        android:banner="@drawable/mayo_tv_banner"
+        android:banner="@drawable/mayo_tv_banner_hd"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/mayo_tv_icon"
+        android:icon="@mipmap/mayo_tv_icon_hd"
         android:label="@string/tvplayer_app_name"
         android:requestLegacyExternalStorage="true"
-        android:roundIcon="@mipmap/mayo_tv_icon"
+        android:roundIcon="@mipmap/mayo_tv_icon_hd"
         android:supportsRtl="true"
         android:theme="@style/Theme.OwnTV"
         android:usesCleartextTraffic="true"
@@ -113,13 +113,13 @@
              purpose: a script-family language switch still needs its one recreate (LocalizedContent). -->
         <activity
             android:name=".MainActivityPetrol"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Petrol"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -142,13 +142,13 @@
 
         <activity
             android:name=".MainActivitySunflower"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Sunflower"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -171,13 +171,13 @@
 
         <activity
             android:name=".MainActivityCobalt"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Cobalt"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -200,13 +200,13 @@
 
         <activity
             android:name=".MainActivityTomato"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Tomato"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -229,13 +229,13 @@
 
         <activity
             android:name=".MainActivityBoard"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Board"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -258,13 +258,13 @@
 
         <activity
             android:name=".MainActivity"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="true"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Eggshell"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -287,13 +287,13 @@
 
         <activity
             android:name=".MainActivityOlive"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Olive"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -316,13 +316,13 @@
 
         <activity
             android:name=".MainActivityOliveCream"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.OliveCream"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
@@ -346,13 +346,13 @@
 
         <activity
             android:name=".MainActivityPixel"
-            android:banner="@drawable/mayo_tv_banner"
+            android:banner="@drawable/mayo_tv_banner_hd"
             android:enabled="false"
             android:exported="true"
-            android:icon="@mipmap/mayo_tv_icon"
+            android:icon="@mipmap/mayo_tv_icon_hd"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|smallestScreenSize|screenLayout|orientation|uiMode|density|colorMode"
             android:launchMode="singleTop"
-            android:roundIcon="@mipmap/mayo_tv_icon"
+            android:roundIcon="@mipmap/mayo_tv_icon_hd"
             android:theme="@style/Theme.OwnTV.Starting.Pixel"
             android:windowSoftInputMode="adjustPan">
             <intent-filter>
