@@ -124,3 +124,67 @@ private fun PanelTileView(tile: PanelTile, modifier: Modifier, onActivity: () ->
         }
     }
 }
+
+/**
+ * The player's settings under the tile row, as in TiviMate: ▼ from the tiles opens them (picture format,
+ * tracks, subtitles and the rest), ▲ goes back. Until then a small arrow under the tiles says they are
+ * there (Jonathan, 27 Oct 2026). The same entries as the options panel that holding OK opens.
+ */
+@Composable
+internal fun SettingsPanelRow(
+    options: List<LiveOption>,
+    firstFocus: FocusRequester,
+    onActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyRow(
+        modifier = modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 86.mpx, vertical = 14.mpx),
+        horizontalArrangement = Arrangement.spacedBy(14.mpx),
+    ) {
+        items(options.size) { i ->
+            SettingChip(options[i], if (i == 0) Modifier.focusRequester(firstFocus) else Modifier, onActivity)
+        }
+    }
+}
+
+@Composable
+private fun SettingChip(option: LiveOption, modifier: Modifier, onActivity: () -> Unit) {
+    var focused by remember { mutableStateOf(false) }
+    androidx.compose.foundation.layout.Row(
+        modifier
+            .height(72.mpx)
+            .clip(RoundedCornerShape(11.mpx))
+            .background(if (focused) StageFocusFill else LocalStagePalette.current.glassTint)
+            .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
+            .onKeyEvent { e ->
+                val ok = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
+                if (ok && e.type == KeyEventType.KeyUp) { option.onClick(); true } else ok
+            }
+            .focusable()
+            .padding(horizontal = 22.mpx),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.mpx),
+    ) {
+        OwnTVIcon(option.icon, if (focused) StageOnFocus else Color.White, Modifier.size(32.mpx))
+        Text(
+            option.label,
+            style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
+            color = if (focused) StageOnFocus else Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+        option.value?.let {
+            Text(
+                it, style = stageText(tv.own.owntv.ui.theme.StageListText, 500),
+                color = (if (focused) StageOnFocus else Color.White).copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis,
+            )
+        }
+    }
+}
+
+/** The arrow under the tile row: there is more below. */
+@Composable
+internal fun MoreBelowHint(modifier: Modifier = Modifier) {
+    Box(modifier.fillMaxWidth().padding(bottom = 6.mpx), contentAlignment = Alignment.Center) {
+        OwnTVIcon(OwnTVIcon.CHEVRON_DOWN, Color.White.copy(alpha = 0.7f), Modifier.size(28.mpx))
+    }
+}

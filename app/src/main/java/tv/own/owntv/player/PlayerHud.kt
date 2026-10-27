@@ -530,6 +530,39 @@ fun PlayerHud(
             else -> remoteShortcuts.dispatch(action)
         }
     }
+    // The live player's settings: down the right edge on long OK, and under the tile row on ▼ (see
+    // HudControlPanel). Built only while one of the two is up.
+    val liveOptions: List<LiveOption> = if (showOptions || (showPanel && listFirst)) {
+        val close = { showOptions = false; showPanel = false }
+        val open: (HudDialog) -> Unit = { d -> showOptions = false; showPanel = false; dialog = d }
+        val qualities by player.videoQualities.collectAsStateWithLifecycle()
+        buildList {
+            onToggleFavorite?.let { toggle ->
+                add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { close(); toggle() })
+            }
+            onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.HISTORY) { close(); prev() }) }
+            onOpenHistoryList?.let { history -> add(LiveOption(stringResource(R.string.content_category_recently_watched), OwnTVIcon.HISTORY) { close(); history() }) }
+            if (onJumpBack != null) add(LiveOption(stringResource(R.string.player_tool_catchup), OwnTVIcon.CATCHUP) { open(HudDialog.JUMP_BACK) })
+            add(LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { open(HudDialog.AUDIO) })
+            add(LiveOption(stringResource(R.string.player_tool_subtitles), OwnTVIcon.SUBTITLE, subCount.takeIf { it > 0 }?.toString()) { open(HudDialog.SUBS) })
+            add(LiveOption(stringResource(R.string.player_tool_aspect), OwnTVIcon.ASPECT) { open(HudDialog.ZOOM) })
+            if (qualities.isNotEmpty()) add(LiveOption(stringResource(R.string.player_tool_quality), OwnTVIcon.VIDEO) { open(HudDialog.QUALITY) })
+            onRecordThis?.let { rec ->
+                add(LiveOption(stringResource(if (recordingThis) R.string.recording_stop else R.string.recording_record), OwnTVIcon.LIVE_TV) { close(); rec() })
+            }
+            onMultiview?.let { mv -> add(LiveOption(stringResource(R.string.multiview_button), OwnTVIcon.LIST_GRID) { close(); mv() }) }
+            toggleCompat?.let { toggle ->
+                add(LiveOption(
+                    stringResource(R.string.player_tool_engine), OwnTVIcon.VIDEO,
+                    stringResource(if (compatMode == true) R.string.player_engine_mpv else R.string.player_engine_exo),
+                ) { close(); toggle() })
+            }
+            add(LiveOption(stringResource(R.string.player_sleep_timer), OwnTVIcon.BEDTIME) { open(HudDialog.SLEEP_TIMER) })
+            add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { close(); showInfo = !showInfo })
+            onPip?.let { pip -> add(LiveOption(stringResource(R.string.player_tool_mini), OwnTVIcon.PIP) { close(); pip() }) }
+            add(LiveOption(stringResource(R.string.tvplayer_option_controls), OwnTVIcon.LIST) { close(); controlsVisible = true })
+        }
+    } else emptyList()
     Box(
         modifier = modifier.fillMaxSize()
             .onPreviewKeyEvent { e ->
@@ -747,7 +780,7 @@ fun PlayerHud(
         // List-first: the channel change shows the info bar along the bottom instead of the corner card.
         if (listFirst && isLive && showPanel && zapInfo != null) {
             HudControlPanel(
-                player, zapInfo(), remote, onOpenHistoryList, panelFocus,
+                player, zapInfo(), remote, onOpenHistoryList, panelFocus, liveOptions,
                 onClose = { showPanel = false }, onActivity = { panelTick++ },
                 modifier = Modifier.align(Alignment.BottomCenter),
             )
@@ -987,39 +1020,10 @@ fun PlayerHud(
     }
 
     if (showOptions) {
-        val close = { showOptions = false }
-        val open: (HudDialog) -> Unit = { d -> showOptions = false; dialog = d }
         val meta by player.currentMeta.collectAsStateWithLifecycle()
-        val qualities by player.videoQualities.collectAsStateWithLifecycle()
-        val options = buildList {
-            onToggleFavorite?.let { toggle ->
-                add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { close(); toggle() })
-            }
-            onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.HISTORY) { close(); prev() }) }
-            onOpenHistoryList?.let { history -> add(LiveOption(stringResource(R.string.content_category_recently_watched), OwnTVIcon.HISTORY) { close(); history() }) }
-            if (onJumpBack != null) add(LiveOption(stringResource(R.string.player_tool_catchup), OwnTVIcon.CATCHUP) { open(HudDialog.JUMP_BACK) })
-            add(LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { open(HudDialog.AUDIO) })
-            add(LiveOption(stringResource(R.string.player_tool_subtitles), OwnTVIcon.SUBTITLE, subCount.takeIf { it > 0 }?.toString()) { open(HudDialog.SUBS) })
-            add(LiveOption(stringResource(R.string.player_tool_aspect), OwnTVIcon.ASPECT) { open(HudDialog.ZOOM) })
-            if (qualities.isNotEmpty()) add(LiveOption(stringResource(R.string.player_tool_quality), OwnTVIcon.VIDEO) { open(HudDialog.QUALITY) })
-            onRecordThis?.let { rec ->
-                add(LiveOption(stringResource(if (recordingThis) R.string.recording_stop else R.string.recording_record), OwnTVIcon.LIVE_TV) { close(); rec() })
-            }
-            onMultiview?.let { mv -> add(LiveOption(stringResource(R.string.multiview_button), OwnTVIcon.LIST_GRID) { close(); mv() }) }
-            toggleCompat?.let { toggle ->
-                add(LiveOption(
-                    stringResource(R.string.player_tool_engine), OwnTVIcon.VIDEO,
-                    stringResource(if (compatMode == true) R.string.player_engine_mpv else R.string.player_engine_exo),
-                ) { close(); toggle() })
-            }
-            add(LiveOption(stringResource(R.string.player_sleep_timer), OwnTVIcon.BEDTIME) { open(HudDialog.SLEEP_TIMER) })
-            add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { close(); showInfo = !showInfo })
-            onPip?.let { pip -> add(LiveOption(stringResource(R.string.player_tool_mini), OwnTVIcon.PIP) { close(); pip() }) }
-            add(LiveOption(stringResource(R.string.tvplayer_option_controls), OwnTVIcon.LIST) { close(); controlsVisible = true })
-        }
         LiveOptionsPanel(
             title = meta.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.tvplayer_options_title),
-            options = options,
+            options = liveOptions,
             ignoreOkUntilReleased = optionsOpenedByOk,
             onDismiss = close,
         )
@@ -1133,10 +1137,16 @@ private fun HudControlPanel(
     remote: LiveRemoteActions?,
     onOpenHistoryList: (() -> Unit)?,
     focus: FocusRequester,
+    settings: List<LiveOption>,
     onClose: () -> Unit,
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var settingsOpen by remember { mutableStateOf(false) }
+    val settingsFocus = remember { FocusRequester() }
+    LaunchedEffect(settingsOpen) {
+        if (settingsOpen) { withFrameNanos { }; runCatching { settingsFocus.requestFocus() } }
+    }
     val recent = remote?.panelChannels?.invoke().orEmpty()
     val guideLabel = stringResource(R.string.tvplayer_panel_guide)
     val historyLabel = stringResource(R.string.tvplayer_panel_history)
@@ -1147,11 +1157,33 @@ private fun HudControlPanel(
     }
     Column(modifier.fillMaxWidth()) {
         ZapInfoBar(player, guide)
-        if (tiles.isNotEmpty()) {
-            ControlPanelRow(
-                tiles, focus, onActivity = onActivity,
-                modifier = Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp),
-            )
+        Column(Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp)) {
+            if (tiles.isNotEmpty()) {
+                ControlPanelRow(
+                    tiles, focus, onActivity = onActivity,
+                    // ▼ from the tiles opens the settings under them.
+                    modifier = Modifier.onPreviewKeyEvent { e ->
+                        if (e.key == Key.DirectionDown && settings.isNotEmpty()) {
+                            if (e.type == KeyEventType.KeyDown) { settingsOpen = true; onActivity() }
+                            true
+                        } else false
+                    },
+                )
+            }
+            when {
+                settings.isEmpty() -> Unit
+                settingsOpen -> SettingsPanelRow(
+                    settings, settingsFocus, onActivity,
+                    // ▲ back to the tiles; the settings fold away again.
+                    modifier = Modifier.onPreviewKeyEvent { e ->
+                        if (e.key == Key.DirectionUp && tiles.isNotEmpty()) {
+                            if (e.type == KeyEventType.KeyDown) { settingsOpen = false; runCatching { focus.requestFocus() }; onActivity() }
+                            true
+                        } else false
+                    },
+                )
+                else -> MoreBelowHint()
+            }
         }
     }
 }
