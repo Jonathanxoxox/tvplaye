@@ -875,19 +875,6 @@ class SettingsViewModel(
     val brandAccentTriangle: StateFlow<Boolean> = settings.brandAccentTriangle.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), true)
     fun setBrandAccentTriangle(on: Boolean) { viewModelScope.launch { settings.setBrandAccentTriangle(on) } }
 
-    // Docked mini-player: size (% of screen width) and screen position.
-    val miniPlayerSizePct: StateFlow<Int> =
-        settings.miniPlayerSizePct.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.player.MiniPlayerSize.DEFAULT)
-    fun setMiniPlayerSize(percent: Int) { viewModelScope.launch { settings.setMiniPlayerSizePct(percent) } }
-
-    val miniPlayerPosition: StateFlow<tv.own.owntv.core.player.MiniPlayerPosition> =
-        settings.miniPlayerPosition
-            .map { tv.own.owntv.core.player.MiniPlayerPosition.fromName(it) }
-            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.player.MiniPlayerPosition.DEFAULT)
-    fun setMiniPlayerPosition(position: tv.own.owntv.core.player.MiniPlayerPosition) {
-        viewModelScope.launch { settings.setMiniPlayerPosition(position.name) }
-    }
-
     // Live TV latency: preset + custom seconds.
     val liveLatencyMode: StateFlow<tv.own.owntv.core.settings.LiveLatency> =
         settings.liveLatencyMode

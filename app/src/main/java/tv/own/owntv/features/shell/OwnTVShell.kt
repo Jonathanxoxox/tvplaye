@@ -73,7 +73,6 @@ import tv.own.owntv.features.series.SeriesScreen
 import tv.own.owntv.features.series.SeriesViewModel
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutBindings
-import tv.own.owntv.player.MiniPlayer
 import tv.own.owntv.player.MpvVideoSurface
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.player.PlayerHud
@@ -84,7 +83,6 @@ import tv.own.owntv.features.shell.components.SettingsScreen
 import tv.own.owntv.features.shell.components.SolidAmbientBackdrop
 import androidx.tv.material3.Text
 import androidx.compose.ui.res.stringResource
-import tv.own.owntv.player.alignment
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.stage.stageBackground
 import tv.own.owntv.ui.components.OwnTVIcon
@@ -99,8 +97,8 @@ import androidx.compose.runtime.setValue
 /** Which layer currently holds focus (drives Back navigation). */
 private enum class ShellLayer { SIDEBAR, CONTENT }
 
-/** Player presentation: hidden, fullscreen, docked mini-player, or audio-only now-playing bar. */
-internal enum class PlayerMode { NONE, FULLSCREEN, MINI, AUDIO }
+/** Player presentation: hidden, or full screen. */
+internal enum class PlayerMode { NONE, FULLSCREEN }
 
 /**
  * The MD3 shell: a fixed navigation panel (Layer 1) plus the active destination. Settings is a
@@ -188,28 +186,15 @@ fun OwnTVShell(
     var restoreTrendingSearchFocus by remember { mutableStateOf(false) }
     var trendingSearchActive by remember { mutableStateOf(false) }
     val player = koinInject<OwnTVPlayer>()
-    // Docked mini-player size (% of screen width) + position, configurable in Settings and from the
-    // mini-player's own controls. Read straight from settings so both entry points stay in sync.
     val settingsRepo = koinInject<tv.own.owntv.core.settings.SettingsRepository>()
     val remoteShortcutsEnabled by settingsRepo.chNavEnabled.collectAsStateWithLifecycle(initialValue = true)
     val clockColors by settingsRepo.clockColors.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.ClockColors())
     val remoteShortcutBindings by settingsRepo.remoteShortcutBindings.collectAsStateWithLifecycle(
         initialValue = RemoteShortcutBindings.defaults,
     )
-    val miniSizePct by settingsRepo.miniPlayerSizePct.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.player.MiniPlayerSize.DEFAULT)
-    val miniPosName by settingsRepo.miniPlayerPosition.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.player.MiniPlayerPosition.DEFAULT.name)
     val ambientGlowEnabled by settingsRepo.ambientGlowEnabled.collectAsStateWithLifecycle(initialValue = false)
     val ambientGlowPulse by settingsRepo.ambientGlowPulse.collectAsStateWithLifecycle(initialValue = true)
     val shellAnimationLevel by settingsRepo.animationLevel.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.theme.AnimationLevel.FULL)
-    val miniPos = tv.own.owntv.core.player.MiniPlayerPosition.fromName(miniPosName)
-    // Reaching the mini player: the mini window floats above the content panel, so D-pad focus
-    // search has no spatial path into it from most screens. These are the three deliberate ways in:
-    // the rail's Now Playing item, long-press Back, and the media keys.
-    val miniEntryFocus = remember { FocusRequester() }
-    val audioEntryFocus = remember { FocusRequester() }
-    // The browse UI is one focus group with a restorer, so handing focus back to it after the mini
-    // player returns to the exact control the user left rather than to the top of the screen.
-    val shellContentFocus = remember { FocusRequester() }
     // Stage navigation: what the rail shows and its length. Mayo TV has one rail (26 Oct 2026): the icon strip
     // always at the left edge, opening with names while it holds focus. No floating or docked variants.
     val navSize by settingsRepo.navSize.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
@@ -232,7 +217,6 @@ fun OwnTVShell(
     var settingsStart by remember { mutableStateOf<tv.own.owntv.features.shell.components.SettingsStart?>(null) }
     // The playlist pill's place on screen, where the playlist menu redraws it above its scrim.
     var playlistPillBounds by remember { mutableStateOf<androidx.compose.ui.geometry.Rect?>(null) }
-    var miniHasFocus by remember { mutableStateOf(false) }
     val subtitleController = koinInject<tv.own.owntv.core.subtitles.SubtitleController>()
     val subtitleContext by subtitleController.current.collectAsStateWithLifecycle()
     var showSubtitleSearch by remember { mutableStateOf(false) }
@@ -280,8 +264,8 @@ fun OwnTVShell(
     // rather than the live stream — the HUD swaps live-only controls for the VOD ones.
     val catchupActive by liveVm.catchupActive.collectAsStateWithLifecycle()
     val vodExoActive by player.exoActiveState.collectAsStateWithLifecycle()
-    // Auto frame rate: only ever applied to the FULL-SCREEN surface (never the mini-player or the
-    // in-pane Live preview) — see FrameRateController.
+    // Auto frame rate: only ever applied to the FULL-SCREEN surface (never the in-pane Live
+    // preview) — see FrameRateController.
     val autoFrameRate by settingsRepo.autoFrameRate.collectAsStateWithLifecycle(initialValue = false)
     val afrMatchResolution by settingsRepo.afrMatchResolution.collectAsStateWithLifecycle(initialValue = false)
     val afrPauseSecs by settingsRepo.afrPauseSecs.collectAsStateWithLifecycle(initialValue = 0)
@@ -524,9 +508,7 @@ fun OwnTVShell(
         }
     }
 
-    // Opening content from a browse screen goes fullscreen — UNLESS the player is already docked as a
-    // mini-player, in which case it stays docked and just swaps to the newly-selected stream (the VM
-    // already started it), so picking a channel updates the PiP window in place (#6).
+    // Opening content from a browse screen goes fullscreen.
     fun openFullscreen(source: MainSection = selectedSection) {
         restoreFocus = false
         zapSource = source
@@ -539,19 +521,8 @@ fun OwnTVShell(
         if (source != MainSection.MOVIES && source != MainSection.SERIES && source != MainSection.DOWNLOADS) {
             subtitleController.clear()
         }
-        // A new stream is opening — make sure any Audio Mode video-off state is cleared, else mpv keeps
-        // `vid=no` and the new item would play with no picture.
-        player.exitAudioOnly(); runCatching { liveVm.previewEngine.exitAudioOnly() }
-        if (playerMode != PlayerMode.MINI) playerMode = PlayerMode.FULLSCREEN
+        playerMode = PlayerMode.FULLSCREEN
     }
-    // Restore video output on both engines (no-op unless we were in Audio Mode). mpv `vid=auto` /
-    // ExoPlayer surface is re-attached by the surface remount right after.
-    val resumeVideo = {
-        player.exitAudioOnly()
-        runCatching { liveVm.previewEngine.exitAudioOnly() }
-    }
-    // The mini-player's own expand button always maximizes.
-    val expandPlayer = { resumeVideo(); restoreFocus = false; playerMode = PlayerMode.FULLSCREEN }
     // [toRail] false: the guide takes focus itself (its row, the channel carrying on in its corner), so the
     // menu does not flash open on the way.
     // [intoLive]: the caller has just chosen Live TV, but this function still sees the section it was composed
@@ -562,7 +533,6 @@ fun OwnTVShell(
         // no-ops unless the player is on that section's item.
         movieVm.saveProgressNow()
         seriesVm.saveEpisodeProgressNow()
-        resumeVideo() // restore mpv `vid=auto` before stop so the next played item isn't left video-less
         playerMode = PlayerMode.NONE
         showChannelList = false
         showHistoryList = false
@@ -702,36 +672,8 @@ fun OwnTVShell(
         }
     }
 
-    val dockPlayer = {
-        resumeVideo()
-        playerMode = PlayerMode.MINI
-        restoreFocus = true
-        focusRail()
-        Unit
-    }
-    // Switch the current stream to audio-only and surface the now-playing bar in the top bar. Stop the
-    // video decoder FIRST, then drop the video surface by leaving FULLSCREEN/MINI.
-    val toAudioMode = {
-        (if (liveOnExo) liveVm.previewEngine else mpvEngine).enterAudioOnly()
-        playerMode = PlayerMode.AUDIO
-        restoreFocus = true
-        focusRail()
-        Unit
-    }
-
-    // Whichever engine is on the speaker right now — what the rail item pictures and what the media
-    // keys act on while the window is docked.
-    val dockedEngine = if (liveOnExo) liveVm.previewEngine else mpvEngine
-    val dockedPlaying by dockedEngine.isPlaying.collectAsStateWithLifecycle()
-    val nowPlayingRail = when (playerMode) {
-        PlayerMode.MINI, PlayerMode.AUDIO -> tv.own.owntv.features.shell.components.NowPlayingRail(
-            // Only a live channel has a logo to show; a movie or an episode falls back to the play mark.
-            logoUrl = if (zapSource == MainSection.LIVE_TV) previewChannel?.displayLogoUrl else null,
-            audioMode = playerMode == PlayerMode.AUDIO,
-            playing = dockedPlaying,
-        )
-        else -> null
-    }
+    // Whichever engine is on the speaker right now — what the play/pause shortcut acts on.
+    val activeEngine = if (liveOnExo) liveVm.previewEngine else mpvEngine
     // Focus on a top-right pill (reached from the rail) is not "in the rail": the rail closes, so its
     // scrim never covers the pill that holds focus.
     var clusterFocused by remember { mutableStateOf(false) }
@@ -781,21 +723,6 @@ fun OwnTVShell(
         activePlaylistId <= 0L -> stringResource(R.string.content_all_playlists)
         else -> playlists.firstOrNull { it.id == activePlaylistId }?.name ?: (sourceSummary ?: noSourceLabel)
     }
-    // OK on the rail item moves focus INTO the window (it is not a section and navigates nowhere).
-    val enterNowPlaying = {
-        when (playerMode) {
-            PlayerMode.MINI -> runCatching { miniEntryFocus.requestFocus() }
-            PlayerMode.AUDIO -> runCatching { audioEntryFocus.requestFocus() }
-            else -> Unit
-        }
-        Unit
-    }
-    // Long-press Back toggles: into the window, and back out to the control you came from.
-    val toggleNowPlayingFocus = {
-        if (miniHasFocus) runCatching { shellContentFocus.requestFocus() } else enterNowPlaying()
-        Unit
-    }
-
     val continueLastWatched = {
         continueTarget?.let { target ->
             scope.launch {
@@ -853,7 +780,7 @@ fun OwnTVShell(
             RemoteShortcutAction.ENTER_MINI_PLAYER,
             RemoteShortcutAction.ENTER_AUDIO_MODE,
             -> Unit
-            RemoteShortcutAction.PLAY_PAUSE -> if (playerMode != PlayerMode.NONE) dockedEngine.togglePlayPause()
+            RemoteShortcutAction.PLAY_PAUSE -> if (playerMode != PlayerMode.NONE) activeEngine.togglePlayPause()
             RemoteShortcutAction.RETURN_TO_LIVE -> if (playerMode != PlayerMode.NONE && zapSource == MainSection.LIVE_TV && timeshifted) liveVm.goToLive()
             RemoteShortcutAction.PREVIOUS_CHANNEL -> if (playerMode != PlayerMode.NONE && zapSource == MainSection.LIVE_TV) liveVm.previousChannel()
             RemoteShortcutAction.PAGE_TOWARD_FIRST,
@@ -994,7 +921,6 @@ fun OwnTVShell(
     var shortcutKeyCode by remember { mutableStateOf(android.view.KeyEvent.KEYCODE_UNKNOWN) }
     var shortcutLongFired by remember { mutableStateOf(false) }
     var shortcutHoldJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
-    val longPressBackArmed = playerMode == PlayerMode.MINI && !showExit && !showAvatarPicker && !showPlaylistPicker
     // Holding Back anywhere in the menus goes straight back to the channel watched last, full screen:
     // the one in the preview, else the last one this session, else the newest in the history.
     var lastLiveChannel by remember { mutableStateOf<tv.own.owntv.core.database.entity.ChannelEntity?>(null) }
@@ -1021,7 +947,7 @@ fun OwnTVShell(
         homeVm.stopPreview()
         // Live TV set to play externally → the channel went to another app;
         // don't mount the fullscreen player over it.
-        if (playerMode != PlayerMode.MINI && !liveVm.externalPlayerOn.value) {
+        if (!liveVm.externalPlayerOn.value) {
             if (grow && liveVm.liveOnExo.value && multiview == null) {
                 guideHandover = true
                 handoverGrow = true
@@ -1049,15 +975,6 @@ fun OwnTVShell(
             }
         }
     }
-    // Media keys (the third way in) act on the docked window wherever focus is — but only if nothing nearer
-    // claimed them first, which is why this is a bubbling handler: a focused browse list still gets its
-    // CH+/CH− paging, and the full-screen HUD still owns zapping.
-    val dockedZap: ((Int) -> Unit)? = when {
-        playerMode != PlayerMode.MINI -> null
-        zapSource == MainSection.LIVE_TV && liveCanZap && (liveOnExo || player.isLiveContent) -> liveVm::zap
-        else -> null
-    }
-
     CompositionLocalProvider(
         LocalRemoteShortcuts provides remoteShortcutEnvironment,
         tv.own.owntv.features.shell.components.LocalClockWeather provides (weatherInfo to weatherFahrenheit),
@@ -1077,13 +994,12 @@ fun OwnTVShell(
                 if (e.key != Key.Back) return@onPreviewKeyEvent false
                 when (e.type) {
                     KeyEventType.KeyDown -> {
-                        if ((longPressBackArmed || backToChannelArmed) && backHoldJob == null) {
-                            val toChannel = !longPressBackArmed
+                        if (backToChannelArmed && backHoldJob == null) {
                             backLongFired = false
                             backHoldJob = scope.launch {
                                 kotlinx.coroutines.delay(600)
                                 backLongFired = true
-                                if (toChannel) backToChannel() else toggleNowPlayingFocus()
+                                backToChannel()
                             }
                         }
                         false
@@ -1154,16 +1070,10 @@ fun OwnTVShell(
                     if (e.type == KeyEventType.KeyUp && !e.nativeKeyEvent.isCanceled) backDispatcher?.onBackPressed()
                     return@onKeyEvent backDispatcher != null
                 }
-                if (e.type != KeyEventType.KeyDown || playerMode != PlayerMode.MINI) return@onKeyEvent false
-                when (e.key) {
-                    Key.MediaPlayPause, Key.MediaPlay, Key.MediaPause -> { dockedEngine.togglePlayPause(); true }
-                    Key.ChannelUp -> dockedZap?.let { it(1); true } ?: false
-                    Key.ChannelDown -> dockedZap?.let { it(-1); true } ?: false
-                    else -> false
-                }
+                false
             },
     ) {
-      // Browse UI — hidden while the player is fullscreen (stays visible behind the docked mini-player).
+      // Browse UI — hidden while the player is fullscreen.
       // A live channel opened from the guide keeps the guide laid out behind it, unseen, so the picture can
       // glide straight back onto its corner (exitToList). Not drawn meanwhile: the picture covers it all.
       val guideBehind = playerMode == PlayerMode.FULLSCREEN && multiview == null && liveOnExo &&
@@ -1173,9 +1083,8 @@ fun OwnTVShell(
         Column(
             modifier = Modifier.fillMaxSize()
                 .graphicsLayer { alpha = if (browseHidden) 0f else 1f }
-                // One group with a restorer: leaving for the mini player and coming back lands on the
+                // One group with a restorer: leaving for full screen and coming back lands on the
                 // exact control that was focused, without every screen having to remember its own.
-                .focusRequester(shellContentFocus)
                 .focusRestorer()
                 .focusGroup(),
         ) {
@@ -1188,38 +1097,6 @@ fun OwnTVShell(
               }
               onSelectSection(section)
           }
-          // Audio Mode: the now-playing bar — in the top bar left of the weather chip, or in the Stage
-          // cluster in the Continue pill's place. Present only while PlayerMode.AUDIO.
-          val audioBarContent: (@Composable () -> Unit)? = if (playerMode == PlayerMode.AUDIO) {
-              {
-                  val isLiveStream = liveOnExo || player.isLiveContent
-                  val zapFn: ((Int) -> Unit)? = when {
-                      !isLiveStream -> null
-                      zapSource == MainSection.LIVE_TV && liveCanZap -> liveVm::zap
-                      else -> null
-                  }
-                  val audioEngine = if (liveOnExo) liveVm.previewEngine else mpvEngine
-                  val vodNav by audioEngine.nav.collectAsStateWithLifecycle()
-                  tv.own.owntv.player.AudioNowPlayingBar(
-                      player = audioEngine,
-                      isLive = isLiveStream,
-                      canPrev = if (isLiveStream) zapFn != null else vodNav.hasPrev,
-                      canNext = if (isLiveStream) zapFn != null else vodNav.hasNext,
-                      onPrev = { if (isLiveStream) zapFn?.invoke(-1) else mpvEngine.previous() },
-                      onNext = { if (isLiveStream) zapFn?.invoke(1) else mpvEngine.next() },
-                      onExpand = expandPlayer,
-                      onClose = exitPlayer,
-                      // Always reachable while Audio Mode is active (from the Search/Continue
-                      // pills on the left or the playlist chip on the right) — not gated on the
-                      // nav panel like the other chips, because its own D-pad trap keeps focus
-                      // inside once entered and Back is the only way out.
-                      focusable = true,
-                      entryFocusRequester = audioEntryFocus,
-                      favorite = favActive,
-                      onToggleFavorite = favToggle,
-                  )
-              }
-          } else null
           Box(Modifier.weight(1f).fillMaxWidth()) {
           Row(modifier = Modifier.fillMaxSize()) {
             Column(
@@ -1241,7 +1118,7 @@ fun OwnTVShell(
                     liveVm.playCatchupProgramme(ch, prog)
                     zapSource = MainSection.LIVE_TV
                     homeVm.stopPreview()
-                    if (playerMode != PlayerMode.MINI) playerMode = PlayerMode.FULLSCREEN
+                    playerMode = PlayerMode.FULLSCREEN
                 }
                 Box(
                     modifier = Modifier.weight(1f).fillMaxWidth()
@@ -1521,7 +1398,6 @@ fun OwnTVShell(
                         onClick = continueLastWatched,
                     )
                 },
-                audioBar = audioBarContent,
                 playlistLabel = playlistLabel,
                 playlistInteractive = playlists.size > 1,
                 onPlaylistClick = { showPlaylistPicker = true },
@@ -1561,8 +1437,6 @@ fun OwnTVShell(
                     else -> null
                 },
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
-                nowPlaying = nowPlayingRail,
-                onNowPlaying = enterNowPlaying,
                 modifier = Modifier.graphicsLayer { alpha = stripAlpha.value }.onFocusChanged { railTrulyFocused = it.hasFocus },
             )
           }
@@ -1583,9 +1457,8 @@ fun OwnTVShell(
           tv.own.owntv.features.shell.components.SyncStatusPill(modifier = Modifier.align(Alignment.BottomCenter))
       }
 
-      // Player surface — hoisted so it persists across fullscreen <-> mini (same call site = the
-      // SurfaceView isn't recreated when docking/expanding, so playback never blips). NOT composed in
-      // AUDIO mode: there's no video surface — audio plays and the top-bar now-playing bar drives it.
+      // Player surface — hoisted so it persists between the guide's corner and full screen (same call site =
+      // the SurfaceView isn't recreated, so playback never blips).
       // Multiview draws over everything, including the player it grew out of, and owns its own
       // engines. The player surface below is not composed while it is up: its stream was stopped when
       // the grid opened, so there is nothing behind the tiles to keep alive.
@@ -1668,7 +1541,7 @@ fun OwnTVShell(
           tv.own.owntv.features.epg.GuidePreviewSpot.video && tv.own.owntv.features.epg.GuidePreviewSpot.rect != null
       // ExoPlayer's picture is on screen: a promoted live channel, the guide's corner, or the move between them.
       val exoShown = liveOnExo || inCorner || guideHandover
-      if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || playerMode == PlayerMode.MINI || inCorner || guideHandover)) {
+      if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || inCorner || guideHandover)) {
         val isFull = playerMode == PlayerMode.FULLSCREEN
         // 0 = the whole screen, 1 = the guide's corner. Read in layout and draw only, so only this box moves.
         val cornerness = {
@@ -1698,19 +1571,13 @@ fun OwnTVShell(
                     shape = RoundedCornerShape(cornerRadius.toPx() * f / scaleX.coerceAtLeast(0.05f))
                     clip = true
                 }.background(Color.Black)
-            } else if (isFull) {
-                Modifier.fillMaxSize().background(Color.Black)
             } else {
-                // Dynamic docked size/position: a screen-width fraction at the chosen corner/edge, so it
-                // scales with the panel + UI zoom (never a fixed-size box).
-                Modifier.align(miniPos.alignment).padding(24.dp)
-                    .fillMaxWidth(tv.own.owntv.core.player.MiniPlayerSize.fraction(miniSizePct)).aspectRatio(16f / 9f)
-                    .clip(RoundedCornerShape(14.dp)).background(Color.Black)
+                Modifier.fillMaxSize().background(Color.Black)
             },
         ) {
-            // "Promote Preview": a Live channel playing on ExoPlayer renders the ExoPlayer surface — in BOTH
-            // full-screen AND the docked mini-player (same call site = the surface persists across dock/
-            // expand, so playback never blips). Everything else (mpv) renders mpv's surface.
+            // "Promote Preview": a Live channel playing on ExoPlayer renders the ExoPlayer surface, in full screen
+            // and in the guide's corner (same call site = the surface persists, so playback never blips).
+            // Everything else (mpv) renders mpv's surface.
             if (exoShown) {
                 tv.own.owntv.player.ExoPreviewSurface(
                     engine = liveVm.previewEngine, modifier = Modifier.fillMaxSize(),
@@ -1743,17 +1610,8 @@ fun OwnTVShell(
                 tv.own.owntv.player.AudioOnlyBadge(modifier = Modifier.fillMaxSize(), compact = !isFull)
             }
             // Direct render mode: mpv can't draw subtitles on the decoder-owned surface — the app does.
-            // Also drawn docked: the mini-player is a real watching mode for a subtitled film, and
-            // dropping the only line of dialogue there made subtitles look broken. Scaled to the box.
             if (!exoShown) {
-                tv.own.owntv.player.SubtitleOverlay(
-                    player = player, modifier = Modifier.fillMaxSize(),
-                    // Tied to the chosen mini size, but nudged up and floored: a strictly proportional
-                    // line would be unreadable in the smallest box.
-                    sizeScale = if (isFull) 1f else {
-                        (tv.own.owntv.core.player.MiniPlayerSize.fraction(miniSizePct) * 1.5f).coerceIn(0.35f, 0.7f)
-                    },
-                )
+                tv.own.owntv.player.SubtitleOverlay(player = player, modifier = Modifier.fillMaxSize(), sizeScale = 1f)
             }
             if (isFull && !guideHandover) {
                 // Engine state still distinguishes the live edge from catch-up/archive playback for
@@ -2076,18 +1934,6 @@ fun OwnTVShell(
                         modifier = Modifier.fillMaxSize(),
                     )
                 }
-            } else if (playerMode == PlayerMode.MINI) {
-                MiniPlayer(
-                    player = if (liveOnExo) liveVm.previewEngine else mpvEngine,
-                    onExpand = expandPlayer,
-                    onClose = exitPlayer,
-                    onCycleSize = { scope.launch { settingsRepo.setMiniPlayerSizePct(tv.own.owntv.core.player.MiniPlayerSize.next(miniSizePct)) } },
-                    onCyclePosition = { scope.launch { settingsRepo.setMiniPlayerPosition(miniPos.next().name) } },
-                    onAudioMode = toAudioMode,
-                    entryFocusRequester = miniEntryFocus,
-                    onBack = { runCatching { shellContentFocus.requestFocus() } },
-                    modifier = Modifier.fillMaxSize().onFocusChanged { miniHasFocus = it.hasFocus },
-                )
             }
         }
       }
