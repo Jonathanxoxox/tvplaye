@@ -498,7 +498,7 @@ def settings_tour():
             key("BACK", wait=1.5)
 
 
-SCENES = ["Graphit", "Schiefer", "Königsblau", "Rasengrün", "Bordeaux", "Espresso"]
+SCENES = ["Basalt", "Taupe", "Salbei", "Pflaume", "Neon", "Abendrot", "Flutlicht", "Gletscher"]
 
 
 def open_scene_row():
@@ -526,7 +526,7 @@ def scenes_tour():
         if not open_scene_row():
             shot(f"szene-{slug(name)}-zeile-fehlt")
             return
-        for _ in range(14):
+        for _ in range(20):
             if find(dump(), "^" + re.escape(name) + "$") is not None:
                 break
             key("DPAD_RIGHT", wait=1.0)

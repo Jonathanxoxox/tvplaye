@@ -38,7 +38,7 @@
     <string name="tvplayer_scene_heading" translatable="false">Farben</string>
     <string name="tvplayer_scene_title" translatable="false">Farbthema</string>
     <string name="tvplayer_scene_line" translatable="false">Ruhige Farbe für Seite, Menü und Flächen</string>
-    <string name="tvplayer_scene_help" translatable="false">Farbthemen färben Seite, Menü und Flächen und bewegen sich nicht. Im hellen Design bleibt alles hell.</string>
+    <string name="tvplayer_scene_help" translatable="false">Farbthemen färben Seite, Menü und Flächen und bewegen sich nicht. Die modernen Themen bringen ihre eigene Akzentfarbe mit. Im hellen Design bleibt alles hell.</string>
     <string name="tvplayer_scene_panel" translatable="false">%1$s\n\n%2$s</string>
     <string name="tvplayer_scene_off" translatable="false">Aus</string>
     <string name="tvplayer_scene_off_desc" translatable="false">Cyan Blau wie TiviMate</string>
@@ -48,6 +48,22 @@
     <string name="tvplayer_color_rasengruen" translatable="false">Rasengrün</string>
     <string name="tvplayer_color_bordeaux" translatable="false">Bordeaux</string>
     <string name="tvplayer_color_espresso" translatable="false">Espresso</string>
+    <string name="tvplayer_color_basalt" translatable="false">Basalt</string>
+    <string name="tvplayer_color_taupe" translatable="false">Taupe</string>
+    <string name="tvplayer_color_salbei" translatable="false">Salbei</string>
+    <string name="tvplayer_color_pflaume" translatable="false">Pflaume</string>
+    <string name="tvplayer_color_neon" translatable="false">Neon</string>
+    <string name="tvplayer_color_abendrot" translatable="false">Abendrot</string>
+    <string name="tvplayer_color_flutlicht" translatable="false">Flutlicht</string>
+    <string name="tvplayer_color_gletscher" translatable="false">Gletscher</string>
+    <string name="tvplayer_color_basalt_desc" translatable="false">Schlicht: fast schwarz, ganz neutral, ideal im dunklen Zimmer</string>
+    <string name="tvplayer_color_taupe_desc" translatable="false">Schlicht: warmes Graubraun, ruhig und weich</string>
+    <string name="tvplayer_color_salbei_desc" translatable="false">Schlicht: gedecktes Graugrün</string>
+    <string name="tvplayer_color_pflaume_desc" translatable="false">Schlicht: gedämpftes Pflaumengrau</string>
+    <string name="tvplayer_color_neon_desc" translatable="false">Modern: tiefes Violett mit pinkem Akzent. Ersetzt die Akzentfarbe.</string>
+    <string name="tvplayer_color_abendrot_desc" translatable="false">Modern: dunkles Weinrot mit Korallen-Akzent. Ersetzt die Akzentfarbe.</string>
+    <string name="tvplayer_color_flutlicht_desc" translatable="false">Modern: Rasen bei Nacht mit gelbem Flutlicht-Akzent. Ersetzt die Akzentfarbe.</string>
+    <string name="tvplayer_color_gletscher_desc" translatable="false">Modern: Nachtblau mit eisblauem Akzent. Ersetzt die Akzentfarbe.</string>
     <string name="tvplayer_color_graphit_desc" translatable="false">Farbthema: fast schwarzes Anthrazit, neutral und ohne Farbstich</string>
     <string name="tvplayer_color_schiefer_desc" translatable="false">Farbthema: kühles Blaugrau, etwas heller</string>
     <string name="tvplayer_color_koenigsblau_desc" translatable="false">Farbthema: sattes, tiefes Blau</string>
