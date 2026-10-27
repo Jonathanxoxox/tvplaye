@@ -7,13 +7,32 @@ on:
     branches: [ "main", "claude/**" ]
   workflow_dispatch:
 
-concurrency:
-  group: smoke-${{ github.ref }}
-  cancel-in-progress: true
+# Keine concurrency-Gruppe mit cancel-in-progress: jeder abgebrochene Lauf schickt eine Mail.
+# Überholte Läufe erkennt der Job "current" und überspringt den Rest.
 
 jobs:
+  # Überholte Pushes: ist der Zweig schon weiter, bleibt dieser Lauf still grün statt zu bauen.
+  current:
+    runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.head.outputs.stale }}
+    steps:
+      - id: head
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          HEAD=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY" "$REF" | cut -f1)
+          if [ -n "$HEAD" ] && [ "$HEAD" != "$GITHUB_SHA" ]; then
+            echo "::notice::Überholt von ${HEAD::7}, dieser Lauf baut nichts."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
   # Die eigenen JVM-Tests (Fußball-Erkennung, Launcher-Zeilen); der Rest der OwnTV-Tests läuft nicht mit.
   tests:
+    needs: current
+    if: needs.current.outputs.stale != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -32,6 +51,8 @@ jobs:
           ./gradlew testStandardDebugUnitTest --tests 'tv.own.owntv.launcher.*' --stacktrace
 
   smoke:
+    needs: current
+    if: needs.current.outputs.stale != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:

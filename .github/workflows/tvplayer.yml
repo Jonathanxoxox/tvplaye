@@ -14,12 +14,31 @@ permissions:
   contents: write
   actions: read
 
-concurrency:
-  group: tvplayer-${{ github.ref }}
-  cancel-in-progress: true
+# Keine concurrency-Gruppe mit cancel-in-progress: jeder abgebrochene Lauf schickt eine Mail.
+# Überholte Läufe erkennt der Job "current" und überspringt den Rest.
 
 jobs:
+  # Überholte Pushes: ist der Zweig schon weiter, bleibt dieser Lauf still grün statt zu bauen.
+  current:
+    runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.head.outputs.stale }}
+    steps:
+      - id: head
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          HEAD=$(git ls-remote "https://github.com/$GITHUB_REPOSITORY" "$REF" | cut -f1)
+          if [ -n "$HEAD" ] && [ "$HEAD" != "$GITHUB_SHA" ]; then
+            echo "::notice::Überholt von ${HEAD::7}, dieser Lauf baut nichts."
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: current
+    if: needs.current.outputs.stale != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -74,13 +93,30 @@ jobs:
           path: dist/MayoTV.apk
           if-no-files-found: error
 
+      # Läufe desselben Zweigs können sich überholen; veröffentlicht wird nur, was noch der neueste
+      # Stand ist, sonst zeigte "latest" am Ende auf einen älteren Bau.
+      - name: Still the newest push?
+        id: newest
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          HEAD=$(git ls-remote origin "$REF" | cut -f1)
+          if [ -n "$HEAD" ] && [ "$HEAD" != "$GITHUB_SHA" ]; then
+            echo "::notice::Überholt von ${HEAD::7}, diese APK wird nicht veröffentlicht."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # Ein Release behält seinen Tag; damit "latest" zum gebauten Stand passt, wird der Tag mitgezogen.
       - name: Move tag "latest"
+        if: steps.newest.outputs.ok == 'true'
         run: |
           git tag -f latest "$GITHUB_SHA"
           git push -f origin refs/tags/latest
 
       - name: Publish "latest" release
+        if: steps.newest.outputs.ok == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
@@ -95,6 +131,7 @@ jobs:
       # Der Text des Releases erscheint in der App unter "Neuerungen": die Commits seit dem letzten
       # erfolgreichen Bau dieses Zweigs, ohne Merges und ohne reine Tour-/CI-Pflege.
       - name: Release notes
+        if: steps.newest.outputs.ok == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -116,6 +153,7 @@ jobs:
           cat dist/notes.md
 
       - name: Publish versioned release for the in-app updater
+        if: steps.newest.outputs.ok == 'true'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v1.0.${{ github.run_number }}
