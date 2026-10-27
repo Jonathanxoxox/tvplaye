@@ -106,6 +106,9 @@ private const val Tabular = "tnum"
  */
 object GuidePreviewSpot {
     var rect by androidx.compose.runtime.mutableStateOf<androidx.compose.ui.geometry.Rect?>(null)
+
+    /** The guide wants its picture: the shell then draws it on [rect], with the very view full screen uses. */
+    var video by androidx.compose.runtime.mutableStateOf(false)
 }
 
 /**
@@ -122,10 +125,17 @@ internal fun GuideVideo(
      *  in TiviMate (Jonathan, 27 Oct 2026); the Sports Hub, listing several channels, keeps them. */
     channelLine: String? = null,
     nowTitle: String? = null,
+    /** The guide's corner: the shell draws the picture over it (see [GuidePreviewSpot]), so the stream never
+     *  changes surface between here and full screen and plays straight on, as in TiviMate. */
+    shellDrawsVideo: Boolean = false,
 ) {
     val previewState by previewEngine.state.collectAsStateWithLifecycle()
     val playing = showVideo && previewState != tv.own.owntv.player.LivePreviewEngine.State.ERROR &&
         previewState != tv.own.owntv.player.LivePreviewEngine.State.IDLE
+    if (shellDrawsVideo) {
+        androidx.compose.runtime.SideEffect { GuidePreviewSpot.video = playing }
+        androidx.compose.runtime.DisposableEffect(Unit) { onDispose { GuidePreviewSpot.video = false } }
+    }
     val r = 20.mpx
     val videoShadow = tv.own.owntv.ui.theme.stageShadow(0.55f)
     Box(
@@ -136,12 +146,14 @@ internal fun GuideVideo(
             .background(Color.Black),
         contentAlignment = Alignment.Center,
     ) {
-        if (channel != null) {
+        // Not behind a running picture: when full screen hands the stream back, the frame or two before this
+        // surface shows it would flash the logo.
+        if (channel != null && !playing) {
             ChannelLogoTile(logoUrl = channel.displayLogoUrl, modifier = Modifier.size(120.mpx), fill = Color.Transparent) {
                 OwnTVIcon(OwnTVIcon.LIVE_TV, tint = StageColors.Dim, modifier = Modifier.size(48.mpx))
             }
         }
-        if (playing) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
+        if (playing && !shellDrawsVideo) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
         if (showVideo && previewState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) OwnTVSpinner(sizeDp = 24)
         if (channelLine != null) Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
         Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), r.toPx()) })
