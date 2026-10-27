@@ -206,7 +206,10 @@ fun EpgScreen(
     val recordingRows by vm.recordingRows.collectAsStateWithLifecycle()
     val reminderRows by vm.reminderRows.collectAsStateWithLifecycle()
     val leadMinutes by vm.reminderLeadMinutes.collectAsStateWithLifecycle()
-    val railItems by liveVm.railItems.collectAsStateWithLifecycle()
+    val allRailItems by liveVm.railItems.collectAsStateWithLifecycle()
+    // The guide's second column lists the groups alone: no All channels, Catch-up, Recently watched or
+    // Favourites above them (Jonathan, 27 Oct 2026).
+    val railItems = remember(allRailItems) { allRailItems.filter { it.key is LiveKey.Folder || it.key is LiveKey.Custom } }
     val liveSelected by liveVm.selectedKey.collectAsStateWithLifecycle()
     val playlistMarks by liveVm.playlistMarks.collectAsStateWithLifecycle()
     val livePreviewSetting by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
@@ -217,6 +220,15 @@ fun EpgScreen(
     // Live TV's Guide view shows Live TV's own category; the TV Guide keeps its own choice.
     val categoryKey: LiveKey? = if (liveMode) liveSelected.takeUnless { it == LiveKey.All } else categoryFilter
     LaunchedEffect(liveMode, liveSelected) { if (liveMode) vm.setCategoryFilter(liveSelected) }
+    // With only the groups on offer, the guide never stays on a list it cannot show: it opens on the playing
+    // channel's group, else on the first group.
+    LaunchedEffect(liveMode, liveSelected, categoryFilter, railItems) {
+        val current = if (liveMode) liveSelected else categoryFilter
+        if (railItems.isEmpty() || railItems.any { it.key == current }) return@LaunchedEffect
+        val own = previewChannel?.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
+        val target = own ?: railItems.first().key
+        if (liveMode) liveVm.select(target) else vm.setCategoryFilter(target)
+    }
     LaunchedEffect(Unit) { vm.load() } // reload from DB each time the guide is opened
 
     // The preview stays on its channel while the guide is browsed; OK on a row brings that row's channel
@@ -367,7 +379,7 @@ fun EpgScreen(
         val playing = previewChannel
         if (found < 0 && liveMode && playing != null) {
             val own = playing.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
-            val target = own ?: LiveKey.All
+            val target = own ?: railItems.firstOrNull()?.key ?: LiveKey.All
             if (target != liveSelected) {
                 anchorId = playing.id
                 restoreTo = playing.id
@@ -728,6 +740,7 @@ fun EpgScreen(
                 entries = groupEntries,
                 selectedIndex = railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0),
                 groupsHeading = groupsHeading,
+                showGroupsHeading = false,
                 sheet = false,
                 listState = groupsListState,
                 onSelect = { idx ->
@@ -743,7 +756,7 @@ fun EpgScreen(
                     if (key != null && (key is LiveKey.Folder || key is LiveKey.Custom)) {
                         groupsHeld = true
                         returnTo = {
-                            val at = liveVm.railItems.value.indexOfFirst { it.key == key }
+                            val at = railItems.indexOfFirst { it.key == key }
                             if (at >= 0) groupsFocusIndex = at else enterGroups()
                             scope.launch { delay(400); groupsFocusIndex = null; groupsHeld = false }
                             returnTo = null
