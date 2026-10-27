@@ -70,6 +70,10 @@
     <string name="update_ready">Mayo TV v<xliff:g id="available">%1$s</xliff:g> is ready (you have v<xliff:g id="current">%2$s</xliff:g>).</string>
     <string name="settings_navigation_description">What the menu on the left shows</string>
     <string name="settings_help_navigation">The menu rests as a narrow strip of icons at the left edge and opens with names when you move left. Size sets how much it shows; Menu items which sections it lists.</string>
+    <string name="details_streaming_on">Streaming on</string>
+    <string name="details_streaming_source">Streaming data: JustWatch</string>
+    <string name="search_mood_heading">Fits “%1$s”</string>
+    <string name="search_mood_searching">Jev is looking for titles that fit…</string>
     <string name="voice_search_listening">Speak now…</string>
     <string name="voice_search_not_understood">Didn\'t catch that – press the mic again</string>
     <string name="voice_search_no_microphone">Microphone not allowed</string>

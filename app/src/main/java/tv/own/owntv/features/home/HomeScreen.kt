@@ -1335,6 +1335,8 @@ private fun TrendingHomeItem.toDetailsUi(meta: MetadataCacheEntity?, tmdbWins: B
         genres = trendingJsonList(meta?.genresJson),
         plot = if (tmdbWins) tmdbPlot ?: providerPlot else providerPlot ?: tmdbPlot,
         cast = tv.own.owntv.core.metadata.MetadataCast.parse(meta?.castJson),
+        tmdbType = meta?.type?.takeIf { it == "movie" || it == "tv" },
+        tmdbId = meta?.tmdbId,
     )
 }
 

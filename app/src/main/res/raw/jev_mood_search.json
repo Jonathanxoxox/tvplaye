@@ -1,0 +1,43 @@
+{
+  "describes": {
+    "type": "noul",
+    "instructions": "`wish` was typed into the search of a TV app that holds live channels, movies and series. Does `wish` describe what kind of movie or series the person wants to watch (a mood, theme, sub-genre, subject, setting or occasion), rather than naming one specific title, channel, person or sports team?",
+    "criteria": {
+      "true": "A description of the kind of thing to watch, in any language: a mood, theme, sub-genre, subject or occasion, e.g. a type of film, a feeling, a topic, an evening plan",
+      "false": "The name of one specific movie, series, channel, actor, team or event, or a fragment of such a name"
+    }
+  },
+  "kind": {
+    "type": "choice",
+    "instructions": "Does `wish` ask for movies, for series, or does it leave that open?",
+    "criteria": {
+      "movie": "Asks for a movie or film (words like movie, film, Film, Streifen)",
+      "series": "Asks for a series or show (words like series, show, Serie, Staffel)",
+      "either": "Does not say whether it should be a movie or a series"
+    }
+  },
+  "genre": {
+    "type": "noul",
+    "instructions": "Is {genre} the main genre of what `wish` asks for, so that browsing {genre} titles is a good start?",
+    "criteria": {
+      "true": "The wish names this genre or a sub-genre of it, or clearly implies it",
+      "false": "The genre is unrelated, only loosely possible, or just one of many that could fit"
+    }
+  },
+  "keyword": {
+    "type": "noul",
+    "instructions": "Does the TMDB keyword `keywords[{index}]` name the theme, subject or sub-genre that `wish` is looking for?",
+    "criteria": {
+      "true": "Titles tagged with this keyword are what the wish describes",
+      "false": "The keyword only shares a word with the wish, or is about something else"
+    }
+  },
+  "fit": {
+    "type": "noul",
+    "instructions": "Is `titles[{index}]` the kind of movie or series that `wish` asks for?",
+    "criteria": {
+      "true": "Its genres and story clearly match the mood, theme or sub-genre in the wish",
+      "false": "It only shares a broad genre with the wish, or does not match it"
+    }
+  }
+}

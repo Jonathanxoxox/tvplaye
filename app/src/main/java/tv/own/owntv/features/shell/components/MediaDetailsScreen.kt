@@ -68,6 +68,9 @@ data class MediaDetailsUi(
     val genres: List<String> = emptyList(),
     val plot: String? = null,
     val cast: List<tv.own.owntv.core.metadata.CastMember> = emptyList(),
+    /** TMDB's "movie" or "tv" and the title's id, for "Streaming on Netflix…"; null = not shown. */
+    val tmdbType: String? = null,
+    val tmdbId: Int? = null,
 )
 
 /**
@@ -139,6 +142,14 @@ fun MediaDetailsScreen(details: MediaDetailsUi, onExit: () -> Unit, modifier: Mo
                 if (!details.plot.isNullOrBlank()) {
                     DetailsLabel(stringResource(R.string.content_media_overview))
                     Text(details.plot, style = stageText(21, 400).copy(lineHeight = (21 * 1.55f).mpxSp), color = StageColors.ItemText, modifier = Modifier.widthIn(max = 1300.mpx))
+                }
+                val streaming = rememberWatchProviders(details.tmdbType, details.tmdbId)
+                if (streaming.isNotEmpty()) {
+                    DetailsLabel(stringResource(R.string.details_streaming_on))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(10.mpx), verticalArrangement = Arrangement.spacedBy(10.mpx)) {
+                        streaming.forEach { tv.own.owntv.ui.stage.StageTag(it) }
+                    }
+                    Text(stringResource(R.string.details_streaming_source), style = stageText(14, 600), color = StageColors.Dim, modifier = Modifier.padding(top = 10.mpx))
                 }
                 if (details.cast.isNotEmpty()) {
                     DetailsLabel(stringResource(R.string.content_media_cast))
