@@ -246,6 +246,12 @@ val stageAccent: StageAccent
     }
 
 /**
+ * Mayo TV: one text size for every list on the TV (26 Oct 2026, Jonathan) — the menu, the categories, the
+ * channel names and the programmes in the guide all read alike instead of four sizes side by side.
+ */
+const val StageListText = 20
+
+/**
  * Stage type: a design size and weight in the user's main font (Plus Jakarta Sans by default).
  * Line height is left to the font, as the design's `line-height: normal` leaves it to the browser.
  */

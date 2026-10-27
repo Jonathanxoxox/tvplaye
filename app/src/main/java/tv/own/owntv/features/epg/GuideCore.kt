@@ -86,7 +86,9 @@ internal fun ProgrammeStripCanvas(
     val a = tv.own.owntv.ui.theme.stageAccent
     val px = with(density) { 1.mpx.toPx() }
     val pxPerMin = with(density) { GuideGridDefaults.PxPerMin.toPx() }
-    val titleStyle = tv.own.owntv.ui.theme.stageText(20, 500).copy(textDirection = TextDirection.Content)
+    val titleStyle = tv.own.owntv.ui.theme.stageText(tv.own.owntv.ui.theme.StageListText, 600).copy(textDirection = TextDirection.Content)
+    // "No programme" at the list size too, quieter in weight.
+    val emptyStyle = tv.own.owntv.ui.theme.stageText(tv.own.owntv.ui.theme.StageListText, 400).copy(textDirection = TextDirection.Content)
     val timeStyle = tv.own.owntv.ui.theme.stageText(14, 400).copy(fontFeatureSettings = "tnum", textDirection = TextDirection.Content)
     val formatTime = rememberSystemTimeFormatter()
     val rangeTemplate = stringResource(R.string.content_live_time_range_plain)
@@ -129,10 +131,15 @@ internal fun ProgrammeStripCanvas(
             val gx1 = (((gapEnd - windowStart) / 60_000f) * pxPerMin - scrollPx - 3 * px).coerceAtMost(viewW)
             if (gx1 > gx0) {
                 val box = androidx.compose.ui.geometry.Rect(gx0, 0f, gx1, h)
-                drawBoxShadow(a.accent.copy(alpha = 0.4f), 34 * px, r.x, dy = 12 * px, bounds = box)
-                drawRoundRect(a.accent, Offset(gx0, 0f), Size(gx1 - gx0, h), r)
-                focusRing(gx0, gx1 - gx0, h, r)
-                val label = measurer.measure(emptyText, timeStyle.copy(color = a.onAccent), maxLines = 1, softWrap = false)
+                if (palette.isLight) {
+                    drawBoxShadow(a.accent.copy(alpha = 0.4f), 34 * px, r.x, dy = 12 * px, bounds = box)
+                    drawRoundRect(a.accent, Offset(gx0, 0f), Size(gx1 - gx0, h), r)
+                    focusRing(gx0, gx1 - gx0, h, r)
+                } else {
+                    drawBoxShadow(Color.Black.copy(alpha = 0.25f), 14 * px, r.x, dy = 4 * px, bounds = box)
+                    drawRoundRect(tv.own.owntv.ui.theme.StageFocusFill, Offset(gx0, 0f), Size(gx1 - gx0, h), r)
+                }
+                val label = measurer.measure(emptyText, emptyStyle.copy(color = a.onAccent), overflow = TextOverflow.Ellipsis, maxLines = 1, softWrap = false, constraints = Constraints(maxWidth = (gx1 - gx0 - 28 * px).toInt().coerceAtLeast(1)))
                 drawText(label, topLeft = Offset(gx0 + 14 * px, (h - label.size.height) / 2f))
                 drawnAny = true
             }
@@ -195,7 +202,7 @@ internal fun ProgrammeStripCanvas(
         // Nothing on anywhere in view: say so, rather than a row that looks broken.
         if (!drawnAny) {
             drawRoundRect(ink.copy(alpha = 0.03f), Offset(3 * px, 0f), Size(viewW - 6 * px, h), r)
-            val label = measurer.measure(emptyText, timeStyle.copy(color = dimColor), maxLines = 1, softWrap = false)
+            val label = measurer.measure(emptyText, emptyStyle.copy(color = dimColor), maxLines = 1, softWrap = false)
             drawText(label, topLeft = Offset(17 * px, (h - label.size.height) / 2f))
         }
     } }

@@ -251,6 +251,8 @@ val StageRailStripWidth = StripWidth
 /** Whether the menu is open over the page right now, for a page that shows its own column beside it. */
 object StageRailOpen {
     var open by mutableStateOf(false)
+    /** The guide's categories are out (focused or being entered): the status cluster steps aside for them too. */
+    var guideGroups by mutableStateOf(false)
 }
 
 /**
@@ -333,7 +335,7 @@ private fun RailItem(
             OwnTVIcon(icon, tint, Modifier.size(32.mpx))
             Text(
                 label,
-                style = stageText(26, if (focused) 400 else 600),
+                style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
                 color = tint,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),

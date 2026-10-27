@@ -76,7 +76,6 @@ import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.OwnTVSpinner
 import tv.own.owntv.ui.stage.StageButton
 import tv.own.owntv.ui.stage.shownColor
-import tv.own.owntv.ui.stage.stageFocusLook
 import tv.own.owntv.ui.stage.StageSearchField
 import tv.own.owntv.ui.stage.StageTool
 import tv.own.owntv.ui.theme.StageColors
@@ -252,6 +251,8 @@ fun EpgScreen(
     val rowRequesters = remember { HashMap<Int, FocusRequester>() }
     fun rowFocus(i: Int): FocusRequester = rowRequesters.getOrPut(i) { FocusRequester() }
     var focusedRow by remember { mutableIntStateOf(0) }
+    // The channel Back or EPG from the player restored to, held across the silent reload that follows.
+    var anchorId by remember { mutableStateOf<Long?>(null) }
     var gridHasFocus by remember { mutableStateOf(false) }
     var cursorTime by remember { mutableStateOf(0L) }
     // Row stage (false): ▲ ▼ move between channels, ◀ leaves for the menu. Cell stage (true): ◀ ▶ go
@@ -266,6 +267,7 @@ fun EpgScreen(
     var stepTarget by remember { mutableStateOf<Int?>(null) }
     var stepJob by remember { mutableStateOf<kotlinx.coroutines.Job?>(null) }
     fun stepTo(i: Int) {
+        anchorId = null
         stepTarget = i
         stepJob?.cancel()
         stepJob = scope.launch {
@@ -290,7 +292,8 @@ fun EpgScreen(
         val i = row.coerceIn(0, (state.channels.size - 1).coerceAtLeast(0))
         scope.launch {
             val visible = rowListState.layoutInfo.visibleItemsInfo.any { it.index == i }
-            if (!visible) runCatching { rowListState.scrollToItem(i) }
+            // Two rows of the channels before it stay in view, so a jump never opens on a lone row at the top.
+            if (!visible) runCatching { rowListState.scrollToItem((i - 2).coerceAtLeast(0)) }
             withFrameNanos { }
             if (!runCatching { rowFocus(i).requestFocus() }.getOrDefault(false)) {
                 withFrameNanos { }
@@ -317,9 +320,21 @@ fun EpgScreen(
             .map { id -> state.channels.indexOfFirst { it.id == id } }
             .firstOrNull { it >= 0 } ?: 0
         focusedRow = idx
+        anchorId = state.channels.getOrNull(idx)?.id
         delay(80)
         focusGrid(idx)
         onRestored()
+    }
+    // The guide keeps the list it had on screen and reloads it silently, so the restore above can run on
+    // the old list (from the player: EPG landed past the end of the new one, Jonathan 27 Oct 2026). The
+    // channel it restored to is found again in each fresh list, until the user moves on.
+    LaunchedEffect(state.channels) {
+        val id = anchorId ?: return@LaunchedEffect
+        val idx = state.channels.indexOfFirst { it.id == id }.takeIf { it >= 0 } ?: 0
+        if (state.channels.isEmpty()) return@LaunchedEffect
+        focusedRow = idx
+        runCatching { rowListState.scrollToItem((idx - 2).coerceAtLeast(0)) }
+        if (gridHasFocus) focusGrid(idx)
     }
 
     // --- Overlays --------------------------------------------------------------------------------------
@@ -470,10 +485,13 @@ fun EpgScreen(
         // With the menu open, or the groups in use, they stand at the left and the guide moves over by their width.
         val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter
         val groupsW = fx(400)
+        LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
+        DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false } }
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
-        // Top (44 → 404): the video, and beside it the programme under the cursor.
-        Row(Modifier.padding(start = fx(64), end = fx(64), top = 44.mpx).fillMaxWidth().height(360.mpx)) {
+        // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
+        // 27 Oct 2026) so the grid below shows more channels.
+        Row(Modifier.padding(start = fx(64), end = fx(64), top = 40.mpx).fillMaxWidth().height(240.mpx)) {
         val videoChannel = if (effectivePreview) previewChannel ?: topChannel else topChannel
         // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
         GuideVideo(
@@ -482,7 +500,7 @@ fun EpgScreen(
             nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
-            modifier = Modifier.width(640.mpx),
+            modifier = Modifier.width(426.mpx),
         )
         // The programme title runs level with the shell's pills and clock: it stops short of them.
         val statusRect = tv.own.owntv.features.shell.components.StageStatusBounds.rect
@@ -506,11 +524,11 @@ fun EpgScreen(
 
         }
 
-        // The control line (452): one row with every guide header button.
+        // The control line (308): one row with every guide header button.
         val viewTime = timeAt(scrollPx + timelinePx * 3f / 8f)
         val viewDay = localMidnight(viewTime)
         Row(
-            Modifier.padding(start = fx(68), end = fx(64), top = 48.mpx).fillMaxWidth().height(48.mpx),
+            Modifier.padding(start = fx(68), end = fx(64), top = 28.mpx).fillMaxWidth().height(48.mpx),
             horizontalArrangement = Arrangement.spacedBy(8.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -582,8 +600,8 @@ fun EpgScreen(
                 state.channels.isEmpty() -> GuideEmpty(title = state.message?.let { epgMessageText(it) } ?: stringResource(R.string.content_epg_no_guide))
                 else -> {
                     val gx = fx(48) + labelW
-                    // The number column fits the longest channel number (38 = three digits).
-                    val numberWidth = maxOf(38f, (state.channels.maxOfOrNull { it.number?.toString()?.length ?: 0 } ?: 0) * 11f).mpx
+                    // The number column fits the longest channel number (44 = three digits at the list size).
+                    val numberWidth = maxOf(44f, (state.channels.maxOfOrNull { it.number?.toString()?.length ?: 0 } ?: 0) * 13f).mpx
                     GuideRuler(
                         windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = scrollPx,
                         modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
@@ -696,6 +714,7 @@ fun EpgScreen(
                 onSelect = { idx ->
                     railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
                     focusedRow = 0
+                    anchorId = null
                     scope.launch { runCatching { rowListState.scrollToItem(0) } }
                     focusGrid(0)
                 },
@@ -864,7 +883,6 @@ private fun GuideRow(
     var okDown by remember { mutableStateOf(false) }
     var menuDown by remember { mutableStateOf(false) }
     LaunchedEffect(focused, cursorTime, programmes) { if (focused) onShow(programmeAt(programmes, cursorTime)) }
-    val rowSelected = focused && !cellMode
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight), verticalAlignment = Alignment.CenterVertically) {
         GuideChannelLabel(channel, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
         Box(
@@ -918,8 +936,7 @@ private fun GuideRow(
                         else -> false
                     }
                 }
-                .focusable()
-                .then(if (rowSelected) Modifier.stageFocusLook(tv.own.owntv.ui.stage.StageFocus.FX, 14.mpx) else Modifier),
+                .focusable(),
         ) {
             programmes?.let { progs ->
                 val catchupIds = remember(progs, channel, now) { progs.filter { vm.canCatchup(channel, it, now) }.mapTo(HashSet()) { it.id } }
@@ -928,7 +945,9 @@ private fun GuideRow(
                     windowStart = windowStart,
                     windowEnd = windowEnd,
                     now = now,
-                    focusTime = if (focused && cellMode) cursorTime else null,
+                    // The row in focus lights the programme on now (its cell, dark text on the light fill);
+                    // in the programmes, the one under the cursor. A whole light row hid its white titles.
+                    focusTime = if (!focused) null else if (cellMode) cursorTime else now,
                     catchupIds = catchupIds,
                     recordingStarts = recordingStarts,
                     reminderStarts = reminderStarts,

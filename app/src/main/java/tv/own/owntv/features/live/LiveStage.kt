@@ -651,7 +651,7 @@ private fun LiveColumnItem(
             entry.icon?.let { OwnTVIcon(it, on ?: StageColors.Muted, Modifier.size(20.mpx)) }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.mpx)) {
                 Text(
-                    entry.label, style = stageText(18.5f, 600),
+                    entry.label, style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
                     color = on ?: if (selected) a.accent else stageTone(Color(0xFFCDD7D3), StageColors.ItemText),
                     maxLines = 2, overflow = TextOverflow.Ellipsis,
                 )
