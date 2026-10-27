@@ -977,12 +977,13 @@ class LiveViewModel(
     // dead — otherwise "no preview" looks like a broken channel.
     val previewBlockedSingleSession: StateFlow<Boolean> = live.previewBlockedSingleSession
 
-    /** In-pane preview playback (no history) — triggered by the UI after the focus settles. */
-    fun playPreview(channel: ChannelEntity) {
+    /** In-pane preview playback (no history) — triggered by the UI after the focus settles. [audible]: with
+     *  its sound whatever "Preview audio" says (the guide's preview, a channel picked with OK). */
+    fun playPreview(channel: ChannelEntity, audible: Boolean = false) {
         if (channel.categoryId != null && channel.categoryId in hiddenCategoryIds.value) return
         // Core keeps the preview off a promoted full-screen stream, re-mutes on a re-focus instead of
         // reloading, mints a Stalker link, and holds back on a one-session panel while mpv plays.
-        live.preview(channel, muted = !livePreviewAudio.value)
+        live.preview(channel, muted = !(audible || livePreviewAudio.value))
     }
 
     // --- Multiview: channels kept from the browse screen ------------------------------------------

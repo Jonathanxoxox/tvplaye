@@ -29,6 +29,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
@@ -174,6 +175,9 @@ fun OwnTVShell(
     }
     // One-shot: set when leaving the player so the returning browse screen re-focuses the item you played.
     var restoreFocus by remember { mutableStateOf(false) }
+    // The picture is on its way from full screen into the guide's preview corner (see exitToList).
+    var guideHandover by remember { mutableStateOf(false) }
+    val handoverShrink = remember { androidx.compose.animation.core.Animatable(0f) }
     var searchReturn by remember { mutableStateOf<MainSection?>(null) }
     var restoreTrendingSearchFocus by remember { mutableStateOf(false) }
     var trendingSearchActive by remember { mutableStateOf(false) }
@@ -538,7 +542,9 @@ fun OwnTVShell(
     }
     // The mini-player's own expand button always maximizes.
     val expandPlayer = { resumeVideo(); restoreFocus = false; playerMode = PlayerMode.FULLSCREEN }
-    val exitPlayer = {
+    // [toRail] false: the guide takes focus itself (its row, the channel carrying on in its corner), so the
+    // menu does not flash open on the way.
+    fun closePlayer(toRail: Boolean) {
         // Flush the resume position BEFORE the stream is torn down — stop() drops the loaded item's
         // identity, after which neither view model can tell the position was theirs. Both calls are
         // no-ops unless the player is on that section's item.
@@ -554,15 +560,40 @@ fun OwnTVShell(
         subtitleController.clear() // leaving the player drops the OpenSubtitles item context
         if (selectedSection != MainSection.LIVE_TV) liveVm.clearLiveOnExo()
         restoreFocus = true
-        focusRail()
-        Unit
+        if (toRail) focusRail()
     }
-    // Back out of a live channel lands in the channel list, with the channel carrying on in its preview,
-    // as Jonathan wants it. Films, series and a hidden list keep the plain exit.
-    val exitToList = {
+    val exitPlayer = { closePlayer(toRail = true) }
+    // Back out of a live channel lands in the guide, with the channel carrying on in its preview, as
+    // Jonathan wants it. Films, series and a hidden list keep the plain exit.
+    // As in TiviMate the picture does not just vanish: it shrinks into the guide's preview corner and plays
+    // on there, sound and all (Jonathan, 27 Oct 2026). The guide is laid out under it meanwhile, so the
+    // corner it lands in is the one the guide reports.
+    val livePreviewOn by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
+    val exitToList: () -> Unit = exit@{
+        if (guideHandover) return@exit
         val toList = zapSource == MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections
-        exitPlayer()
-        if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+        val intoGuide = toList && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
+            livePreviewOn && multiview == null
+        if (!intoGuide) {
+            exitPlayer()
+            if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            return@exit
+        }
+        if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+        tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
+        guideHandover = true
+        restoreFocus = true
+        scope.launch {
+            handoverShrink.snapTo(0f)
+            var frames = 0
+            while (tv.own.owntv.features.epg.GuidePreviewSpot.rect == null && frames++ < 30) withFrameNanos { }
+            if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) {
+                handoverShrink.animateTo(1f, androidx.compose.animation.core.tween(340, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+            }
+            closePlayer(toRail = false)
+            guideHandover = false
+            handoverShrink.snapTo(0f)
+        }
     }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
     tv.own.owntv.features.downloads.DownloadWatchPrompt(onClosePlayer = { if (playerMode != PlayerMode.NONE) exitPlayer() })
@@ -671,8 +702,19 @@ fun OwnTVShell(
     // The strip at rest, the menu with names while it holds focus.
     val railState = if (railFocused) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
-    val guideStripHidden = tv.own.owntv.features.shell.components.StageRailOpen.guideFocused &&
+    val guideSection = selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG
+    val guideStripHidden = guideSection &&
+        // Behind full screen as well, so the guide is already in place when the picture shrinks onto it.
+        (tv.own.owntv.features.shell.components.StageRailOpen.guideFocused || guideHandover || playerMode == PlayerMode.FULLSCREEN) &&
         railState != tv.own.owntv.features.shell.components.RailState.OPEN
+    // The guide does not jump when the strip steps aside or comes back: it slides, as TiviMate's does.
+    // Keyed on the section: another page keeps its padding and must not slide in from the guide's offset.
+    val guideStripRoom = androidx.compose.runtime.key(guideSection) {
+        androidx.compose.animation.core.animateDpAsState(
+            if (guideSection && !guideStripHidden) tv.own.owntv.features.shell.components.StageRailStripWidth else 0.mpx,
+        )
+    }
+    val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f)
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -852,7 +894,7 @@ fun OwnTVShell(
 
     BackHandler {
         when {
-            playerMode == PlayerMode.FULLSCREEN -> exitToList()
+            playerMode == PlayerMode.FULLSCREEN -> { if (!guideHandover) exitToList() }
             showAvatarPicker -> showAvatarPicker = false
             showPlaylistPicker -> showPlaylistPicker = false
             showExit -> showExit = false
@@ -1014,7 +1056,7 @@ fun OwnTVShell(
             },
     ) {
       // Browse UI — hidden while the player is fullscreen (stays visible behind the docked mini-player).
-      if (playerMode != PlayerMode.FULLSCREEN) {
+      if (playerMode != PlayerMode.FULLSCREEN || guideHandover) {
         Column(
             modifier = Modifier.fillMaxSize()
                 // One group with a restorer: leaving for the mini player and coming back lands on the
@@ -1102,12 +1144,15 @@ fun OwnTVShell(
                             // the strip never lies over text. Only the open menu covers the content.
                             Modifier
                                 .padding(
-                                    // In the guide the strip steps aside and the guide takes its room. No animation:
-                                    // a sliding padding would lay the whole grid out again on every frame.
-                                    start = if (guideStripHidden) 0.mpx else tv.own.owntv.features.shell.components.StageRailStripWidth,
+                                    // The guide takes the strip's room while it has focus. It slides over by the
+                                    // strip's width instead of padding: a sliding padding would lay the whole grid
+                                    // out again on every frame.
+                                    start = if (guideSection) 0.mpx else tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
                                 // The open menu pushes the page aside instead of covering its left edge.
-                                .graphicsLayer { translationX = railPush.value.toPx() * if (contentLtr) 1f else -1f }
+                                .graphicsLayer {
+                                    translationX = (railPush.value + guideStripRoom.value).toPx() * if (contentLtr) 1f else -1f
+                                }
                                 // ◀ with nothing further left in the content goes back to the rail, however the
                                 // content was entered. The D-pad search alone missed it whenever the open rail
                                 // overlapped the content's left edge, which left Back as the only way out.
@@ -1344,12 +1389,8 @@ fun OwnTVShell(
                 }
             }
           }
-            // Like TiviMate: with the menu and the groups open over the guide, the pushed guide runs to the
-            // right edge and the clock and playlist pill step aside instead of sitting on top of it.
-            // The groups alone count as well: they shift the guide under the cluster (27 Oct 2026 photos).
-            val clusterAside = (railState == tv.own.owntv.features.shell.components.RailState.OPEN ||
-                tv.own.owntv.features.shell.components.StageRailOpen.guideGroups) &&
-                (selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV)
+            // The guide shows no clock and no pills at all, as in TiviMate (Jonathan, 27 Oct 2026: "unnötig").
+            val clusterAside = selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV
             val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f)
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
@@ -1411,7 +1452,7 @@ fun OwnTVShell(
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
                 nowPlaying = nowPlayingRail,
                 onNowPlaying = enterNowPlaying,
-                modifier = Modifier.graphicsLayer { alpha = if (guideStripHidden) 0f else 1f },
+                modifier = Modifier.graphicsLayer { alpha = stripAlpha.value },
             )
           }
         }
@@ -1511,7 +1552,25 @@ fun OwnTVShell(
       if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || playerMode == PlayerMode.MINI)) {
         val isFull = playerMode == PlayerMode.FULLSCREEN
         Box(
-            modifier = if (isFull) {
+            modifier = if (isFull && guideHandover) {
+                // From the whole screen to the guide's preview corner; read in layout, so only this box moves.
+                Modifier.layout { measurable, constraints ->
+                    val f = handoverShrink.value
+                    val to = tv.own.owntv.features.epg.GuidePreviewSpot.rect
+                    val fullW = constraints.maxWidth.toFloat()
+                    val fullH = constraints.maxHeight.toFloat()
+                    fun mix(a: Float, b: Float) = a + (b - a) * f
+                    val w = (if (to == null) fullW else mix(fullW, to.width)).toInt().coerceAtLeast(1)
+                    val h = (if (to == null) fullH else mix(fullH, to.height)).toInt().coerceAtLeast(1)
+                    val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(w, h))
+                    layout(constraints.maxWidth, constraints.maxHeight) {
+                        placeable.place(
+                            (if (to == null) 0f else mix(0f, to.left)).toInt(),
+                            (if (to == null) 0f else mix(0f, to.top)).toInt(),
+                        )
+                    }
+                }.background(Color.Black)
+            } else if (isFull) {
                 Modifier.fillMaxSize().background(Color.Black)
             } else {
                 // Dynamic docked size/position: a screen-width fraction at the chosen corner/edge, so it
@@ -1582,7 +1641,7 @@ fun OwnTVShell(
                     onDismiss = { scope.launch { settingsRepo.setAutoFrameRatePrompted() } },
                 )
             }
-            if (isFull) {
+            if (isFull && !guideHandover) {
                 // Engine state still distinguishes the live edge from catch-up/archive playback for
                 // controls such as direct number tuning. It must not gate the physical CH keys below.
                 val isLiveStream = liveOnExo || player.isLiveContent
@@ -1715,7 +1774,7 @@ fun OwnTVShell(
                     remote = tv.own.owntv.player.LiveRemoteActions(
                         // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
                         onOpenGuide = if (isLiveChannel && MainSection.LIVE_TV in visibleSections) {
-                            { exitPlayer(); onSelectSection(MainSection.LIVE_TV) }
+                            { exitToList() }
                         } else null,
                         // Long Down: search, the channel carrying on in the preview.
                         onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,

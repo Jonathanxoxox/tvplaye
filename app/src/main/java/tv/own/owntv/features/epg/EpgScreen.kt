@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -226,7 +229,9 @@ fun EpgScreen(
         if (!effectivePreview || !previewArmed) return@LaunchedEffect
         val ch = previewChannel ?: return@LaunchedEffect
         delay(700)
-        liveVm.playPreview(ch)
+        // With its sound, as in TiviMate: the guide's preview is a channel picked with OK (or the one just
+        // watched full screen), never one merely passed on the way (Jonathan, 27 Oct 2026).
+        liveVm.playPreview(ch, audible = true)
     }
 
     val scope = rememberCoroutineScope()
@@ -505,12 +510,9 @@ fun EpgScreen(
             channel = videoChannel,
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
-            modifier = Modifier.width(426.mpx),
+            // Where the picture lands when full screen closes (the shell shrinks it into this corner).
+            modifier = Modifier.width(426.mpx).onGloballyPositioned { GuidePreviewSpot.rect = it.boundsInRoot() },
         )
-        // The programme title runs level with the shell's pills and clock: it stops short of them.
-        val statusRect = tv.own.owntv.features.shell.components.StageStatusBounds.rect
-        val windowW = androidx.compose.ui.platform.LocalView.current.width
-        val statusClear = if (statusRect.width <= 0f) 0.mpx else with(density) { (windowW - statusRect.left).toDp() } - fx(64) + 28.mpx
         Box(Modifier.weight(1f).fillMaxHeight()) {
             if (topChannel != null) {
                 val chName = ProviderTags.parse(topChannel.name).name
@@ -520,11 +522,8 @@ fun EpgScreen(
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
                     modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
-                    topEndClear = statusClear.coerceAtLeast(0.mpx),
                 )
             }
-            // The key hints at the bottom of the top area, level with the video's bottom edge.
-            Box(Modifier.align(Alignment.BottomStart).padding(start = 46.mpx)) { GuideKeyHints(cellMode = inCellMode && gridHasFocus) }
         }
 
         }
@@ -668,7 +667,9 @@ fun EpgScreen(
             delay(400)
             applyGroup(idx)
         }
-        if (showGroups) {
+        // Kept on screen while it slides out again, so leaving the groups is as smooth as opening them.
+        val groupsOnScreen by remember { derivedStateOf { groupsShift.value > 0.5.mpx } }
+        if (showGroups || groupsOnScreen) {
             val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
             val (groupEntries, _) = liveCategoryEntries(railItems, railCounts)
             // The groups on their own panel, a shade apart from the guide with a line at its edge, so the two
@@ -678,7 +679,10 @@ fun EpgScreen(
                 Modifier
                     .width(groupsW)
                     .fillMaxHeight()
-                    .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
+                    .graphicsLayer {
+                        alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f)
+                        translationX = (groupsShift.value - groupsW).toPx()
+                    }
                     .background(palette.glassTint)
                     .drawBehind {
                         val line = 2.mpx.toPx()
@@ -731,7 +735,10 @@ fun EpgScreen(
                     .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
                     .width(groupsW - fx(40))
                     .fillMaxHeight()
-                    .graphicsLayer { alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f) }
+                    .graphicsLayer {
+                        alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f)
+                        translationX = (groupsShift.value - groupsW).toPx()
+                    }
                     .onFocusChanged { groupsFocused = it.hasFocus },
             )
         }
@@ -1033,31 +1040,6 @@ private fun GuideEmpty(
             }
         }
     }
-}
-
-/**
- * How to move, under the programme beside the video (in place of action buttons,
- * which could not be reached without leaving the channel — they are all in Hold OK's menu). At row level:
- * OK Browse · ▲▼ Channels · ◀ Menu · Hold OK Options; inside a row: OK Watch · ◀ ▶ Programs · Back Channels.
- */
-@Composable
-private fun GuideKeyHints(cellMode: Boolean) {
-    val hints = if (cellMode) {
-        listOf(
-            stringResource(R.string.common_ok) to stringResource(R.string.content_key_watch),
-            "◀ ▶" to stringResource(R.string.content_key_programmes),
-            stringResource(R.string.common_back) to stringResource(R.string.content_key_channels),
-            stringResource(R.string.content_key_hold_ok) to stringResource(R.string.content_key_options),
-        )
-    } else {
-        listOf(
-            stringResource(R.string.common_ok) to stringResource(R.string.content_key_browse),
-            "▲ ▼" to stringResource(R.string.content_key_channels),
-            "◀" to stringResource(R.string.content_key_menu),
-            stringResource(R.string.content_key_hold_ok) to stringResource(R.string.content_key_options),
-        )
-    }
-    tv.own.owntv.ui.stage.StageKeyHints(hints)
 }
 
 /** Rows a page key (CH±, RW/FF) moves the guide by. */
