@@ -1025,7 +1025,7 @@ fun PlayerHud(
             title = meta.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.tvplayer_options_title),
             options = liveOptions,
             ignoreOkUntilReleased = optionsOpenedByOk,
-            onDismiss = close,
+            onDismiss = { showOptions = false },
         )
     }
 
