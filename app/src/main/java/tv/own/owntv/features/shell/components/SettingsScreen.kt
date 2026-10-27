@@ -432,7 +432,9 @@ fun SettingsScreen(
 
     // Only at the root: every sub-screen registers its own handler, which is nested deeper and
     // therefore wins while one is open.
-    if (onBack != null) BackHandler { onBack() }
+    // It is composed after the search-clearing and Quick-pin handlers above, and the last enabled one wins,
+    // so it stands aside while either of those has something to undo first.
+    if (onBack != null) BackHandler(enabled = searchQuery.isBlank() && !(deepReturnKey != null && selectedGroup != 0)) { onBack() }
 
 
     // The root rows, as data (see [RootItem]). Building 40 small objects is a fraction of the cost of

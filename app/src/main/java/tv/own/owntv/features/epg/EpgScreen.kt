@@ -207,9 +207,13 @@ fun EpgScreen(
     val reminderRows by vm.reminderRows.collectAsStateWithLifecycle()
     val leadMinutes by vm.reminderLeadMinutes.collectAsStateWithLifecycle()
     val allRailItems by liveVm.railItems.collectAsStateWithLifecycle()
-    // The guide's second column lists the groups alone: no All channels, Catch-up, Recently watched or
-    // Favourites above them (Jonathan, 27 Oct 2026).
-    val railItems = remember(allRailItems) { allRailItems.filter { it.key is LiveKey.Folder || it.key is LiveKey.Custom } }
+    // The guide's second column lists the groups, with Favourites on top: no All channels, Catch-up or
+    // Recently watched (Jonathan, 27 Oct 2026; Favourites stay so the start mode "Favourites" has its group).
+    val railItems = remember(allRailItems) {
+        allRailItems.filter { it.key is LiveKey.Folder || it.key is LiveKey.Custom || it.key == LiveKey.Favorites }
+    }
+    // Where the guide falls back to when its list is not on offer: the first provider group, not Favourites.
+    val firstGroupKey = remember(railItems) { (railItems.firstOrNull { it.key != LiveKey.Favorites } ?: railItems.firstOrNull())?.key }
     val liveSelected by liveVm.selectedKey.collectAsStateWithLifecycle()
     val playlistMarks by liveVm.playlistMarks.collectAsStateWithLifecycle()
     val livePreviewSetting by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
@@ -226,7 +230,7 @@ fun EpgScreen(
         val current = if (liveMode) liveSelected else categoryFilter
         if (railItems.isEmpty() || railItems.any { it.key == current }) return@LaunchedEffect
         val own = previewChannel?.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
-        val target = own ?: railItems.first().key
+        val target = own ?: firstGroupKey ?: return@LaunchedEffect
         if (liveMode) liveVm.select(target) else vm.setCategoryFilter(target)
     }
     LaunchedEffect(Unit) { vm.load() } // reload from DB each time the guide is opened
@@ -379,7 +383,7 @@ fun EpgScreen(
         val playing = previewChannel
         if (found < 0 && liveMode && playing != null) {
             val own = playing.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
-            val target = own ?: railItems.firstOrNull()?.key ?: LiveKey.All
+            val target = own ?: firstGroupKey ?: LiveKey.All
             if (target != liveSelected) {
                 anchorId = playing.id
                 restoreTo = playing.id
@@ -583,7 +587,11 @@ fun EpgScreen(
                 state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 44) }
                 // Live TV lists every channel of the group, guide or not: an empty grid is an empty group.
                 liveMode && state.channels.isEmpty() && (state.message == null || state.message == EpgMessage.MismatchedIds) ->
-                    GuideEmpty(title = stringResource(R.string.content_no_channels_here))
+                    GuideEmpty(
+                        title = stringResource(
+                            if (categoryKey == LiveKey.Favorites) R.string.tvplayer_guide_no_favorites else R.string.content_no_channels_here,
+                        ),
+                    )
                 // No EPG feed added yet → a guide it can't fill. Point the user to EPG Sources.
                 !state.hasEpgSources && state.channels.isEmpty() -> GuideEmpty(
                     title = stringResource(R.string.content_epg_empty),

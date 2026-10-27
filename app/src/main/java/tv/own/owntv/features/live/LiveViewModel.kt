@@ -1929,6 +1929,14 @@ class LiveViewModel(
         }
     }
 
+    /** The guide's corner shows [channel] again after the preview was stopped by leaving Live TV. Only when
+     *  nothing is previewed, so a channel that is already there is left alone. */
+    fun restorePreview(channel: ChannelEntity) {
+        if (_previewChannel.value != null) return
+        _previewArmed.value = true
+        _previewChannel.value = channel
+    }
+
     fun stopPreview() {
         live.stop() // both engines, every watcher and the give-up alarm, and the reconnect link
         _previewChannel.value = null

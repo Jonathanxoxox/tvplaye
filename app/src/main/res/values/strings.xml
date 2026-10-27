@@ -82,4 +82,5 @@
     <string name="tvplayer_action_ch_down" translatable="false">Vorheriger Sender</string>
     <string name="tvplayer_action_history" translatable="false">Verlauf</string>
     <string name="tvplayer_action_search" translatable="false">Suche</string>
+    <string name="tvplayer_guide_no_favorites" translatable="false">Noch keine Favoriten</string>
 </resources>

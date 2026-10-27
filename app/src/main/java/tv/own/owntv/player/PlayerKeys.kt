@@ -24,7 +24,8 @@ data class PlayerKeyBinding(val short: PlayerKeyAction, val long: PlayerKeyActio
 /**
  * The fullscreen live player's key map. The defaults are the classic IPTV player's: OK the info bar
  * (held: options), Menu the options (held: the guide), Left the channel list, Right the channel
- * before (held: the info bar), Up/Down change channel (held: history / search), Info and Yellow
+ * before (held: the info bar), Up/Down change channel on the press (nothing on hold, so zapping
+ * is instant), Info and Yellow
  * the info bar, Guide, Red and Green the guide, Blue the options.
  */
 object PlayerKeyMap {
@@ -33,8 +34,8 @@ object PlayerKeyMap {
         PlayerKey.MENU to PlayerKeyBinding(PlayerKeyAction.OPTIONS, PlayerKeyAction.GUIDE),
         PlayerKey.LEFT to PlayerKeyBinding(PlayerKeyAction.CHANNEL_LIST, PlayerKeyAction.NONE),
         PlayerKey.RIGHT to PlayerKeyBinding(PlayerKeyAction.LAST_CHANNEL, PlayerKeyAction.INFO_PANEL),
-        PlayerKey.UP to PlayerKeyBinding(PlayerKeyAction.CHANNEL_UP, PlayerKeyAction.HISTORY),
-        PlayerKey.DOWN to PlayerKeyBinding(PlayerKeyAction.CHANNEL_DOWN, PlayerKeyAction.SEARCH),
+        PlayerKey.UP to PlayerKeyBinding(PlayerKeyAction.CHANNEL_UP, PlayerKeyAction.NONE),
+        PlayerKey.DOWN to PlayerKeyBinding(PlayerKeyAction.CHANNEL_DOWN, PlayerKeyAction.NONE),
         PlayerKey.INFO to PlayerKeyBinding(PlayerKeyAction.INFO_PANEL, PlayerKeyAction.NONE),
         PlayerKey.GUIDE to PlayerKeyBinding(PlayerKeyAction.GUIDE, PlayerKeyAction.NONE),
         PlayerKey.RED to PlayerKeyBinding(PlayerKeyAction.GUIDE, PlayerKeyAction.NONE),
@@ -45,6 +46,8 @@ object PlayerKeyMap {
 
     private const val PREFS = "tvplayer"
     private const val PREFIX = "player_key_"
+    private const val FAST_ZAP_DONE = "fast_zap_v1"
+    private fun prefKey(key: PlayerKey, long: Boolean) = PREFIX + key.name + if (long) "_long" else "_short"
     private val state = MutableStateFlow(defaults)
     @Volatile private var loaded = false
 
@@ -54,11 +57,18 @@ object PlayerKeyMap {
             synchronized(this) {
                 if (!loaded) {
                     val prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                    // Fast zapping (Jonathan, 27 Oct 2026): ▲▼ change the channel on the press. Held ▲ / ▼ used to
+                    // open history / search, which made every zap wait for the release. Once, drop a stored hold.
+                    if (!prefs.getBoolean(FAST_ZAP_DONE, false)) {
+                        prefs.edit()
+                            .remove(prefKey(PlayerKey.UP, true)).remove(prefKey(PlayerKey.DOWN, true))
+                            .putBoolean(FAST_ZAP_DONE, true).apply()
+                    }
                     state.value = PlayerKey.entries.associateWith { k ->
                         val d = defaults.getValue(k)
                         PlayerKeyBinding(
-                            short = prefs.getString(PREFIX + k.name + "_short", null)?.let(::actionOf) ?: d.short,
-                            long = prefs.getString(PREFIX + k.name + "_long", null)?.let(::actionOf) ?: d.long,
+                            short = prefs.getString(prefKey(k, false), null)?.let(::actionOf) ?: d.short,
+                            long = prefs.getString(prefKey(k, true), null)?.let(::actionOf) ?: d.long,
                         )
                     }
                     loaded = true
@@ -72,7 +82,7 @@ object PlayerKeyMap {
         val current = flow(context).value.getValue(key)
         state.value = state.value + (key to if (long) current.copy(long = action) else current.copy(short = action))
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putString(PREFIX + key.name + if (long) "_long" else "_short", action.name).apply()
+            .putString(prefKey(key, long), action.name).apply()
     }
 
     fun reset(context: Context) {
