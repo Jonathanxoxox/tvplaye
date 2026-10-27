@@ -356,14 +356,16 @@ class EpgViewModel(
      * One job at a time, and the newest wins: rows come into view one after another, so each request
      * cancels the previous run rather than adding to it. That is what keeps this a prefetch and not
      * the N+1 query storm the deleted batch load was originally written to prevent — at most
-     * [PREFETCH_AHEAD] small indexed reads are ever in flight, sequentially, and the LRU bounds what
+     * [PREFETCH_AHEAD] + [PREFETCH_BEHIND] small indexed reads are ever in flight, sequentially, and the LRU bounds what
      * they cost to keep.
      */
     private fun prefetchAfter(channel: ChannelEntity) {
         val channels = _state.value.channels
         val from = channels.indexOfFirst { it.id == channel.id }
         if (from < 0) return
-        val next = channels.subList((from + 1).coerceAtMost(channels.size), (from + 1 + PREFETCH_AHEAD).coerceAtMost(channels.size))
+        // Below first (the usual direction), then a few above, so scrolling back up does not draw blanks either.
+        val next = channels.subList((from + 1).coerceAtMost(channels.size), (from + 1 + PREFETCH_AHEAD).coerceAtMost(channels.size)) +
+            channels.subList((from - PREFETCH_BEHIND).coerceAtLeast(0), from).asReversed()
         if (next.isEmpty()) return
         prefetchJob?.cancel()
         prefetchJob = viewModelScope.launch {
@@ -1198,6 +1200,7 @@ class EpgViewModel(
         // Rows read ahead of the one that came into view. Roughly a screen's worth on a television,
         // measure before making it two screens; do not raise it on a hunch.
         private const val PREFETCH_AHEAD = 10
+        private const val PREFETCH_BEHIND = 4
         // Rows read ahead for the category under the cursor (a screen and a bit), and how many at once.
         private const val CATEGORY_PREFETCH = 12
         private const val CATEGORY_PREFETCH_PARALLEL = 4

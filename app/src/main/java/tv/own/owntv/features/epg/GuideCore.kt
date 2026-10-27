@@ -93,8 +93,11 @@ internal fun ProgrammeStripCanvas(
     val timeStyle = tv.own.owntv.ui.theme.stageText(14, 400).copy(fontFeatureSettings = "tnum", textDirection = TextDirection.Content)
     val formatTime = rememberSystemTimeFormatter()
     val rangeTemplate = stringResource(R.string.content_live_time_range_plain)
+    // Only needed for the small line, which title-only cells never draw: formatting two times per programme
+    // on every row that comes into view was pure waste while scrolling.
     val labels = remember(programmes, formatTime, rangeTemplate) {
-        programmes.map { String.format(java.util.Locale.ROOT, rangeTemplate, formatTime(it.startMs), formatTime(it.stopMs)) }
+        if (TitleOnly) emptyList()
+        else programmes.map { String.format(java.util.Locale.ROOT, rangeTemplate, formatTime(it.startMs), formatTime(it.stopMs)) }
     }
     val recRed = Color(0xFFFF5B5B)
     val textColor = tv.own.owntv.ui.theme.StageColors.Text
@@ -175,9 +178,11 @@ internal fun ProgrammeStripCanvas(
             val titleColor = if (focused) a.onAccent else textColor.copy(alpha = fade)
             val smallColor = if (focused) Color.Black.copy(alpha = 0.6f) else dimColor.copy(alpha = fade)
             val iconColor = if (focused) a.onAccent else a.accent.copy(alpha = fade)
-            val title = measurer.measure(p.title, titleStyle.copy(color = titleColor), overflow = TextOverflow.Ellipsis, maxLines = 1, softWrap = false, constraints = Constraints(maxWidth = textW))
+            // Measured without its colour, which is applied when drawing: focusing a cell or the clock passing
+            // then reuses the cached layout instead of measuring the title again.
+            val title = measurer.measure(p.title, titleStyle, overflow = TextOverflow.Ellipsis, maxLines = 1, softWrap = false, constraints = Constraints(maxWidth = textW))
             // The title alone, centred in the cell, as the classic player shows it.
-            drawText(title, topLeft = Offset(tx + 14 * px, (h - title.size.height) / 2f))
+            drawText(title, color = titleColor, topLeft = Offset(tx + 14 * px, (h - title.size.height) / 2f))
             if (p.startMs in recordingStarts) {
                 drawCircle(if (focused) recRed else recRed.copy(alpha = fade), 4 * px, Offset(x + w - 12 * px, h / 2f))
             }
