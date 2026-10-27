@@ -189,7 +189,6 @@ internal val VIDEO_QUICK_ROWS: List<VideoQuickRef> = listOf(
     VideoQuickRef("vp_rewind_step", SECTION_CONTROLS, OwnTVIcon.REWIND, R.string.settings_live_rewind_step, R.string.settings_live_rewind_step_description),
     VideoQuickRef("vp_multiview", SECTION_MULTIVIEW, OwnTVIcon.LIST_GRID, R.string.settings_multiview, R.string.settings_multiview_description),
     VideoQuickRef("vp_multiview_tiles", SECTION_MULTIVIEW, OwnTVIcon.LIST_GRID, R.string.settings_multiview_tiles_max, R.string.settings_multiview_description),
-    VideoQuickRef("vp_mini", SECTION_MULTIVIEW, OwnTVIcon.PIP, R.string.settings_mini_player_root, R.string.settings_mini_player_root_description),
     VideoQuickRef("vp_volume", SECTION_SOUND, OwnTVIcon.VOLUME_HIGH, R.string.settings_default_volume, R.string.settings_default_volume_description),
     VideoQuickRef("vp_reset_volume", SECTION_SOUND, OwnTVIcon.VOLUME_HIGH, R.string.settings_reset_saved_volume, R.string.settings_reset_saved_volume_description),
     VideoQuickRef("vp_surround", SECTION_SOUND, OwnTVIcon.AUDIO, R.string.settings_surround_sound),
@@ -477,7 +476,6 @@ internal fun videoQuickBinding(key: String, vm: SettingsViewModel): VideoQuickBi
             val on by vm.detailedDiagnostics.collectAsStateWithLifecycle()
             toggle(onOff(on), on) { vm.setDetailedDiagnostics(!on) }
         }
-        // vp_mini has no value of its own — the mini player row is a screen, nothing else.
         else -> null
     }
 }
@@ -1184,15 +1182,6 @@ internal fun VideoPlayerGroupRows(
                 onClick = { savedScroll = scrollState.value; dialog = Dialog.MULTIVIEW_TILES },
             )
         }
-        KeyedSettingRow(
-            quickKey = "vp_mini",
-            icon = OwnTVIcon.PIP,
-            title = stringResource(R.string.settings_mini_player_root),
-            desc = stringResource(R.string.settings_mini_player_root_description),
-            value = SettingValue.Opens(null),
-            modifier = Modifier.focusRequester(dialogRowFocus.getValue(Dialog.MINI_PLAYER)),
-            onClick = { savedScroll = scrollState.value; dialog = Dialog.MINI_PLAYER },
-        )
                     }
                     SECTION_SOUND -> {
         KeyedSettingRow(
@@ -1965,7 +1954,6 @@ private fun dialogForQuickKey(key: String): Dialog? = when (key) {
     "vp_sub_style" -> Dialog.SUB_STYLE
     "vp_sub_lang" -> Dialog.SUB_LANG
     "vp_resume" -> Dialog.RESUME
-    "vp_mini" -> Dialog.MINI_PLAYER
     else -> null
 }
 

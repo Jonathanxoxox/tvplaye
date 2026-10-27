@@ -802,7 +802,8 @@ fun OwnTVShell(
         Unit
     }
     val openShortcutSection: (MainSection) -> Unit = { section ->
-        if (playerMode == PlayerMode.FULLSCREEN) dockPlayer()
+        // Out of full screen first, as with Back; the section change follows.
+        if (playerMode == PlayerMode.FULLSCREEN) exitPlayer()
         if (section == MainSection.SEARCH) {
             searchVm.setQuery("")
             trendingSearchActive = false
@@ -828,18 +829,20 @@ fun OwnTVShell(
             RemoteShortcutAction.OPEN_SEARCH -> openShortcutSection(MainSection.SEARCH)
             RemoteShortcutAction.OPEN_SETTINGS -> openShortcutSection(MainSection.SETTINGS)
             RemoteShortcutAction.OPEN_PROFILE_SWITCHER -> {
-                if (playerMode == PlayerMode.FULLSCREEN) dockPlayer()
+                if (playerMode == PlayerMode.FULLSCREEN) exitPlayer()
                 onSwitchProfile()
             }
             RemoteShortcutAction.OPEN_PLAYLIST_SWITCHER -> {
-                if (playerMode == PlayerMode.FULLSCREEN) dockPlayer()
+                if (playerMode == PlayerMode.FULLSCREEN) exitPlayer()
                 if (playlists.size > 1) showPlaylistPicker = true
             }
             RemoteShortcutAction.CONTINUE_LAST_WATCHED -> continueLastWatched()
-            RemoteShortcutAction.FOCUS_NOW_PLAYING -> enterNowPlaying()
-            RemoteShortcutAction.EXPAND_NOW_PLAYING -> if (playerMode == PlayerMode.MINI || playerMode == PlayerMode.AUDIO) expandPlayer()
-            RemoteShortcutAction.ENTER_MINI_PLAYER -> if (playerMode == PlayerMode.FULLSCREEN) dockPlayer()
-            RemoteShortcutAction.ENTER_AUDIO_MODE -> if (playerMode == PlayerMode.FULLSCREEN || playerMode == PlayerMode.MINI) toAudioMode()
+            // The mini player and audio mode are gone: a stored binding does nothing.
+            RemoteShortcutAction.FOCUS_NOW_PLAYING,
+            RemoteShortcutAction.EXPAND_NOW_PLAYING,
+            RemoteShortcutAction.ENTER_MINI_PLAYER,
+            RemoteShortcutAction.ENTER_AUDIO_MODE,
+            -> Unit
             RemoteShortcutAction.PLAY_PAUSE -> if (playerMode != PlayerMode.NONE) dockedEngine.togglePlayPause()
             RemoteShortcutAction.RETURN_TO_LIVE -> if (playerMode != PlayerMode.NONE && zapSource == MainSection.LIVE_TV && timeshifted) liveVm.goToLive()
             RemoteShortcutAction.PREVIOUS_CHANNEL -> if (playerMode != PlayerMode.NONE && zapSource == MainSection.LIVE_TV) liveVm.previousChannel()
@@ -1786,8 +1789,6 @@ fun OwnTVShell(
                 PlayerHud(
                     player = if (liveOnExo) liveVm.previewEngine else mpvEngine, // HUD drives the active engine
                     onBack = exitToList,
-                    onPip = dockPlayer, // PiP/dock works for live on either engine now
-                    onAudioMode = toAudioMode,
                     // The channel-list overlay draws ABOVE the HUD; while it's open the HUD goes inert so
                     // its hide/error focus grabs can't yank D-pad focus off the overlay.
                     inert = showChannelList || showHistoryList || showCategoryBrowser || showSubtitleSearch || showLocalSubPicker || showOtherChannels,

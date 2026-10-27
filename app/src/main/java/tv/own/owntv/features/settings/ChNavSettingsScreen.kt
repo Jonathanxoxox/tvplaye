@@ -214,7 +214,7 @@ fun ChNavSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
             onDismiss = { dialog = ChNavDialog.NONE },
         )
         ChNavDialog.ACTION -> pendingBinding?.let { binding ->
-            val actionOptions = RemoteShortcutAction.entries.map { it.name to remoteActionLabel(it) }
+            val actionOptions = RemoteShortcutAction.entries.filter { it !in RETIRED_ACTIONS }.map { it.name to remoteActionLabel(it) }
             PickerDialog(
                 title = stringResource(R.string.settings_remote_shortcuts_choose_action),
                 options = if (editingExisting) listOf(String() to stringResource(R.string.common_delete)) + actionOptions else actionOptions,
@@ -222,7 +222,7 @@ fun ChNavSettingsScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 searchable = true,
                 leadingIcons = buildMap {
                     if (editingExisting) put(String(), OwnTVIcon.CLOSE)
-                    RemoteShortcutAction.entries.forEach { put(it.name, remoteActionIcon(it)) }
+                    RemoteShortcutAction.entries.filter { it !in RETIRED_ACTIONS }.forEach { put(it.name, remoteActionIcon(it)) }
                 },
                 onSelect = { value ->
                     if (value.isEmpty()) vm.removeRemoteShortcutBinding(binding.keyCode, binding.press)
@@ -421,3 +421,11 @@ private fun remoteActionIcon(action: RemoteShortcutAction): OwnTVIcon = when (ac
 }
 
 private const val CAPTURE_LONG_PRESS_MS = 600L
+
+/** Shortcuts for the mini player and audio mode, which Mayo TV no longer has: no longer offered, a stored one does nothing. */
+private val RETIRED_ACTIONS = setOf(
+    RemoteShortcutAction.FOCUS_NOW_PLAYING,
+    RemoteShortcutAction.EXPAND_NOW_PLAYING,
+    RemoteShortcutAction.ENTER_MINI_PLAYER,
+    RemoteShortcutAction.ENTER_AUDIO_MODE,
+)
