@@ -470,10 +470,16 @@ internal fun LiveCategories(
     val scope = rememberCoroutineScope()
     // CH+/− in the categories changes the selection; the highlight follows it there.
     var hasFocus by remember { mutableStateOf(false) }
+    // The row that has focus: a selection that only followed it (browsing, then applied) needs no scroll.
+    var focusedPos by remember { mutableStateOf(-1) }
     LaunchedEffect(selectedIndex) {
         val pos = visible.indexOf(selectedIndex)
-        if (!hasFocus || pos < 0) return@LaunchedEffect
-        runCatching { listState.scrollToItem(pos + 1) } // +1: the search field is item 0
+        if (!hasFocus || pos < 0 || pos == focusedPos) return@LaunchedEffect
+        // CH+/− moved the selection: bring the row in only when it is off screen (scrollToItem puts it at the top).
+        // (+2 as well: the groups heading sits between the search field and the rows)
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == pos + 1 || it.index == pos + 2 }) {
+            runCatching { listState.scrollToItem(pos + 1) } // +1: the search field is item 0
+        }
         withFrameNanos { }
         runCatching { rowFocusers[pos].requestFocus() }
     }
@@ -575,7 +581,7 @@ internal fun LiveCategories(
                 }
                 item(key = entry.item.key.toString()) {
                     val rowModifier = Modifier.focusRequester(rowFocusers[pos]).then(rightKey)
-                        .onFocusChanged { if (it.hasFocus) onRowFocus(index) }
+                        .onFocusChanged { if (it.hasFocus) { focusedPos = pos; onRowFocus(index) } }
                     val selected = index == selectedIndex
                     if (sheet) {
                         StageSheetItem(
