@@ -441,6 +441,8 @@ fun OwnTVShell(
                     // There is no caller-owned browse rail here. Let LiveViewModel build the channel's
                     // provider context instead of permanently arming a one-item list that disables CH+/CH-.
                     liveVm.watchFullscreen(ch, emptyList())
+                    // Live TV is built behind the picture from the start, so Back finds the guide ready.
+                    onSelectSection(MainSection.LIVE_TV)
                     playerMode = PlayerMode.FULLSCREEN
                 }
             }
@@ -478,6 +480,7 @@ fun OwnTVShell(
                 if (channel != null && liveVm.isVisibleToActiveProfile(channel) && playerMode == PlayerMode.NONE) {
                     zapSource = MainSection.LIVE_TV
                     liveVm.watchFullscreen(channel, emptyList())
+                    onSelectSection(MainSection.LIVE_TV)
                     playerMode = PlayerMode.FULLSCREEN
                 } else {
                     onSelectSection(MainSection.HOME)
@@ -562,8 +565,10 @@ fun OwnTVShell(
         runCatching { handoverFocus.requestFocus() }
         Unit
     }
+    // Back is pressed and the guide is still getting ready behind the picture (see GuidePreviewSpot.ready).
+    var exitPending by remember { mutableStateOf(false) }
     val exitToList: () -> Unit = exit@{
-        if (guideHandover) return@exit
+        if (guideHandover || exitPending) return@exit
         val toList = zapSource == MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections
         val intoGuide = toList && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
             livePreviewOn && multiview == null
@@ -587,17 +592,24 @@ fun OwnTVShell(
             onSelectSection(MainSection.LIVE_TV)
             tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
         }
-        // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
-        // focused, Compose hands focus to the first thing on screen, the top of the menu, which flashed open.
-        if (fromScratch || guideEntry?.invoke() != true) parkFocus()
-        guideHandover = true
-        handoverGrow = false
+        exitPending = true
         scope.launch {
-            handoverShrink.snapTo(0f)
+            // The guide gets ready behind the picture first (loaded, on the playing row, axis at now), so the
+            // glide lands on a grid that does not move any more. Bounded: a guide that cannot load must not
+            // hold Back; the picture simply stays full screen meanwhile.
             var frames = 0
+            while (!tv.own.owntv.features.epg.GuidePreviewSpot.ready && frames++ < 45) withFrameNanos { }
+            // Closed some other way while it got ready (a shortcut, the Home key): nothing left to glide.
+            if (playerMode != PlayerMode.FULLSCREEN) { exitPending = false; return@launch }
+            // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
+            // focused, Compose hands focus to the first thing on screen, the top of the menu, which flashed open.
+            if (guideEntry?.invoke() != true) parkFocus()
+            guideHandover = true
+            handoverGrow = false
+            exitPending = false
+            handoverShrink.snapTo(0f)
+            frames = 0
             while (tv.own.owntv.features.epg.GuidePreviewSpot.rect == null && frames++ < 30) withFrameNanos { }
-            // A guide built just now: let its first heavy frames pass before the picture starts to move.
-            if (fromScratch) repeat(3) { withFrameNanos { } }
             if (tv.own.owntv.features.epg.GuidePreviewSpot.rect != null) handoverShrink.animateTo(1f, handoverSpec)
             closePlayer(toRail = false, intoLive = true)
             // The picture stays where it is until the guide claims it for its corner (inCorner), so the view
@@ -1325,6 +1337,7 @@ fun OwnTVShell(
                             onOpenSettings = { onSelectSection(MainSection.SETTINGS) },
                             onAddEpg = { openEpgAdd = true; onSelectSection(MainSection.SETTINGS) },
                             previewEnabled = playerMode == PlayerMode.NONE,
+                            behindFullscreen = guideBehind,
                             liveMode = true,
                             onEntryHook = { guideEntry = it },
                             restoreFocus = restoreFocus,
