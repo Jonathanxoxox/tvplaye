@@ -37,3 +37,25 @@ val animationsOn: Boolean
 @ReadOnlyComposable
 fun <T> ownTvTween(durationMs: Int = 200, easing: Easing = FastOutSlowInEasing): TweenSpec<T> =
     tween(LocalAnimationLevel.current.scale(durationMs), easing = easing)
+
+/** Quick to leave, long soft landing: the curve the guide's panels and the picture's hand-over slide on. */
+val StageEase: Easing = androidx.compose.animation.core.CubicBezierEasing(0.2f, 0f, 0f, 1f)
+
+/**
+ * The guide's slides (menu, groups, picture to and from the corner), [durationMs] long on the television.
+ *
+ * Compose shortens every animation by the box's animator scale, and many Android TV boxes ship at 0.5× (or
+ * are set there to feel faster): 320 ms became 160 ms on Jonathan's, too short to read as motion (27 Oct
+ * 2026). The app's own Animations switch decides instead; a scale of 0 (motion off) is still respected.
+ */
+@Composable
+fun <T> stageSlide(durationMs: Int = 320): TweenSpec<T> {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scale = androidx.compose.runtime.remember(context) {
+        runCatching {
+            android.provider.Settings.Global.getFloat(context.contentResolver, android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        }.getOrDefault(1f)
+    }
+    val ms = if (scale <= 0f) 0 else LocalAnimationLevel.current.scale((durationMs / scale).toInt())
+    return tween(ms, easing = StageEase)
+}
