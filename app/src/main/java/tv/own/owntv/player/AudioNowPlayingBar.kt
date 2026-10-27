@@ -36,6 +36,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.runtime.State
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -351,9 +353,9 @@ private fun LiveRow() {
     val red = Color(0xFFFF5A4F)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.mpx)) {
         // Animations Off: a steady dot. The pulse is not run at all (never a 0 ms infinite transition).
-        val alpha = if (animationsOn) pulse() else 1f
+        val dot = if (animationsOn) pulse() else null
         Box(
-            Modifier.size(7.mpx).alpha(alpha).drawBehind {
+            Modifier.size(7.mpx).graphicsLayer { alpha = dot?.value ?: 1f }.drawBehind {
                 drawBoxShadow(red, 8.mpx.toPx(), size.minDimension / 2f)
                 drawCircle(red)
             },
@@ -363,14 +365,14 @@ private fun LiveRow() {
 }
 
 @Composable
-private fun pulse(): Float {
+private fun pulse(): State<Float> {
+    // Returned as a State and read in the dot's graphics layer: the row does not recompose per frame.
     val transition = rememberInfiniteTransition(label = "liveDot")
-    val a by transition.animateFloat(
+    return transition.animateFloat(
         initialValue = 0.35f, targetValue = 1f,
         animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
         label = "liveDotAlpha",
     )
-    return a
 }
 
 /**

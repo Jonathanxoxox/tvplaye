@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -183,15 +184,17 @@ internal fun LiveStateBadge(offsetSec: Int?) {
     // find the current repeat — 0 ms means a divide-by-zero on the main thread on the very next frame.
     // That shipped in 4.2.3 and crashed full-screen Live TV for every user with animations turned off.
     // Reduce animations is honoured by skipping the transition entirely instead.
+    // The pulse is read in the dot's graphics layer only, so the badge redraws each frame without
+    // recomposing its row and text (it sits over the playing video the whole time).
     val pulse = if (behind || !animationsOn) {
-        1f
+        null
     } else {
         val transition = rememberInfiniteTransition(label = "liveDot")
         transition.animateFloat(
             initialValue = 1f, targetValue = 0.25f,
             animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
             label = "liveDotAlpha",
-        ).value
+        )
     }
     Row(
         Modifier.clip(RoundedCornerShape(7.dp)).background(tint.copy(alpha = 0.85f)).padding(horizontal = 9.dp, vertical = 3.dp),
@@ -200,9 +203,9 @@ internal fun LiveStateBadge(offsetSec: Int?) {
     ) {
         OwnTVIcon(
             OwnTVIcon.LIVE_DOT,
-            tint = Color.White.copy(alpha = if (behind) 1f else pulse),
+            tint = Color.White,
             filled = true,
-            modifier = Modifier.size(10.dp),
+            modifier = Modifier.size(10.dp).graphicsLayer { alpha = pulse?.value ?: 1f },
         )
         Text(
             if (behind) stringResource(R.string.player_live_offset, mmss(offsetSec)) else stringResource(R.string.player_live),

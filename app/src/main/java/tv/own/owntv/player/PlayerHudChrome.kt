@@ -32,6 +32,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
@@ -218,14 +219,14 @@ internal fun ChannelCard(player: PlaybackEngine, modifier: Modifier = Modifier, 
 @Composable
 internal fun ChannelNumberCard(digits: String, error: String? = null, modifier: Modifier = Modifier) {
     // Animations Off: a steady caret, with no infinite transition started (never a 0 ms one).
-    val caretAlpha = if (!animationsOn) 1f else {
+    // Read only while drawing the caret, so the blink does not recompose the card every frame.
+    val caretAlpha = if (!animationsOn) null else {
         val caret = rememberInfiniteTransition(label = "tuneCaret")
-        val blink by caret.animateFloat(
+        caret.animateFloat(
             initialValue = 1f, targetValue = 0f,
             animationSpec = infiniteRepeatable(tween(600, easing = LinearEasing), RepeatMode.Reverse),
             label = "tuneCaretAlpha",
         )
-        blink
     }
     val countdown = remember { Animatable(0f) }
     // Captured before the draw lambda: a DrawScope is not a composable, so it can't read the theme.
@@ -263,7 +264,7 @@ internal fun ChannelNumberCard(digits: String, error: String? = null, modifier: 
                 if (error == null) {
                     Box(
                         Modifier.padding(start = 4.dp, bottom = 4.dp).width(3.dp).height(22.dp)
-                            .clip(RoundedCornerShape(2.dp)).background(accent.copy(alpha = caretAlpha)),
+                            .clip(RoundedCornerShape(2.dp)).drawBehind { drawRect(accent.copy(alpha = caretAlpha?.value ?: 1f)) },
                     )
                 }
             }

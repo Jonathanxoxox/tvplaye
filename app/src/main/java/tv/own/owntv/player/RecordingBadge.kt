@@ -20,7 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -61,11 +61,12 @@ fun RecordingBadge(modifier: Modifier = Modifier) {
     // That distinction is the whole reason this is written as a branch: an infinite animation whose
     // duration had been scaled to 0 ms is what crashed the app in 4.2.3, from the LIVE badge in this
     // very HUD. `AnimationLevel.scale(...)` returning 0 must never reach `infiniteRepeatable`.
+    // Kept as a State and read in the dot's graphics layer, so the pulse redraws without recomposing.
     val dotAlpha = if (animation == AnimationLevel.OFF) {
-        1f
+        null
     } else {
         val transition = rememberInfiniteTransition(label = "rec")
-        val pulse by transition.animateFloat(
+        transition.animateFloat(
             initialValue = 1f,
             targetValue = 0.25f,
             animationSpec = infiniteRepeatable(
@@ -74,7 +75,6 @@ fun RecordingBadge(modifier: Modifier = Modifier) {
             ),
             label = "recPulse",
         )
-        pulse
     }
 
     Row(
@@ -89,7 +89,7 @@ fun RecordingBadge(modifier: Modifier = Modifier) {
         Box(
             Modifier
                 .size(8.dp)
-                .alpha(dotAlpha)
+                .graphicsLayer { alpha = dotAlpha?.value ?: 1f }
                 .clip(CircleShape)
                 .background(RecordingRed),
         )
