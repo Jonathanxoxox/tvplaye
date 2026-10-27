@@ -562,6 +562,8 @@ fun OwnTVShell(
             // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
             // the stream on the way, and it takes the focus itself.
             if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            // The guide's row takes focus before the player's controls leave, so focus never falls to the menu.
+            else guideEntry?.invoke()
             closePlayer(toRail = false, intoLive = true)
             return@exit
         }
@@ -573,6 +575,9 @@ fun OwnTVShell(
             onSelectSection(MainSection.LIVE_TV)
             tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
         }
+        // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
+        // focused, Compose hands focus to the first thing on screen, the top of the menu, which flashed open.
+        if (!fromScratch) guideEntry?.invoke()
         guideHandover = true
         handoverGrow = false
         scope.launch {
@@ -697,7 +702,9 @@ fun OwnTVShell(
     // Only the strip itself brings the strip back: with nobody focused (the moment after full screen shrinks
     // onto the guide) it must stay out, or it flashes in for the frames before a guide row takes focus.
     val guideStripHidden = guideSection &&
-        railState != tv.own.owntv.features.shell.components.RailState.OPEN && !railTrulyFocused
+        railState != tv.own.owntv.features.shell.components.RailState.OPEN &&
+        // Focus the menu gets by itself while full screen hands over to the guide is not the menu being used.
+        (!railTrulyFocused || guideHandover || playerMode == PlayerMode.FULLSCREEN)
     // The guide does not jump when the strip steps aside or comes back: it slides, as TiviMate's does.
     // Keyed on the section: another page keeps its padding and must not slide in from the guide's offset.
     val guideStripRoom = androidx.compose.runtime.key(guideSection) {
