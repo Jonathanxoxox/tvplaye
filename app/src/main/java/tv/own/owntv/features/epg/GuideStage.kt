@@ -101,6 +101,14 @@ import tv.own.owntv.ui.theme.stageText
 private const val Tabular = "tnum"
 
 /**
+ * Where the guide's preview sits on screen (root coordinates), reported by the guide. Full screen closes
+ * into it: the shell shrinks the picture onto this corner before the guide takes the stream over.
+ */
+object GuidePreviewSpot {
+    var rect by androidx.compose.runtime.mutableStateOf<androidx.compose.ui.geometry.Rect?>(null)
+}
+
+/**
  * The top-left video (426×240, radius 20): the focused channel through Live TV's preview player — no
  * second decoder — with the LIVE badge and "259 · Sky Cinema Family · Toy Story 4" along the bottom.
  */

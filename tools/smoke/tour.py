@@ -378,6 +378,13 @@ def player_tour():
     if not in_fullscreen():
         key("DPAD_CENTER", wait=5)
     shot("player")
+    # Zurück: das Bild gleitet in die Vorschau-Ecke des Guides und läuft dort weiter; OK holt es zurück.
+    key("BACK", wait=0.15)
+    shot("player-zurueck-gleitet")
+    time.sleep(2)
+    shot("player-zurueck-im-guide")
+    key("DPAD_CENTER", wait=4)
+    shot("player-wieder-vollbild")
     key("DPAD_CENTER", wait=1.5)
     shot("player-ok-infoleiste")
     key("BACK", wait=1.0)

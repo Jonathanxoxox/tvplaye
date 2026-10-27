@@ -156,12 +156,17 @@ fun StageRail(
     // bright as before, as in the classic IPTV player. Pages that add a column beside the menu read it.
     val openOverPage = state == RailState.OPEN
     androidx.compose.runtime.SideEffect { StageRailOpen.open = openOverPage }
+    // Opening, the menu slides in from the left edge alongside the page it pushes, as in TiviMate.
+    val openness = androidx.compose.animation.core.animateFloatAsState(if (expanded) 1f else 0f)
     Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
                 .width(if (expanded) MenuWidth else StripWidth)
+                .graphicsLayer {
+                    if (expanded) translationX = -(1f - openness.value) * (MenuWidth - StripWidth).toPx() * if (rtl) -1f else 1f
+                }
                 .onFocusChanged {
                     // Every entry from the content lands on the selected section, not on whatever item
                     // happens to line up; moves inside the rail do not re-trigger this.
