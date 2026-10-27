@@ -928,6 +928,7 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	efootball
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eishockey
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	eleven
+1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	er
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	espn
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	esports
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballMatcher.kt	film
