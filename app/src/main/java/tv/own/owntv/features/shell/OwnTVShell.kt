@@ -814,6 +814,11 @@ fun OwnTVShell(
         )
     }
 
+    // The screen the tour's frame report counts against (a no-op unless the build logs frames).
+    LaunchedEffect(selectedSection, playerMode) {
+        tv.own.owntv.ui.FrameJankLog.screen = selectedSection.name + ":" + playerMode.name
+    }
+
     LaunchedEffect(sidebarFocus) {
         tv.own.owntv.core.util.Perf.stamp("shell-composed")
         withFrameNanos { }

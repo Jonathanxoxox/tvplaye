@@ -187,6 +187,8 @@ open class MainActivity : ComponentActivity() {
             return
         }
         Perf.stamp("db-probed") // main thread was blocked here: everything above is pre-composition
+        // Janky frames per screen for the screenshot tour's report; compiled out of normal builds.
+        if (BuildConfig.PERF_LOG) tv.own.owntv.ui.FrameJankLog.attach(window)
         setContent {
             // First composition pass — splits "process start → Compose is running" from
             // "Compose is running → the destination's data arrived".
