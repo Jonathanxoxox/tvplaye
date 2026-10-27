@@ -1,13 +1,18 @@
 package tv.own.owntv.launcher
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import tv.own.owntv.core.sports.FollowedTeam
 import tv.own.owntv.core.sports.SportsConfig
+import tv.own.owntv.core.sports.model.Competitor
+import tv.own.owntv.core.sports.model.Match
+import tv.own.owntv.core.sports.model.MatchState
 import tv.own.owntv.core.sports.model.Sport
+import tv.own.owntv.core.sports.model.Team
 
 class FootballMatcherTest {
 
@@ -138,4 +143,38 @@ class FootballMatcherTest {
         assertTrue(FootballMatcher.isNationalChannel("DK: TV2 Sport"))
         assertTrue(!FootballMatcher.isNationalChannel("DE: Standard Kanal"))
     }
+
+    private fun fixture(home: Team, away: Team, league: String = "ger.dfb_pokal", leagueName: String = "German Cup") =
+        FootballMatcher.fixture(
+            Match(
+                id = "1", sport = Sport.SOCCER, feed = league, leagueSlug = league, leagueName = leagueName,
+                startMs = 0L, state = MatchState.PRE, statusText = "", title = "",
+                competitors = listOf(Competitor(home, home = true, winner = null, score = null), Competitor(away, home = false, winner = null, score = null)),
+            ),
+        )
+
+    private val hsv = Team("127", "Hamburg SV", "Hamburg", "HSV", location = "Hamburg")
+    private val frankfurt = Team("125", "Eintracht Frankfurt", "Frankfurt", "SGE", location = "Frankfurt")
+
+    @Test
+    fun matchPageFindsGermanGuideTitles() {
+        val f = fixture(hsv, frankfurt)
+        assertTrue(f.shownIn("Live DFB-Pokal: Hamburger SV - Eintracht Frankfurt"))
+        assertTrue(f.shownIn("Hamburger SV - Eintracht Frankfurt"))
+        assertTrue(f.shownIn("HSV - SGE"))
+        assertTrue(f.shownIn("DFB-Pokal: HSV - Frankfurt"))
+        assertTrue(f.shownIn("Hamburg – Frankfurt"))
+        assertTrue(f.shownIn("Live DFB-Pokal: Hamburger SV"))
+    }
+
+    @Test
+    fun matchPageSkipsOtherMatchesAndSports() {
+        val f = fixture(hsv, frankfurt)
+        assertFalse(f.shownIn("Handball: HSV Hamburg - Füchse Berlin"))
+        assertFalse(f.shownIn("Sky Sport News"))
+        assertFalse(f.shownIn("Hamburg Journal"))
+        assertFalse(f.shownIn("DFB-Pokal: Bayern - Köln"))
+        assertFalse(f.shownIn("Werder Bremen - VfL Wolfsburg"))
+    }
 }
+
