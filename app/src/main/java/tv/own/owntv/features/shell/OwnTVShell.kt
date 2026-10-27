@@ -631,6 +631,17 @@ fun OwnTVShell(
             }
         }
     }
+    // Back from full screen returns to where the channel was opened. From Sports that is the match page
+    // (SportsScreen reopens it), with the channel carrying on in its preview; Back used to land in the guide
+    // (Jonathan, 27 Oct 2026). Long Menu's "guide" still goes to the guide.
+    val exitBack: () -> Unit = exit@{
+        if (guideHandover) return@exit
+        if (selectedSection == MainSection.SPORTS && zapSource == MainSection.LIVE_TV && playerMode == PlayerMode.FULLSCREEN) {
+            closePlayer(toRail = false, intoLive = livePreviewOn)
+            return@exit
+        }
+        exitToList()
+    }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
     tv.own.owntv.features.downloads.DownloadWatchPrompt(onClosePlayer = { if (playerMode != PlayerMode.NONE) exitPlayer() })
     /**
@@ -952,7 +963,7 @@ fun OwnTVShell(
 
     BackHandler {
         when {
-            playerMode == PlayerMode.FULLSCREEN -> { if (!guideHandover) exitToList() }
+            playerMode == PlayerMode.FULLSCREEN -> exitBack()
             showAvatarPicker -> showAvatarPicker = false
             showPlaylistPicker -> showPlaylistPicker = false
             showExit -> showExit = false
@@ -1788,7 +1799,7 @@ fun OwnTVShell(
                 }
                 PlayerHud(
                     player = if (liveOnExo) liveVm.previewEngine else mpvEngine, // HUD drives the active engine
-                    onBack = exitToList,
+                    onBack = exitBack,
                     // The channel-list overlay draws ABOVE the HUD; while it's open the HUD goes inert so
                     // its hide/error focus grabs can't yank D-pad focus off the overlay.
                     inert = showChannelList || showHistoryList || showCategoryBrowser || showSubtitleSearch || showLocalSubPicker || showOtherChannels,
