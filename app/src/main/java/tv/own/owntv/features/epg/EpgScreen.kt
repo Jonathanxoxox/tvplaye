@@ -178,6 +178,8 @@ fun EpgScreen(
     onPlayCatchup: (channel: ChannelEntity, programme: EpgProgrammeEntity) -> Unit,
     /** False while the full-screen or mini player owns the video surface. */
     previewEnabled: Boolean = true,
+    /** Laid out unseen behind full screen: it follows the channel playing, so Back finds its row in place. */
+    behindFullscreen: Boolean = false,
     liveMode: Boolean = false,
     /** How ▶ from the rail enters the guide: at the grid row focus was on (the rail's entry hook, as Home's). */
     onEntryHook: (((() -> Boolean)?) -> Unit)? = null,
@@ -395,7 +397,6 @@ fun EpgScreen(
         val idx = found.coerceAtLeast(0)
         focusedRow = idx
         anchorId = state.channels.getOrNull(idx)?.id
-        delay(80)
         focusGrid(idx)
         onRestored()
     }
@@ -412,6 +413,39 @@ fun EpgScreen(
         if (pending) restoreTo = null
         if (gridHasFocus || pending) focusGrid(idx)
     }
+
+    // Behind full screen the guide gets ready for the way back: on the channel playing (its category loaded, its
+    // row in view) and with the axis at now. No focus is taken, the player keeps it; Back then finds the row in
+    // place instead of loading from the top and jumping. [GuidePreviewSpot.ready] tells the shell it can glide.
+    LaunchedEffect(behindFullscreen, liveMode, previewChannel?.id, state.loading, state.channels) {
+        val loaded = !state.loading && state.channels.isNotEmpty()
+        if (!behindFullscreen || !liveMode) { GuidePreviewSpot.ready = loaded; return@LaunchedEffect }
+        GuidePreviewSpot.ready = false
+        if (!loaded) return@LaunchedEffect
+        val id = previewChannel?.id
+        if (id == null) { GuidePreviewSpot.ready = true; return@LaunchedEffect }
+        val idx = state.channels.indexOfFirst { it.id == id }
+        if (idx < 0) {
+            // Its own category (or the first group), reloaded now, unseen, so Back finds the row in place.
+            val own = previewChannel?.categoryId?.let { LiveKey.Folder(it) }?.takeIf { k -> railItems.any { it.key == k } }
+            val target = own ?: firstGroupKey
+            if (target == null || target == liveSelected) { GuidePreviewSpot.ready = true; return@LaunchedEffect }
+            anchorId = id
+            restoreTo = id
+            liveVm.select(target)
+            return@LaunchedEffect
+        }
+        focusedRow = idx
+        anchorId = id
+        if (rowListState.layoutInfo.visibleItemsInfo.none { it.index == idx }) {
+            runCatching { rowListState.scrollToItem((idx - 2).coerceAtLeast(0)) }
+        }
+        // The axis moves on to the half hour that is now, if now has left the screen.
+        val nowMs = System.currentTimeMillis()
+        if (timelinePx > 0 && pxAt(nowMs) !in scrollPx.toFloat()..(scrollPx + timelinePx).toFloat()) showTime(nowMs)
+        GuidePreviewSpot.ready = true
+    }
+    DisposableEffect(Unit) { onDispose { GuidePreviewSpot.ready = false } }
 
     // --- Overlays --------------------------------------------------------------------------------------
     var menuFor by remember { mutableStateOf<Pair<ChannelEntity, EpgProgrammeEntity>?>(null) }

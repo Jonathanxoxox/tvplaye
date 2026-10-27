@@ -111,6 +111,12 @@ object GuidePreviewSpot {
     var video by androidx.compose.runtime.mutableStateOf(false)
 
     /**
+     * The guide is loaded and standing on the playing channel with its axis at now. Full screen waits for it
+     * before the picture glides back, so the glide lands on a grid that does not move any more.
+     */
+    var ready by androidx.compose.runtime.mutableStateOf(false)
+
+    /**
      * The slides the corner moves with, in pixels: the open menu's push (the shell's) and the groups column
      * (the guide's). [rect] leaves them out and the shell adds them while drawing, so the picture moves in
      * the same frame as the guide around it instead of one behind.
