@@ -1,5 +1,6 @@
 package tv.own.owntv
 
+import androidx.room.useWriterConnection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import org.koin.core.context.GlobalContext
