@@ -181,7 +181,7 @@ fun ChannelListOverlay(
                 history -> stringResource(R.string.content_history_overlay_hint)
                 playing != null -> listOfNotNull(
                     stringResource(R.string.shell_now_playing),
-                    playing.number?.toString()?.takeIf { showNumbers },
+                    (playingIndex + 1).toString().takeIf { showNumbers },
                     ProviderTags.parse(playing.name).name,
                 ).joinToString(" · ")
                 else -> null
@@ -219,6 +219,7 @@ fun ChannelListOverlay(
                     val nowMs = remember { System.currentTimeMillis() }
                     LiveStageRow(
                         channel = ch,
+                        number = index + 1,
                         name = ProviderTags.parse(ch.name),
                         now = nowProgrammes[ch.id],
                         nowTitle = nowPlaying[ch.id],

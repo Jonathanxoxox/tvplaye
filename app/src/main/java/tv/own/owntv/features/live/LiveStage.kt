@@ -134,6 +134,8 @@ internal fun LiveHeader(category: String, count: Int, showChevron: Boolean, modi
 @Composable
 internal fun LiveStageRow(
     channel: ChannelEntity,
+    /** Its place in the list (each category counts from 1, as in TiviMate), not the provider's number. */
+    number: Int,
     name: ProviderName,
     now: XtEpgEntry?,
     nowTitle: String?,
@@ -155,7 +157,7 @@ internal fun LiveStageRow(
     ) { focused ->
         if (showNumber) {
             Text(
-                channel.number?.toString().orEmpty(),
+                number.toString(),
                 style = stageText(20, 600).copy(textAlign = TextAlign.End, fontFeatureSettings = Tabular),
                 color = if (focused) StageColors.FxLine else StageColors.Dim,
                 maxLines = 1, overflow = TextOverflow.Ellipsis,

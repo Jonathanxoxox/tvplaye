@@ -257,11 +257,12 @@ internal fun GuideRuler(
 }
 
 /**
- * A channel's label column: the playlist's 7 px dot, the number (dim), the logo on a 58×40 plate, the
+ * A channel's label column: the playlist's 7 px dot, the number (dim; its place in the list on screen, each
+ * category counted from 1 as in TiviMate), the logo on a 58×40 plate, the
  * name, both at the one list size ([tv.own.owntv.ui.theme.StageListText]). The row the focus is in has its number and name in accent.
  */
 @Composable
-internal fun GuideChannelLabel(channel: ChannelEntity, name: String, dot: Color?, selected: Boolean, numberWidth: Dp, modifier: Modifier = Modifier) {
+internal fun GuideChannelLabel(channel: ChannelEntity, number: Int, name: String, dot: Color?, selected: Boolean, numberWidth: Dp, modifier: Modifier = Modifier) {
     val a = stageAccent
     Row(
         modifier.padding(start = 8.mpx),
@@ -270,7 +271,7 @@ internal fun GuideChannelLabel(channel: ChannelEntity, name: String, dot: Color?
     ) {
         Box(Modifier.size(7.mpx).background(dot ?: Color.Transparent, RoundedCornerShape(50)))
         Text(
-            channel.number?.toString().orEmpty(),
+            number.toString(),
             style = stageText(tv.own.owntv.ui.theme.StageListText, 600).copy(fontFeatureSettings = Tabular), color = if (selected) a.accent else StageColors.Dim,
             // Always whole: the column fits the longest number in the list; only the name is cut.
             maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(numberWidth),
@@ -555,6 +556,8 @@ internal fun GuideOrderMenu(
 @Composable
 internal fun GuideChannelMenu(
     channel: ChannelEntity,
+    /** The channel's place in the list on screen, as the row shows it. */
+    number: Int?,
     subtitle: String,
     isFavorite: Boolean,
     epgOffsetValue: String,
@@ -572,7 +575,7 @@ internal fun GuideChannelMenu(
     val locale = androidx.compose.ui.text.intl.Locale.current.platformLocale
     GuideMenuHost(x = 1150f, top = 64.mpx, width = 560.mpx, onDismiss = onDismiss) {
         StageMenuHeader(
-            title = listOfNotNull(channel.number?.toString(), tv.own.owntv.core.live.ProviderTags.parse(channel.name).name).joinToString(" · "),
+            title = listOfNotNull(number?.toString(), tv.own.owntv.core.live.ProviderTags.parse(channel.name).name).joinToString(" · "),
             subtitle = subtitle,
         )
         StageGroupLabel(stringResource(R.string.content_menu_group_watch).uppercase(locale))
