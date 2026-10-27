@@ -255,6 +255,11 @@ fun EpgScreen(
     var focusedRow by remember { mutableIntStateOf(0) }
     // The channel Back or EPG from the player restored to, held across the silent reload that follows.
     var anchorId by remember { mutableStateOf<Long?>(null) }
+    // The category the cursor is on in the groups column (applied a moment later, or at once by ▶).
+    var browsedGroup by remember { mutableStateOf<Int?>(null) }
+    // A channel's number is its place in the list on screen: each category counts from 1, as in TiviMate
+    // (Jonathan, 27 Oct 2026: the provider's 1351 in a category of twenty read like the whole list).
+    fun listNumber(ch: ChannelEntity): Int? = state.channels.indexOfFirst { it.id == ch.id }.takeIf { it >= 0 }?.plus(1)
     var gridHasFocus by remember { mutableStateOf(false) }
     var cursorTime by remember { mutableStateOf(0L) }
     // Row stage (false): ▲ ▼ move between channels, ◀ leaves for the menu. Cell stage (true): ◀ ▶ go
@@ -508,7 +513,7 @@ fun EpgScreen(
         // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
         GuideVideo(
             channel = videoChannel,
-            channelLine = videoChannel?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
+            channelLine = videoChannel?.let { listOfNotNull(listNumber(it)?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
             nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
@@ -612,8 +617,8 @@ fun EpgScreen(
                 state.channels.isEmpty() -> GuideEmpty(title = state.message?.let { epgMessageText(it) } ?: stringResource(R.string.content_epg_no_guide))
                 else -> {
                     val gx = fx(48) + labelW
-                    // The number column fits the longest channel number (44 = three digits at the list size).
-                    val numberWidth = maxOf(44f, (state.channels.maxOfOrNull { it.number?.toString()?.length ?: 0 } ?: 0) * 13f).mpx
+                    // The number column fits the last place in the list (44 = three digits at the list size).
+                    val numberWidth = maxOf(44f, state.channels.size.toString().length * 13f).mpx
                     GuideRuler(
                         windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = scrollPx,
                         modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
@@ -634,6 +639,7 @@ fun EpgScreen(
                                 GuideRow(
                                     vm = vm,
                                     channel = channel,
+                                    number = index + 1,
                                     name = rowName(channel),
                                     dot = playlistMarks[channel.sourceId]?.shownColor,
                                     labelWidth = labelW,
@@ -698,6 +704,23 @@ fun EpgScreen(
 
         }
 
+        // As in TiviMate the category under the cursor is the guide's list: moving through the categories shows
+        // each one's channels a moment later, and ▶ goes into the one in focus. ▶ went back to the list that
+        // was open before (Jonathan, 27 Oct 2026: "Sky Bundesliga" still showed every channel).
+        val applyGroup: (Int) -> Unit = { idx ->
+            val key = railItems.getOrNull(idx)?.key
+            if (key != null && key != (categoryKey ?: LiveKey.All)) {
+                if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key)
+                focusedRow = 0
+                anchorId = null
+                scope.launch { runCatching { rowListState.scrollToItem(0) } }
+            }
+        }
+        LaunchedEffect(browsedGroup) {
+            val idx = browsedGroup ?: return@LaunchedEffect
+            delay(400)
+            applyGroup(idx)
+        }
         if (showGroups) {
             val railCounts by liveVm.railCounts.collectAsStateWithLifecycle()
             val (groupEntries, _) = liveCategoryEntries(railItems, railCounts)
@@ -724,6 +747,7 @@ fun EpgScreen(
                 sheet = false,
                 listState = groupsListState,
                 onSelect = { idx ->
+                    browsedGroup = null
                     railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
                     focusedRow = 0
                     anchorId = null
@@ -743,7 +767,12 @@ fun EpgScreen(
                         groupMenuFor = key to groupEntries.getOrNull(idx)?.label.orEmpty()
                     }
                 },
-                onNavigateRight = { focusGrid() },
+                onNavigateRight = {
+                    browsedGroup?.let(applyGroup)
+                    browsedGroup = null
+                    focusGrid()
+                },
+                onRowFocus = { browsedGroup = it },
                 focusRequester = groupsFocus,
                 focusRowIndex = groupsFocusIndex
                     ?: if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
@@ -764,7 +793,7 @@ fun EpgScreen(
             title = p.title,
             subtitle = listOf(
                 stringResource(R.string.content_live_time_range_plain, formatTime(p.startMs), formatTime(p.stopMs)),
-                listOfNotNull(ch.number?.toString(), ProviderTags.parse(ch.name).name).joinToString(" "),
+                listOfNotNull(listNumber(ch)?.toString(), ProviderTags.parse(ch.name).name).joinToString(" "),
             ).joinToString(" · "),
             actions = actionsFor(ch, p),
             leadMinutes = leadMinutes,
@@ -791,6 +820,7 @@ fun EpgScreen(
     channelMenuFor?.takeIf { channelMove == null }?.let { ch ->
         GuideChannelMenu(
             channel = ch,
+            number = listNumber(ch),
             subtitle = categoryLabel,
             isFavorite = ch.id in vm.favoriteChannelIds.collectAsStateWithLifecycle().value,
             epgOffsetValue = vm.currentEpgShift(ch)?.let { liveEpgShiftLabel(it) } ?: stringResource(R.string.content_epg_offset_global_short),
@@ -909,6 +939,7 @@ fun EpgScreen(
 private fun GuideRow(
     vm: EpgViewModel,
     channel: ChannelEntity,
+    number: Int,
     name: String,
     dot: Color?,
     labelWidth: androidx.compose.ui.unit.Dp,
@@ -952,7 +983,7 @@ private fun GuideRow(
     var menuDown by remember { mutableStateOf(false) }
     LaunchedEffect(focused, cursorTime, programmes) { if (focused) onShow(programmeAt(programmes, cursorTime)) }
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight), verticalAlignment = Alignment.CenterVertically) {
-        GuideChannelLabel(channel, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
+        GuideChannelLabel(channel, number, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
         Box(
             Modifier
                 .weight(1f)

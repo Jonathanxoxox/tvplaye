@@ -297,7 +297,12 @@ class LiveViewModel(
      *  Gating it here rather than at each call site means every playback path — Exo, mpv, Stalker —
      *  is covered by the one check, and a null simply omits the line as it did before numbers existed. */
     private fun channelNumberLabel(channel: ChannelEntity): String? =
-        channel.number?.takeIf { showChannelNumbers.value }?.let { "#$it" }
+        listPlace(channel.id)?.takeIf { showChannelNumbers.value }?.let { "#$it" }
+
+    /** A channel's number: its place in the list it plays from, each category counted from 1 as in
+     *  TiviMate (Jonathan, 27 Oct 2026), not the provider's number. Null when it is not in that list. */
+    private fun listPlace(channelId: Long): Int? =
+        zapList.channels.value.indexOfFirst { it.id == channelId }.takeIf { it >= 0 }?.plus(1)
 
     private data class Ctx(
         val profileId: Long,
@@ -1326,6 +1331,17 @@ class LiveViewModel(
     suspend fun tuneByNumber(number: Int): tv.own.owntv.player.DirectTuneResult {
         try {
             val currentChannel = _previewChannel.value ?: return tv.own.owntv.player.DirectTuneResult.NotFound(number)
+            // A number is a place in the list the channel plays from, as the lists show it (TiviMate's
+            // way): 3 in "Sky Bundesliga" is its third channel. The provider's numbers only without a list.
+            val placeList = zapList.channels.value
+            if (placeList.isNotEmpty()) {
+                val tuned = placeList.getOrNull(number - 1) ?: return tv.own.owntv.player.DirectTuneResult.NotFound(number)
+                val restarted = tuned.id != currentChannel.id
+                if (restarted) zapList.directTune(currentChannel.id, tuned) { live.launch { playChannel(it) }.join() }
+                return tv.own.owntv.player.DirectTuneResult.Found(
+                    tv.own.owntv.player.DirectTuneChannelInfo(number, tuned.name, tuned.logoUrl, restarted = restarted),
+                )
+            }
             val snapshotSourceIds = ctx.value.sourceIds
             // Snapshot the zap list at lookup START so the resolver's zap-context tiebreaker is
             // stable for the duration of the IO query. After the lookup completes and context
