@@ -29,7 +29,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
@@ -180,7 +179,7 @@ fun OwnTVShell(
     var guideHandover by remember { mutableStateOf(false) }
     var handoverGrow by remember { mutableStateOf(false) }
     val handoverShrink = remember { androidx.compose.animation.core.Animatable(0f) }
-    val handoverSpec = tv.own.owntv.ui.theme.stageSlide<Float>(420)
+    val handoverSpec = tv.own.owntv.ui.theme.stageSlide<Float>(360)
     var searchReturn by remember { mutableStateOf<MainSection?>(null) }
     var restoreTrendingSearchFocus by remember { mutableStateOf(false) }
     var trendingSearchActive by remember { mutableStateOf(false) }
@@ -578,8 +577,12 @@ fun OwnTVShell(
         val intoGuide = toList && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
             livePreviewOn && multiview == null
         if (!intoGuide) {
-            exitPlayer()
-            if (toList && selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            if (!toList) { exitPlayer(); return@exit }
+            // A live channel without the glide (on mpv, catch-up, no corner preview) still lands in the guide on
+            // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
+            // the stream on the way, and it takes the focus itself.
+            if (selectedSection != MainSection.LIVE_TV) onSelectSection(MainSection.LIVE_TV)
+            closePlayer(toRail = false)
             return@exit
         }
         // Opened from the guide, the guide is still laid out behind the picture (guideBehind) and its corner
@@ -733,6 +736,15 @@ fun OwnTVShell(
         )
     }
     val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
+    val railPushTarget = tv.own.owntv.features.shell.components.railPushTarget(railState)
+    val guideStripTarget = if (guideSection && !guideStripHidden) tv.own.owntv.features.shell.components.StageRailStripWidth else 0.mpx
+    // The guide's corner picture moves with the page in the same frame (see GuidePreviewSpot.shift).
+    val shiftDensity = androidx.compose.ui.platform.LocalDensity.current
+    androidx.compose.runtime.SideEffect {
+        tv.own.owntv.features.epg.GuidePreviewSpot.shellShift = {
+            with(shiftDensity) { (railPush.value + guideStripRoom.value).toPx() } * if (contentLtr) 1f else -1f
+        }
+    }
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -964,6 +976,9 @@ fun OwnTVShell(
                 liveVm.watchFromGuide(ch)
                 zapSource = MainSection.LIVE_TV
                 homeVm.stopPreview()
+                // Back out of it lands in the guide on this channel, wherever Back was held (Jonathan, 27 Oct
+                // 2026): the guide is put behind the picture now, so it is there when the picture glides back.
+                if (selectedSection != MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections) onSelectSection(MainSection.LIVE_TV)
                 if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
             }
         }
@@ -1200,6 +1215,10 @@ fun OwnTVShell(
                                 // The open menu pushes the page aside instead of covering its left edge.
                                 .graphicsLayer {
                                     translationX = (railPush.value + guideStripRoom.value).toPx() * if (contentLtr) 1f else -1f
+                                    // The guide slides as one picture (its corner video is drawn by the shell, not in here).
+                                    compositingStrategy = tv.own.owntv.ui.theme.slideCompositing(
+                                        guideSection && (railPush.value != railPushTarget || guideStripRoom.value != guideStripTarget),
+                                    )
                                 }
                                 // ◀ with nothing further left in the content goes back to the rail, however the
                                 // content was entered. The D-pad search alone missed it whenever the open rail
@@ -1619,25 +1638,23 @@ fun OwnTVShell(
         val cornerRadius = 20.mpx
         Box(
             modifier = if (guideHandover || inCorner) {
-                Modifier.layout { measurable, constraints ->
+                // Laid out full screen and only transformed while drawing: the picture moves and shrinks as a
+                // picture, with no layout pass and no new surface size per frame (the video plane is scaled by
+                // the display hardware, as a SurfaceView under a scaled layer is).
+                Modifier.fillMaxSize().graphicsLayer {
                     val f = cornerness()
                     val to = tv.own.owntv.features.epg.GuidePreviewSpot.rect
-                    val fullW = constraints.maxWidth.toFloat()
-                    val fullH = constraints.maxHeight.toFloat()
-                    fun mix(a: Float, b: Float) = a + (b - a) * f
-                    val w = (if (to == null) fullW else mix(fullW, to.width)).toInt().coerceAtLeast(1)
-                    val h = (if (to == null) fullH else mix(fullH, to.height)).toInt().coerceAtLeast(1)
-                    val placeable = measurable.measure(androidx.compose.ui.unit.Constraints.fixed(w, h))
-                    layout(constraints.maxWidth, constraints.maxHeight) {
-                        placeable.place(
-                            (if (to == null) 0f else mix(0f, to.left)).toInt(),
-                            (if (to == null) 0f else mix(0f, to.top)).toInt(),
-                        )
+                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
+                    if (to != null && size.width > 0f && size.height > 0f) {
+                        scaleX = 1f + (to.width / size.width - 1f) * f
+                        scaleY = 1f + (to.height / size.height - 1f) * f
+                        translationX = (to.left + tv.own.owntv.features.epg.GuidePreviewSpot.shift()) * f
+                        translationY = to.top * f
                     }
-                }
-                    // The corner's rounding, growing in as the picture lands.
-                    .graphicsLayer { clip = true; shape = RoundedCornerShape(cornerRadius * cornerness()) }
-                    .background(Color.Black)
+                    // The corner's rounding grows in as the picture lands (drawn before the scale shrinks it).
+                    shape = RoundedCornerShape(cornerRadius.toPx() * f / scaleX.coerceAtLeast(0.05f))
+                    clip = true
+                }.background(Color.Black)
             } else if (isFull) {
                 Modifier.fillMaxSize().background(Color.Black)
             } else {

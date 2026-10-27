@@ -476,6 +476,8 @@ internal fun LiveCategories(
      *  search for one of 100 categories was gone on return). Null = kept here, for this composition. */
     searchQuery: String? = null,
     onSearchQueryChange: ((String) -> Unit)? = null,
+    /** The heading above the groups; the guide, which lists nothing but groups, leaves it out. */
+    showGroupsHeading: Boolean = true,
     /** The category search is being typed in (the player's sheet then leaves ◀ to the text cursor). */
     onSearchEditingChange: (Boolean) -> Unit = {},
 ) {
@@ -585,7 +587,7 @@ internal fun LiveCategories(
             }
             visible.forEachIndexed { pos, index ->
                 val entry = entries[index]
-                if (index == firstGroup && query.isBlank()) {
+                if (index == firstGroup && query.isBlank() && showGroupsHeading) {
                     item(key = "__groups__") {
                         if (sheet) StageGroupLabel(groupsHeading, sheet = true)
                         else Text(

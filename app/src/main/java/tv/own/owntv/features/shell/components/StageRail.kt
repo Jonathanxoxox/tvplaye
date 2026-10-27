@@ -166,6 +166,7 @@ fun StageRail(
                 .width(if (expanded) MenuWidth else StripWidth)
                 .graphicsLayer {
                     if (expanded) translationX = -(1f - openness.value) * (MenuWidth - StripWidth).toPx() * if (rtl) -1f else 1f
+                    compositingStrategy = tv.own.owntv.ui.theme.slideCompositing(openness.value != 0f && openness.value != 1f)
                 }
                 .onFocusChanged {
                     // Every entry from the content lands on the selected section, not on whatever item
@@ -273,7 +274,10 @@ object StageRailOpen {
  */
 @Composable
 fun rememberRailPush(state: RailState): androidx.compose.runtime.State<androidx.compose.ui.unit.Dp> =
-    androidx.compose.animation.core.animateDpAsState(if (state == RailState.OPEN) MenuWidth - StripWidth else 0.mpx, tv.own.owntv.ui.theme.stageSlide())
+    androidx.compose.animation.core.animateDpAsState(railPushTarget(state), tv.own.owntv.ui.theme.stageSlide())
+
+/** Where [rememberRailPush] comes to rest for [state]: a slide is under way while the push is anywhere else. */
+fun railPushTarget(state: RailState): androidx.compose.ui.unit.Dp = if (state == RailState.OPEN) MenuWidth - StripWidth else 0.mpx
 
 /** The app's name in the accent at the top of the open menu; its first letters on the strip. */
 @Composable

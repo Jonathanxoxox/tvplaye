@@ -38,8 +38,20 @@ val animationsOn: Boolean
 fun <T> ownTvTween(durationMs: Int = 200, easing: Easing = FastOutSlowInEasing): TweenSpec<T> =
     tween(LocalAnimationLevel.current.scale(durationMs), easing = easing)
 
-/** Quick to leave, long soft landing: the curve the guide's panels and the picture's hand-over slide on. */
-val StageEase: Easing = androidx.compose.animation.core.CubicBezierEasing(0.2f, 0f, 0f, 1f)
+/**
+ * Soft start, soft landing: the curve the guide's panels and the picture's hand-over slide on. Not the long
+ * decelerating tail it had first: its last third crept on by a pixel or two a frame, which read as the
+ * picture dragging behind on Jonathan's box (27 Oct 2026).
+ */
+val StageEase: Easing = androidx.compose.animation.core.CubicBezierEasing(0.25f, 0.1f, 0.25f, 1f)
+
+/**
+ * Offscreen while [moving]: a slide then moves a picture of the content drawn once, instead of drawing every
+ * row, text and shadow again each frame — which the Nokia 8010's small GPU does not manage at 60 fps. Only
+ * while moving, since a video surface inside an offscreen layer would lose its picture.
+ */
+fun slideCompositing(moving: Boolean): androidx.compose.ui.graphics.CompositingStrategy =
+    if (moving) androidx.compose.ui.graphics.CompositingStrategy.Offscreen else androidx.compose.ui.graphics.CompositingStrategy.Auto
 
 /**
  * The guide's slides (menu, groups, picture to and from the corner), [durationMs] long on the television.
@@ -49,7 +61,7 @@ val StageEase: Easing = androidx.compose.animation.core.CubicBezierEasing(0.2f, 
  * 2026). The app's own Animations switch decides instead; a scale of 0 (motion off) is still respected.
  */
 @Composable
-fun <T> stageSlide(durationMs: Int = 320): TweenSpec<T> {
+fun <T> stageSlide(durationMs: Int = 280): TweenSpec<T> {
     val context = androidx.compose.ui.platform.LocalContext.current
     val scale = androidx.compose.runtime.remember(context) {
         runCatching {
