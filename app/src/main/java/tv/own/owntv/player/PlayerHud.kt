@@ -787,6 +787,8 @@ fun PlayerHud(
         } else if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
             ZapInfoBar(player, zapInfo(), modifier = Modifier.align(Alignment.BottomCenter))
         }
+        val clockUp = listFirst && isLive && zapInfo != null && (showPanel || (showFlash && !controlsVisible && tuned == null))
+        if (clockUp) PanelClock(Modifier.align(Alignment.TopEnd))
 
         // The REC badge, and it is deliberately OUTSIDE `if (controlsVisible)`.
         //
@@ -795,7 +797,7 @@ fun PlayerHud(
         // must not happen. It is drawn whenever anything is recording, HUD up or down, and it is not
         // focusable and not interactive: stopping a recording is the Recordings screen's job, and a
         // stop button one stray D-pad press from the middle of a programme is not a kindness.
-        RecordingBadge(modifier = Modifier.align(Alignment.TopEnd))
+        RecordingBadge(modifier = Modifier.align(Alignment.TopEnd).padding(top = if (clockUp) 40.dp else 0.dp))
 
         if (controlsVisible) {
             // Scrims: a FLAT semi-transparent panel behind the controls, feathered to transparent only at
@@ -1155,9 +1157,16 @@ private fun HudControlPanel(
         onOpenHistoryList?.let { add(PanelTile("history", historyLabel, OwnTVIcon.HISTORY) { onClose(); it() }) }
         recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { onClose(); ch.onClick() }) }
     }
-    Column(modifier.fillMaxWidth()) {
-        ZapInfoBar(player, guide)
-        Column(Modifier.background(Color.Black.copy(alpha = 0.8f)).padding(bottom = 24.dp)) {
+    val u = rememberScreenUnits()
+    // The panel opens on a moment; the seek line and minutes left are read from it, as in the zap bar.
+    val nowMs = remember(guide) { System.currentTimeMillis() }
+    // Proportions of the classic player at 1920×1080: the programme block from y 622, the seek line
+    // at 790, tiles 236×172 from 820, the arrow at 1030 (Jonathan's photo, 27 Oct 2026).
+    Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60))) {
+        PlayerZapInfoBlock(player, guide, nowMs)
+        Spacer(Modifier.height(u.dp(8)))
+        ProgrammeSeekLine(guide, nowMs)
+        Column {
             if (tiles.isNotEmpty()) {
                 ControlPanelRow(
                     tiles, focus, onActivity = onActivity,
@@ -1171,7 +1180,7 @@ private fun HudControlPanel(
                 )
             }
             when {
-                settings.isEmpty() -> Unit
+                settings.isEmpty() -> Spacer(Modifier.height(u.dp(60)))
                 settingsOpen -> SettingsPanelRow(
                     settings, settingsFocus, onActivity,
                     // ▲ back to the tiles; the settings fold away again.

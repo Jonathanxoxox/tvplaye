@@ -1137,6 +1137,8 @@
 1	preference-key	app/src/main/java/tv/own/owntv/player/PlayerKeys.kt	tvplayer
 1	technical	app/src/main/java/tv/own/owntv/player/RecordingBadge.kt	rec
 1	technical	app/src/main/java/tv/own/owntv/player/RecordingBadge.kt	recPulse
+1	technical	app/src/main/java/tv/own/owntv/player/ZapInfoBar.kt	EEEdMMM
+1	technical	app/src/main/java/tv/own/owntv/player/ZapInfoBar.kt	Mbps
 1	log	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	MayoJank
 1	technical	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	frame-jank
 1	log	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	screen=$name frames=${c.frames} jank=${c.janky} worstMs=${c.worstNs / 1_000_000}
