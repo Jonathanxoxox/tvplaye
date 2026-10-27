@@ -42,7 +42,7 @@ jobs:
             -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mayo TV"
           export KEYSTORE_FILE="$KS"
           chmod +x ./gradlew
-          ./gradlew assembleX86_64Release --stacktrace
+          ./gradlew assembleX86_64Release -Pmayo.perfLog=true --stacktrace
           mkdir -p dist
           cp "$(ls app/build/outputs/apk/x86_64/release/*.apk | head -n1)" dist/app.apk
 

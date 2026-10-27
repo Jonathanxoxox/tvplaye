@@ -6,7 +6,6 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Log
-import androidx.room.useWriterConnection
 import android.view.WindowManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -32,7 +31,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import org.koin.android.ext.android.get
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
@@ -125,12 +123,16 @@ open class MainActivity : ComponentActivity() {
         // Backgrounded (Home / another app), exited, or logged out: stop playback and free the demuxer
         // cache + decoder buffers — holding them while invisible got the process LMK-killed on real TVs.
         // Every engine: mpv, the Live engine (its audio must stop too), each Multiview tile and the hero.
-        if (!isChangingConfigurations) engines.onAppBackgrounded()
+        if (!isChangingConfigurations) {
+            engines.onAppBackgrounded()
+            tv.own.owntv.launcher.AppVisibility.left(this)
+        }
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
     }
 
     override fun onStart() {
         super.onStart()
+        tv.own.owntv.launcher.AppVisibility.entered()
         // Paired with onStop: bring back what was freed while backgrounded (notably the TV screensaver, which
         // kicks in during a long pause) — a VOD restored paused at its position, and a live channel re-tuned
         // to the live edge — so Play resumes instead of sitting on a dead/empty stream. No-op on fresh launch.
@@ -151,19 +153,8 @@ open class MainActivity : ComponentActivity() {
      * device never sits on a blank window.
      */
     private fun probeDatabase(): String? {
-        var error: String? = null
-        val worker = Thread {
-            // Core configures a SQLiteDriver, and `openHelper` throws outright
-            // once one is set. Opening a connection is what this probe was always really doing —
-            // forcing Room to run the migration chain now rather than inside the first query.
-            runCatching {
-                kotlinx.coroutines.runBlocking {
-                    get<tv.own.owntv.core.database.OwnTVDatabase>().useWriterConnection { }
-                }
-            }.onFailure { error = it.message ?: it.javaClass.simpleName }
-        }
-        worker.start()
-        worker.join(DB_PROBE_TIMEOUT_MS)
+        // Usually already finished: OwnTVApp starts it right after Koin (see DatabaseProbe).
+        val error = DatabaseProbe.await(DB_PROBE_TIMEOUT_MS)
         if (error != null) Log.e(TAG, "database probe failed: $error")
         return error
     }
@@ -195,6 +186,8 @@ open class MainActivity : ComponentActivity() {
             return
         }
         Perf.stamp("db-probed") // main thread was blocked here: everything above is pre-composition
+        // Janky frames per screen for the screenshot tour's report; compiled out of normal builds.
+        if (BuildConfig.PERF_LOG) tv.own.owntv.ui.FrameJankLog.attach(window)
         setContent {
             // First composition pass — splits "process start → Compose is running" from
             // "Compose is running → the destination's data arrived".

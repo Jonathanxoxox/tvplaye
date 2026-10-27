@@ -66,6 +66,14 @@ android {
             (providers.gradleProperty("diagnosticBuild").orNull == "true").toString(),
         )
 
+        // Frame and startup logging for the screenshot tour's perf report (screens.yml builds with
+        // -Pmayo.perfLog=true). Off everywhere else, so R8 drops the logger from every published APK.
+        buildConfigField(
+            "boolean",
+            "PERF_LOG",
+            (providers.gradleProperty("mayo.perfLog").orNull == "true").toString(),
+        )
+
         // Maintainer-only tools (today: the "Rebuild Now Trending" button in Home settings, which
         // bypasses the multi-day Trending fetch timer so a reported problem can be reproduced on the
         // spot). Off unless `owntv.devTools=true` is set as a Gradle property or in the out-of-repo
@@ -250,6 +258,15 @@ android {
 androidComponents {
     onVariants(selector().withBuildType("debug")) { variant ->
         variant.androidResources.localeFilters.addAll("en-rXA", "ar-rXB")
+    }
+}
+
+// Compose compiler reports (which composables skip, which parameters are unstable), on request only:
+// `./gradlew :app:assembleStandardRelease -Pmayo.composeReports=true` writes them to build/compose_compiler.
+if (providers.gradleProperty("mayo.composeReports").orNull == "true") {
+    composeCompiler {
+        reportsDestination.set(layout.buildDirectory.dir("compose_compiler"))
+        metricsDestination.set(layout.buildDirectory.dir("compose_compiler"))
     }
 }
 

@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -766,7 +767,9 @@ private fun TrendingHero(
 ) {
     var heroHasFocus by remember { mutableStateOf(false) }
     var resetClock by remember { mutableIntStateOf(0) }
-    var progress by remember { mutableFloatStateOf(0f) }
+    // Written every frame, read only where the pager draws: the hero itself never recomposes for it.
+    val progressState = remember { mutableFloatStateOf(0f) }
+    var progress by progressState
     val intervalMs = 10_000L
 
     fun navigate(index: Int) {
@@ -781,6 +784,8 @@ private fun TrendingHero(
         if (heroHasFocus || folded || items.size < 2) return@LaunchedEffect
         val startProgress = progress.coerceIn(0f, 1f)
         val duration = (intervalMs * (1f - startProgress)).toLong().coerceAtLeast(1L)
+        // 70 px over 10 s is under a pixel per step, so 80 ms steps look continuous; each one only
+        // redraws the pager (see TrendingPager), it does not recompose the hero.
         val startedAt = System.nanoTime()
         while (true) {
             val elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L
@@ -935,7 +940,7 @@ private fun TrendingHero(
             TrendingPager(
                 count = items.size,
                 activeIndex = activeIndex,
-                progress = progress,
+                progress = { progressState.floatValue },
                 onNavigate = ::navigate,
                 modifier = Modifier.tracked(track = track),
             )
@@ -968,7 +973,7 @@ private fun FoldedHeroLine(item: TrendingHomeItem, start: Dp, height: Dp = Compa
  * [trendingPagerTarget].
  */
 @Composable
-private fun TrendingPager(count: Int, activeIndex: Int, progress: Float, onNavigate: (Int) -> Unit, modifier: Modifier = Modifier) {
+private fun TrendingPager(count: Int, activeIndex: Int, progress: () -> Float, onNavigate: (Int) -> Unit, modifier: Modifier = Modifier) {
     val a = stageAccent
     StageSurface(
         onClick = {},
@@ -988,22 +993,25 @@ private fun TrendingPager(count: Int, activeIndex: Int, progress: Float, onNavig
     ) { focused ->
         Row(Modifier.padding(horizontal = 14.mpx, vertical = 12.mpx), horizontalArrangement = Arrangement.spacedBy(8.mpx)) {
             repeat(count) { i ->
-                val fill = when {
-                    i < activeIndex -> 1f
-                    i == activeIndex -> progress
-                    else -> 0f
-                }
+                val fillColor = if (focused && i == activeIndex) a.focus else a.accent
                 Box(
                     Modifier
                         .size(if (i == activeIndex) 70.mpx else 34.mpx, 5.mpx)
                         .clip(RoundedCornerShape(3.mpx))
-                        .background(StageColors.Ink.copy(alpha = if (focused) 0.28f else 0.18f)),
-                ) {
-                    Box(
-                        Modifier.fillMaxWidth(fill).height(5.mpx)
-                            .background(if (focused && i == activeIndex) a.focus else a.accent),
-                    )
-                }
+                        .background(StageColors.Ink.copy(alpha = if (focused) 0.28f else 0.18f))
+                        // The running segment's fill is read here, in the draw pass, every frame.
+                        .drawBehind {
+                            val fill = when {
+                                i < activeIndex -> 1f
+                                i == activeIndex -> progress()
+                                else -> 0f
+                            }
+                            if (fill <= 0f) return@drawBehind
+                            val w = size.width * fill
+                            val x = if (layoutDirection == androidx.compose.ui.unit.LayoutDirection.Rtl) size.width - w else 0f
+                            drawRect(fillColor, topLeft = androidx.compose.ui.geometry.Offset(x, 0f), size = androidx.compose.ui.geometry.Size(w, size.height))
+                        },
+                )
             }
         }
     }

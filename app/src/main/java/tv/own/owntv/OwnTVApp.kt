@@ -87,6 +87,13 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
     override fun onCreate() {
         Perf.begin() // zero-point for the OwnTVPerf startup timeline (adb logcat -s OwnTVPerf)
         super.onCreate()
+        // Debug builds name every disk or network access on the main thread in logcat (tag StrictMode).
+        // Log only: it is a finder, never a crash.
+        if (BuildConfig.DEBUG) {
+            android.os.StrictMode.setThreadPolicy(
+                android.os.StrictMode.ThreadPolicy.Builder().detectDiskReads().detectDiskWrites().detectNetwork().penaltyLog().build(),
+            )
+        }
         // "Restart now" after an icon change runs a few milliseconds in a process of its own; nothing
         // below may start there (core's AppRestartActivity).
         if (tv.own.owntv.core.brand.AppIconSwitcher.isRestartProcess(this)) return
@@ -124,6 +131,8 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
             modules(coreModule, appModule, databaseModule, dataModule, playerModule)
         }
         Perf.stamp("koin-started")
+        // Open the database now, in parallel with the Activity's start; MainActivity waits on the result.
+        DatabaseProbe.start()
         // A chosen icon colour ("Later", the first-run pick, a restore) reaches the launcher when the app
         // is next in the background, never while it is on screen.
         tv.own.owntv.core.brand.AppIconSwitcher.start(this, GlobalContext.get().get())
@@ -210,10 +219,11 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
                 }
             }
         }
-        // The launcher rows ("Für dich", "Favoriten"): every 15 minutes, shortly after each start, and
-        // whenever the favourites change, in whichever screen that happened.
-        tv.own.owntv.launcher.LauncherRowsWorker.schedule(this)
-        tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this, delaySeconds = 20)
+        // The launcher rows ("Für dich", "Favoriten"): every 15 minutes while the app is not on screen,
+        // and each time it is left (MainActivity.onStop). Not right after a start any more: that scan of
+        // every channel landed exactly on the first minutes of browsing and zapping. Scheduling touches
+        // WorkManager's own database, so it is done off the main thread.
+        appScope.launch { runCatching { tv.own.owntv.launcher.LauncherRowsWorker.schedule(this@OwnTVApp) } }
         appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
         appScope.launch { runCatching { refreshLauncherRowsOnSportsChange() } }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",

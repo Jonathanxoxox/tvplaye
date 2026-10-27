@@ -19,6 +19,7 @@
 # category protocol: Stable protocol or comparison identifier.
 # category technical: Reviewed non-user-facing technical literal.
 
+1	technical	app/src/main/java/tv/own/owntv/DatabaseProbe.kt	db-probe
 1	log	app/src/main/java/tv/own/owntv/MainActivity.kt	BgImage
 1	log	app/src/main/java/tv/own/owntv/MainActivity.kt	OwnTVHome
 1	compiler	app/src/main/java/tv/own/owntv/MainActivity.kt	RememberReturnType
@@ -572,6 +573,7 @@
 5	empty	app/src/main/java/tv/own/owntv/features/setup/SetupWizard.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/setup/SetupWizard.kt	+
 3	technical	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	\0
+1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	:
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	ass
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	epg-preload
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	shell-composed
@@ -1071,6 +1073,7 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	★
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	⚽
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	LauncherRows
+1	json	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	force
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	launcher rows not refreshed
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	tvplayer-launcher-rows
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRowsWorker.kt	tvplayer-launcher-rows-now
@@ -1123,6 +1126,10 @@
 1	preference-key	app/src/main/java/tv/own/owntv/player/PlayerKeys.kt	tvplayer
 1	technical	app/src/main/java/tv/own/owntv/player/RecordingBadge.kt	rec
 1	technical	app/src/main/java/tv/own/owntv/player/RecordingBadge.kt	recPulse
+1	log	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	MayoJank
+1	technical	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	frame-jank
+1	log	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	screen=$name frames=${c.frames} jank=${c.janky} worstMs=${c.worstNs / 1_000_000}
+1	performance	app/src/main/java/tv/own/owntv/ui/FrameJankLog.kt	start
 1	file-path	app/src/main/java/tv/own/owntv/ui/components/BackgroundImageChooserDialog.kt	background_${System.currentTimeMillis()}.$ext
 1	file-path	app/src/main/java/tv/own/owntv/ui/components/BackgroundImageChooserDialog.kt	png
 1	log	app/src/main/java/tv/own/owntv/ui/components/BackgroundPicture.kt	BgImage
