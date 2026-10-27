@@ -27,6 +27,7 @@ import tv.own.owntv.core.database.dao.ChannelDao
 import tv.own.owntv.core.database.dao.SourceDao
 import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.entity.ContentOrderEntity
+import tv.own.owntv.core.epg.EpgMatcher
 import tv.own.owntv.core.epg.displayLogoUrl
 import tv.own.owntv.core.launcher.LauncherDeepLink
 import tv.own.owntv.core.live.LiveEpgReader
