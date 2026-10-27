@@ -1066,8 +1066,9 @@ fun OwnTVShell(
         modifier = modifier.fillMaxSize().background(shellBase)
             .onPreviewKeyEvent { e ->
                 // The picture is gliding between full screen and the guide's corner: the guide behind it is
-                // not on screen, so a key now would move or open something nobody can see.
-                if (guideHandover) return@onPreviewKeyEvent true
+                // not on screen, so a key now would move or open something nobody can see. Volume is not a
+                // navigation key: it goes through to the player.
+                if (guideHandover) return@onPreviewKeyEvent e.key != Key.VolumeUp && e.key != Key.VolumeDown && e.key != Key.VolumeMute
                 if (e.type == KeyEventType.KeyDown) {
                     if (e.key == Key.DirectionLeft || e.key == Key.DirectionRight) railKeyAt = android.os.SystemClock.uptimeMillis()
                     // A key pressed on the rail is the user using it, however focus got there.

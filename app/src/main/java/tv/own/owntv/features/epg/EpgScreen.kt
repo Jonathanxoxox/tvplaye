@@ -725,7 +725,10 @@ fun EpgScreen(
         }
         LaunchedEffect(browsedGroup) {
             val idx = browsedGroup ?: return@LaunchedEffect
-            delay(400)
+            // Its first rows start loading once the focus rests on it, so a held key does not start a load per row.
+            delay(150)
+            railItems.getOrNull(idx)?.key?.let(vm::prefetchCategory)
+            delay(250)
             applyGroup(idx)
         }
         // Kept on screen while it slides out again, so leaving the groups is as smooth as opening them.
@@ -787,8 +790,6 @@ fun EpgScreen(
                 },
                 onRowFocus = { idx ->
                     browsedGroup = idx
-                    // Its first rows start loading now, so they are there when it opens.
-                    railItems.getOrNull(idx)?.key?.let(vm::prefetchCategory)
                 },
                 focusRequester = groupsFocus,
                 focusRowIndex = groupsFocusIndex
