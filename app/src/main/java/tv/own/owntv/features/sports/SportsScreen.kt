@@ -51,6 +51,7 @@ fun SportsScreen(
             open(m)
         } ?: playback.returnToMatch?.let { m ->
             playback.returnToMatch = null
+            playback.returnedChannelId = playback.lastPlayedChannelId
             open(m)
         }
     }

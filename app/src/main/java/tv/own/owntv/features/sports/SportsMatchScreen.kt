@@ -86,8 +86,9 @@ internal val TierPick = Color(0xFFE7C56A)
  * A match. Left: the crumb, the score header, the tabs and their content, all
  * from the stored board. Right: *Watch live* — Find channels first (a search of this one match, only
  * when asked); then the preview (Live TV's own engine), the filter chips, every channel showing it with
- * the reason, and how many the filters hide. ▲ ▼ in the list preview each channel, OK plays it full
- * screen, Hold OK remembers it for the competition, ◀ opens the filter panel.
+ * the reason, and how many the filters hide. As in the guide, the preview stays black while ▲ ▼ walk the
+ * list: OK brings a channel into it, OK again on that channel plays it full screen. Hold OK remembers it
+ * for the competition, ◀ opens the filter panel.
  */
 @Composable
 fun SportsMatchScreen(
@@ -114,17 +115,18 @@ fun SportsMatchScreen(
     val m = state.match
     var tab by remember { mutableStateOf(MatchTab.TIMELINE) }
     var revealed by remember(m.key) { mutableStateOf(false) }
-    var focused by remember { mutableStateOf<WatchOption?>(null) }
+    // The channel in the preview: none until one is picked with OK, or the one just watched full screen.
+    var picked by remember(m.key) { mutableStateOf<ChannelEntity?>(null) }
+    var returned by remember(m.key) { mutableStateOf(vm.takeReturnedChannelId()) }
     val firstRow = remember { FocusRequester() }
     val tabFocus = remember { FocusRequester() }
 
-    // The focused channel plays in the box above after the focus settles, exactly as in Live TV.
+    // Only a channel picked with OK plays, with its sound, as in the guide: zapping through the list kept
+    // starting every channel passed (Jonathan, 27 Oct 2026).
     val previewOn by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
-    LaunchedEffect(focused?.channel?.id, previewOn) {
-        val ch = focused?.channel ?: return@LaunchedEffect
-        if (!previewOn) return@LaunchedEffect
-        kotlinx.coroutines.delay(700)
-        liveVm.playPreview(ch)
+    LaunchedEffect(picked?.id, previewOn) {
+        val ch = picked ?: return@LaunchedEffect
+        if (previewOn) liveVm.playPreview(ch, audible = true)
     }
     // Focus follows the search: the tabs while there is no list (Find channels' button goes away while it
     // runs, and must not take focus with it), the first channel once there is one.
@@ -139,6 +141,10 @@ fun SportsMatchScreen(
     val play: (WatchOption) -> Unit = { o -> vm.playedFrom(m, shown, o.channel); onPlayChannel(o.channel, zap) }
     // Back from the player: focus the channel that was playing, not the first.
     val focusTarget = shown.firstOrNull { it.channel.id == vm.lastPlayedChannelId } ?: shown.firstOrNull()
+    LaunchedEffect(returned, shown) {
+        val id = returned ?: return@LaunchedEffect
+        shown.firstOrNull { it.channel.id == id }?.let { picked = it.channel; returned = null }
+    }
 
     // The page takes the whole width, as the guide does: while it holds focus the menu strip steps aside
     // and the clock and pills with it, so Watch live is never cut off on the right. ◀ brings the strip back.
@@ -227,13 +233,13 @@ fun SportsMatchScreen(
                     Text(stringResource(R.string.sports_not_on_channels), style = stageText(19, 400), color = StageColors.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(top = 9.mpx))
                     return@Column
                 }
-                val video = focused ?: shown.firstOrNull()
+                val video = picked?.takeIf { previewOn }
                 GuideVideo(
-                    channel = video?.channel,
-                    channelLine = video?.channel?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(sep) },
-                    nowTitle = video?.guideTitle,
+                    channel = video,
+                    channelLine = video?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(sep) },
+                    nowTitle = video?.let { ch -> shown.firstOrNull { it.channel.id == ch.id }?.guideTitle },
                     previewEngine = liveVm.previewEngine,
-                    showVideo = previewOn && focused != null,
+                    showVideo = video != null,
                     modifier = Modifier.fillMaxWidth(),
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 18.mpx), verticalAlignment = Alignment.CenterVertically) {
@@ -256,11 +262,10 @@ fun SportsMatchScreen(
                     items(shown, key = { it.channel.id }) { o ->
                         ChannelRow(
                             o, m,
-                            onClick = { play(o) },
+                            onClick = { if (previewOn && picked?.id != o.channel.id) picked = o.channel else play(o) },
                             onHold = { vm.rememberChannel(m, o.channel) },
                             modifier = Modifier
-                                .then(if (o === focusTarget) Modifier.focusRequester(firstRow) else Modifier)
-                                .onFocusChanged { if (it.isFocused) focused = o },
+                                .then(if (o === focusTarget) Modifier.focusRequester(firstRow) else Modifier),
                         )
                     }
                     if (state.list.hidden > 0) {

@@ -60,6 +60,9 @@ class SportsPlayback(
     /** The channel last played from a match page, so its row takes focus again on return. */
     var lastPlayedChannelId: Long? = null
 
+    /** Set on Back from the player to its match page: that channel stays in the page's preview, as in the guide. */
+    var returnedChannelId: Long? = null
+
     fun start(match: Match, options: List<WatchOption>) { _session.value = SportsSession(match, options) }
 
     /** [match] as it stands now, refreshed while collected (`Demand.PlayerScore`: that one league, 30 s live). */
