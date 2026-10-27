@@ -240,10 +240,11 @@ fun EpgScreen(
     fun pxAt(t: Long): Float = (t - state.windowStart) / 60_000f * ppm
     fun maxScroll(): Int = (pxAt(state.windowEnd) - timelinePx).toInt().coerceAtLeast(0)
     fun timeAt(px: Float): Long = state.windowStart + (px / ppm * 60_000f).toLong()
-    // A time is shown 3/8 of the way across, as the guide always had it: the programme on now keeps room
-    // on both sides and its title is never cut.
+    // As in TiviMate the grid starts at the half hour a time falls in (14:00 at 14:05), so what is on now
+    // fills the screen instead of an hour of what has been (Jonathan, 27 Oct 2026).
+    fun halfHourOf(t: Long): Long = t - Math.floorMod(t, GuideGridDefaults.SlotMin * 60_000L)
     fun showTime(t: Long) {
-        scrollPx = (pxAt(t) - timelinePx * 3f / 8f).toInt().coerceIn(0, maxScroll())
+        scrollPx = pxAt(halfHourOf(t)).toInt().coerceIn(0, maxScroll())
     }
     LaunchedEffect(state.windowStart, timelinePx, state.channels.isNotEmpty()) {
         if (timelinePx > 0 && state.channels.isNotEmpty()) showTime(System.currentTimeMillis())
@@ -314,7 +315,8 @@ fun EpgScreen(
         val x = pxAt(cursorTime)
         val margin = GuideGridDefaults.SlotMin * ppm
         when {
-            x < scrollPx + margin -> scrollPx = (x - margin).toInt().coerceIn(0, maxScroll())
+            // Back past the left edge: that half hour becomes the edge, as on entry.
+            x < scrollPx -> scrollPx = pxAt(halfHourOf(cursorTime)).toInt().coerceIn(0, maxScroll())
             x > scrollPx + timelinePx - margin -> scrollPx = (x - timelinePx + margin).toInt().coerceIn(0, maxScroll())
         }
     }
@@ -363,9 +365,6 @@ fun EpgScreen(
     var groupsHeld by remember { mutableStateOf(false) }
     var groupsFocusIndex by remember { mutableStateOf<Int?>(null) }
     var dayOpen by remember { mutableStateOf(false) }
-    var searchOpen by remember { mutableStateOf(false) }
-    // The field reports "not focused" when it first attaches; it only closes after it has had focus (playbook 10).
-    var searchHadFocus by remember { mutableStateOf(false) }
     // Where focus goes back to when an overlay closes: the control or button that opened it.
     var returnTo by remember { mutableStateOf<(() -> Unit)?>(null) }
     val anyOverlay = menuFor != null || channelMenuFor != null || recordMenuFor != null || askPlayerFor != null || matchingChannel != null ||
@@ -410,27 +409,18 @@ fun EpgScreen(
         onEpgOffset = { offsetChannel = ch },
     )
 
-    // Channel names as the rows show them: provider tags parsed off, and the category's own name left out
-    // when every channel in it starts with it ("Sky Cinema Highlights" under Sky Cinema → "Highlights").
+    // Channel names as the rows show them: the whole name with only the provider tags ("DE:") parsed off.
+    // The category's name is no longer cut from the front: "DAZN 1 HD" read "1 HD" (27 Oct 2026).
     val (entries, groupsHeading) = liveCategoryEntries(railItems, emptyMap())
     val categoryEntry = entries.firstOrNull { it.item.key == (categoryKey ?: LiveKey.All) }
     val categoryLabel = categoryEntry?.label ?: stringResource(R.string.content_category_all_channels)
-    val prefix = categoryLabel.takeIf { categoryKey is LiveKey.Folder || categoryKey is LiveKey.Custom }
-    fun rowName(ch: ChannelEntity): String {
-        val name = ProviderTags.parse(ch.name).name
-        val rest = prefix?.let { p -> name.takeIf { it.startsWith("$p ", ignoreCase = true) }?.substring(p.length)?.trim() }
-        return rest?.takeIf { it.isNotEmpty() } ?: name
-    }
+    fun rowName(ch: ChannelEntity): String = ProviderTags.parse(ch.name).name
     val remindersByChannel = remember(reminderRows) { reminderRows.groupBy({ it.channelId }, { it.startMs }).mapValues { it.value.toSet() } }
     val recordingsByChannel = remember(recordingRows) {
         recordingRows.filter { it.status != RecordingStatus.CANCELLED }
             .groupBy({ it.channelId }, { it.programmeStartMs }).mapValues { it.value.toSet() }
     }
 
-    val dayTool = remember { FocusRequester() }
-    val categoryTool = remember { FocusRequester() }
-    val orderTool = remember { FocusRequester() }
-    val searchFocus = remember { FocusRequester() }
     // The second of the three levels (menu · groups · guide): the groups column, shown beside the open menu
     // and while it holds focus. ◀ from the guide lands on it, ◀ again on the menu, ▶ goes the other way.
     val groupsFocus = remember { FocusRequester() }
@@ -467,18 +457,18 @@ fun EpgScreen(
     // Back goes one level out, like ◀: from a channel row to the groups (from the groups the shell takes it on
     // to the menu). Inside the programmes it first leaves them for the row (the handler above).
     BackHandler(enabled = gridHasFocus && !inCellMode && !groupsFocused) { enterGroups() }
-    LaunchedEffect(searchOpen) { if (searchOpen) { withFrameNanos { }; runCatching { searchFocus.requestFocus() } } }
 
     BoxWithConstraints(
         modifier
             .fillMaxSize()
+            .onFocusChanged { tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = it.hasFocus }
             // Entering from the rail lands in the grid, on the row focus was on. Not while the search field
             // is opening: the Search button it replaces held focus, so the field's own request enters from
             // outside too, and redirecting it would send focus to the grid instead. Nor when ▶ from the open
             // menu heads for the groups beside it.
             .focusProperties {
                 onEnter = {
-                    if (state.channels.isNotEmpty() && !(searchOpen && !searchHadFocus) && !groupsEnter) {
+                    if (state.channels.isNotEmpty() && !groupsEnter) {
                         runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }
                     }
                 }
@@ -503,7 +493,7 @@ fun EpgScreen(
         val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld
         val groupsW = fx(400)
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
-        DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false } }
+        DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
@@ -513,8 +503,6 @@ fun EpgScreen(
         // As in the classic IPTV player: the video at the left, the programme under the cursor beside it.
         GuideVideo(
             channel = videoChannel,
-            channelLine = videoChannel?.let { listOfNotNull(listNumber(it)?.toString(), ProviderTags.parse(it.name).name).joinToString(" · ") },
-            nowTitle = videoChannel?.let { ch -> programmeAt(vm.cachedProgrammes(ch), liveNow)?.takeIf { liveNow < it.stopMs }?.title },
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
             modifier = Modifier.width(426.mpx),
@@ -541,65 +529,10 @@ fun EpgScreen(
 
         }
 
-        // The control line (308): one row with every guide header button.
-        val viewTime = timeAt(scrollPx + timelinePx * 3f / 8f)
-        val viewDay = localMidnight(viewTime)
-        Row(
-            Modifier.padding(start = fx(68), end = fx(64), top = 28.mpx).fillMaxWidth().height(48.mpx),
-            horizontalArrangement = Arrangement.spacedBy(8.mpx),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                stringResource(if (liveMode) R.string.common_nav_live_tv else R.string.content_epg_title),
-                style = stageText(30, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(start = 16.mpx, end = 14.mpx),
-            )
-            StageTool(
-                text = null, icon = OwnTVIcon.CALENDAR, value = guideDayLabel(viewDay), trailingIcon = OwnTVIcon.CHEVRON_DOWN,
-                onClick = { returnTo = { runCatching { dayTool.requestFocus() } }; dayOpen = true },
-                modifier = Modifier.focusRequester(dayTool),
-            )
-            StageTool(text = stringResource(R.string.content_epg_now_short), icon = OwnTVIcon.NOW, onClick = { showTime(System.currentTimeMillis()); cursorTime = System.currentTimeMillis() })
-            StageTool(
-                text = null, icon = OwnTVIcon.LIST, value = categoryLabel, valueAccent = true, trailingIcon = OwnTVIcon.CHEVRON_DOWN,
-                onClick = enterGroups,
-                modifier = Modifier.focusRequester(categoryTool).widthIn(max = 380.mpx),
-            )
-            StageTool(
-                text = null, icon = OwnTVIcon.SORT, value = guideSortLabel(sortGuide), trailingIcon = OwnTVIcon.CHEVRON_DOWN,
-                onClick = { returnTo = { runCatching { orderTool.requestFocus() } }; orderOpen = true },
-                modifier = Modifier.focusRequester(orderTool),
-            )
-            if (searchOpen || query.isNotEmpty()) {
-                StageSearchField(
-                    query = query, onQueryChange = vm::setQuery,
-                    placeholder = stringResource(R.string.content_epg_search_hint).trimEnd('…'),
-                    modifier = Modifier.width(360.mpx).focusRequester(searchFocus)
-                        .onFocusChanged {
-                            if (it.hasFocus) searchHadFocus = true
-                            else if (searchHadFocus && query.isEmpty()) { searchHadFocus = false; searchOpen = false }
-                        },
-                )
-            } else {
-                StageTool(text = null, icon = OwnTVIcon.SEARCH, onClick = { searchOpen = true })
-            }
-            Spacer(Modifier.weight(1f))
-            matchSummary?.takeIf { review.isEmpty() }?.let {
-                Text(
-                    epgMatchSummaryText(it), style = stageText(16, 600), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    // A capped width, not a weight: a second weight split the line and moved Auto-match off the edge.
-                    modifier = Modifier.widthIn(max = 620.mpx), textAlign = TextAlign.End,
-                )
-            }
-            if (matching) {
-                Row(horizontalArrangement = Arrangement.spacedBy(9.mpx), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 16.mpx)) {
-                    OwnTVSpinner(sizeDp = 18)
-                    Text(stringResource(R.string.content_epg_matching), style = stageText(18, 700), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-            } else {
-                StageTool(text = stringResource(R.string.content_epg_match_button), icon = OwnTVIcon.SPARKLE, onClick = vm::autoMatchEpg)
-            }
-        }
+        // No control line above the grid any more (Jonathan, 27 Oct 2026: "die Filter oberhalb des Guides
+        // können auch weg"): the categories are the second level, the rest lives in the menus, as in TiviMate.
+        // A search left over from before has no field to clear it from, so it goes.
+        LaunchedEffect(Unit) { if (query.isNotEmpty()) vm.setQuery("") }
 
         // The grid: ruler at 518, rows from 566.
         Box(Modifier.fillMaxWidth().weight(1f).padding(top = 18.mpx)) {
@@ -619,10 +552,24 @@ fun EpgScreen(
                     val gx = fx(48) + labelW
                     // The number column fits the last place in the list (44 = three digits at the list size).
                     val numberWidth = maxOf(44f, state.channels.size.toString().length * 13f).mpx
-                    GuideRuler(
-                        windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = scrollPx,
-                        modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
+                    // TiviMate's corner: the day and time the grid is at, left of the ruler ("Di., 27. Okt., 14:05").
+                    // Now while the grid is on today's present, else the half hour at its left edge.
+                    val is24h = android.text.format.DateFormat.is24HourFormat(androidx.compose.ui.platform.LocalContext.current)
+                    val formatCorner = tv.own.owntv.ui.format.rememberBestDateFormatter(
+                        tv.own.owntv.ui.format.combinedDateTimeSkeleton("EEEdMMM", is24h),
                     )
+                    Box(Modifier.fillMaxWidth().height(40.mpx)) {
+                        Text(
+                            formatCorner(maxOf(liveNow, timeAt(scrollPx.toFloat()))),
+                            style = stageText(tv.own.owntv.ui.theme.StageListText, 700), color = stageAccent.accent,
+                            maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = fx(48) + 8.mpx, top = 4.mpx).width(labelW - 16.mpx),
+                        )
+                        GuideRuler(
+                            windowStart = state.windowStart, windowEnd = state.windowEnd, now = liveNow, scrollPx = scrollPx,
+                            modifier = Modifier.padding(start = gx).width(timelineW).height(40.mpx),
+                        )
+                    }
                     CompositionLocalProvider(androidx.compose.foundation.gestures.LocalBringIntoViewSpec provides edgeScrollSpec) {
                         LazyColumn(
                             state = rowListState,
@@ -772,7 +719,11 @@ fun EpgScreen(
                     browsedGroup = null
                     focusGrid()
                 },
-                onRowFocus = { browsedGroup = it },
+                onRowFocus = { idx ->
+                    browsedGroup = idx
+                    // Its first rows start loading now, so they are there when it opens.
+                    railItems.getOrNull(idx)?.key?.let(vm::prefetchCategory)
+                },
                 focusRequester = groupsFocus,
                 focusRowIndex = groupsFocusIndex
                     ?: if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
