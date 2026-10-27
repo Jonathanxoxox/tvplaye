@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -40,7 +42,10 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -50,6 +55,7 @@ import androidx.tv.material3.Text
 import tv.own.owntv.ui.components.LocalTvImeMetrics
 import tv.own.owntv.ui.components.LocalTvImeWatcher
 import tv.own.owntv.ui.components.OwnTVIcon
+import tv.own.owntv.ui.components.rememberVoiceSearch
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.LocalStagePalette
 import androidx.compose.foundation.border
@@ -60,7 +66,8 @@ import tv.own.owntv.ui.theme.stageText
 /**
  * `.srchf` (tool rows, 48 high, radius 15) and `.sheet .srch` (54, radius 16): a quiet white-6% field,
  * the search glyph and a dim placeholder. The field takes D-pad focus like a button, OK opens the
- * keyboard, Back returns to the field. Focused = the 2 px focus ring.
+ * keyboard, Back returns to the field. Focused = the 2 px focus ring. Beside it, the same height square,
+ * the microphone ([voice]): ▶ from the field reaches it, OK starts voice search, ◀ goes back.
  */
 @Composable
 fun StageSearchField(
@@ -77,6 +84,8 @@ fun StageSearchField(
     onActivate: (() -> Unit)? = null,
     /** Typing started (true) or ended (false) — so a host can leave ◀/▶ to the text cursor meanwhile. */
     onEditingChange: (Boolean) -> Unit = {},
+    /** The microphone button (Jonathan's keyboard has its mic off). Not where OK hands over to another search. */
+    voice: Boolean = onActivate == null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pillFocused by interaction.collectIsFocusedAsState()
@@ -90,6 +99,12 @@ fun StageSearchField(
     val imeWatcher = LocalTvImeWatcher.current
     val imeMetrics = LocalTvImeMetrics.current
     val focus = stageAccent.focus
+    val voiceSearch = if (voice) rememberVoiceSearch(onQueryChange) else null
+    val voiceNote = voiceSearch?.note?.let { stringResource(it) }
+    val micFocus = remember { FocusRequester() }
+    val micInteraction = remember { MutableInteractionSource() }
+    val micFocused by micInteraction.collectIsFocusedAsState()
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     LaunchedEffect(editing) {
         onEditingChange(editing)
         if (editing) {
@@ -108,9 +123,28 @@ fun StageSearchField(
             runCatching { bringIntoView.bringIntoView() }
         }
     }
+    Row(
+        // Ahead of the host's own key handling: ▶ from the field reaches the mic first, ◀ from the mic returns.
+        Modifier
+            .onPreviewKeyEvent { e ->
+                if (voiceSearch == null || editing || e.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                val toMic = if (rtl) Key.DirectionLeft else Key.DirectionRight
+                val toField = if (rtl) Key.DirectionRight else Key.DirectionLeft
+                when {
+                    e.key == toMic && pillFocused -> runCatching { micFocus.requestFocus() }.isSuccess
+                    e.key == toField && micFocused -> runCatching { pillFocus.requestFocus() }.isSuccess
+                    else -> false
+                }
+            }
+            .then(modifier)
+            .height(height),
+        horizontalArrangement = Arrangement.spacedBy(8.mpx),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
     Box(
-        modifier
-            .height(height)
+        Modifier
+            .weight(1f)
+            .fillMaxHeight()
             .background(StageColors.ControlFill, RoundedCornerShape(radius))
             .then(if (pillFocused || editing) Modifier.drawBehind { drawOuterRing(focus, 2.mpx.toPx(), radius.toPx()) } else Modifier)
             .focusRequester(pillFocus)
@@ -124,7 +158,9 @@ fun StageSearchField(
         ) {
             OwnTVIcon(OwnTVIcon.SEARCH, if (pillFocused || editing) StageColors.Text else StageColors.Dim, Modifier.size(18.mpx))
             Box(Modifier.weight(1f)) {
-                if (query.isEmpty()) {
+                if (voiceNote != null) {
+                    Text(voiceNote, style = stageText(18, 500), color = stageAccent.accent, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                } else if (query.isEmpty()) {
                     Text(placeholder, style = stageText(18, 400), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 BasicTextField(
@@ -132,6 +168,7 @@ fun StageSearchField(
                     onValueChange = onQueryChange,
                     modifier = Modifier
                         .fillMaxWidth()
+                        .alpha(if (voiceNote != null) 0f else 1f)
                         .bringIntoViewRequester(bringIntoView)
                         .focusRequester(fieldFocus)
                         .focusProperties { canFocus = editing }
@@ -160,6 +197,25 @@ fun StageSearchField(
                 )
             }
         }
+    }
+    if (voiceSearch != null) {
+        val lit = micFocused || voiceSearch.listening
+        Box(
+            Modifier
+                .size(height)
+                .background(StageColors.ControlFill, RoundedCornerShape(radius))
+                .then(if (lit) Modifier.drawBehind { drawOuterRing(focus, 2.mpx.toPx(), radius.toPx()) } else Modifier)
+                .focusRequester(micFocus)
+                .clickable(micInteraction, null) { voiceSearch.start() },
+            contentAlignment = Alignment.Center,
+        ) {
+            OwnTVIcon(
+                OwnTVIcon.MIC,
+                if (voiceSearch.listening) stageAccent.accent else if (micFocused) StageColors.Text else StageColors.Dim,
+                Modifier.size(20.mpx),
+            )
+        }
+    }
     }
 }
 

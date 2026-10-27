@@ -549,12 +549,13 @@ internal fun GuideOrderMenu(
 }
 
 /**
- * Hold OK / ☰ where nothing is on (a channel with no guide, or a gap in its feed): what the programme
- * menu offers for the channel itself — watch it, favourite it, and give it a guide.
+ * Hold OK on a channel row (and ☰ where nothing is on): the channel itself — watch it, favourite it, give
+ * it a guide, and ORGANISE: move it within its group ([onMove] null outside one) or hide it.
  */
 @Composable
 internal fun GuideChannelMenu(
     channel: ChannelEntity,
+    subtitle: String,
     isFavorite: Boolean,
     epgOffsetValue: String,
     onWatch: () -> Unit,
@@ -562,6 +563,8 @@ internal fun GuideChannelMenu(
     onAutoMatch: () -> Unit,
     onPickEpg: () -> Unit,
     onEpgOffset: () -> Unit,
+    onMove: (() -> Unit)?,
+    onHide: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val focus = remember { FocusRequester() }
@@ -570,7 +573,7 @@ internal fun GuideChannelMenu(
     GuideMenuHost(x = 1150f, top = 64.mpx, width = 560.mpx, onDismiss = onDismiss) {
         StageMenuHeader(
             title = listOfNotNull(channel.number?.toString(), tv.own.owntv.core.live.ProviderTags.parse(channel.name).name).joinToString(" · "),
-            subtitle = stringResource(R.string.content_epg_no_programme),
+            subtitle = subtitle,
         )
         StageGroupLabel(stringResource(R.string.content_menu_group_watch).uppercase(locale))
         StageMenuItem(text = stringResource(R.string.content_epg_watch_channel), icon = OwnTVIcon.LIVE_TV, onClick = { onDismiss(); onWatch() }, modifier = Modifier.focusRequester(focus))
@@ -582,6 +585,14 @@ internal fun GuideChannelMenu(
         StageMenuItem(text = stringResource(R.string.content_epg_match_button), icon = OwnTVIcon.SPARKLE, onClick = { onDismiss(); onAutoMatch() })
         StageMenuItem(text = stringResource(R.string.content_epg_pick_manually), icon = OwnTVIcon.EPG, onClick = { onDismiss(); onPickEpg() })
         StageMenuItem(text = stringResource(R.string.content_epg_time_offset), icon = OwnTVIcon.CLOCK, value = epgOffsetValue, onClick = { onDismiss(); onEpgOffset() })
+        StageGroupLabel(stringResource(R.string.content_menu_group_organise).uppercase(locale))
+        StageMenuItem(
+            text = stringResource(R.string.content_reorder_channel), icon = OwnTVIcon.MOVE,
+            value = if (onMove == null) stringResource(R.string.content_move_in_group_only) else null,
+            enabled = onMove != null,
+            onClick = { onMove?.invoke() },
+        )
+        StageMenuItem(text = stringResource(R.string.content_hide_channel), icon = OwnTVIcon.EYE_OFF, onClick = { onDismiss(); onHide() })
     }
 }
 
