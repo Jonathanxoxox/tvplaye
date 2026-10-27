@@ -333,7 +333,13 @@ fun PlayerHud(
     var showFlash by remember { mutableStateOf(false) }
     LaunchedEffect(channelFlash) { if (channelFlash > 0) { showFlash = true; delay(if (listFirst) 4000 else 3000); showFlash = false } }
     // List-first: every channel change shows the info bar, from the list, a number or a zap alike.
-    LaunchedEffect(directTuneContextKey) { if (listFirst && directTuneContextKey != 0L) channelFlash++ }
+    // The channel the player opened on is the entry, not a change: no info bar for it, only for a change made inside.
+    var entryKey by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(directTuneContextKey) {
+        if (!listFirst || directTuneContextKey == 0L) return@LaunchedEffect
+        if (entryKey == null) { entryKey = directTuneContextKey; return@LaunchedEffect }
+        if (directTuneContextKey != entryKey) { entryKey = directTuneContextKey; channelFlash++ }
+    }
 
     // Engine-switch confirmation toast: a brief "Switched to MPV/ExoPlayer" at the bottom-center when the
     // user flips the engine via the HUD toggle. Mirrors the channel-flash pattern above.
