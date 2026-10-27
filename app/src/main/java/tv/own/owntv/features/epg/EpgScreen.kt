@@ -620,14 +620,17 @@ fun EpgScreen(
                                     onEnterCell = {
                                         cursorTime = System.currentTimeMillis()
                                         inCellMode = true
-                                        if (previewNeeds(channel)) liveVm.onChannelFocused(channel)
                                     },
                                     recordingStarts = recordingsByChannel[channel.id].orEmpty(),
                                     reminderStarts = remindersByChannel[channel.id].orEmpty(),
                                     onFocused = {
                                         focusedRow = index
                                         if (cursorTime !in state.windowStart until state.windowEnd) cursorTime = System.currentTimeMillis()
-                                        if (!effectivePreview) liveVm.onChannelFocused(channel)
+                                        // Only with the guide's preview switched off does the focus pick the channel. Off for a
+                                        // moment is not enough: behind full screen and on the way back from it (previewEnabled
+                                        // false) the focus took the corner over, and the guide then played whatever row focus
+                                        // passed (Jonathan, 27 Oct 2026). The corner changes only with OK.
+                                        if (!(livePreviewSetting && guidePreview)) liveVm.onChannelFocused(channel)
                                     },
                                     onCursor = { cursorTime = it },
                                     onShow = { p -> selected = channel to p },
