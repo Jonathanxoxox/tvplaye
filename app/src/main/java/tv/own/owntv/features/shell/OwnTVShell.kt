@@ -283,7 +283,6 @@ fun OwnTVShell(
     val afrPauseSecs by settingsRepo.afrPauseSecs.collectAsStateWithLifecycle(initialValue = 0)
     // ...and the one-time suggestion to turn it on, for the 25-fps-on-60-Hz judder the direct render path
     // cannot fix by itself. `true` until the flag is read, so it can never flash on first frame.
-    val afrPrompted by settingsRepo.autoFrameRatePrompted.collectAsStateWithLifecycle(initialValue = true)
     // Direct tune (type a channel number on the remote). Settings › Live TV › Channel numbers; default on.
     val directTuneEnabled by settingsRepo.directTune.collectAsStateWithLifecycle(initialValue = true)
     // "Prefer EPG logos": start following the setting once, here rather than in Application.onCreate —
@@ -1731,29 +1730,6 @@ fun OwnTVShell(
                     },
                 )
             }
-            if (isFull && !autoFrameRate && !afrPrompted) {
-                // Frame rate of whichever engine is on screen. On the mpv side this is what the direct
-                // path judders on; on Exo it now survives "Measured stream stats" being off.
-                val activeFps by if (liveOnExo) {
-                    liveVm.previewEngine.videoFps.collectAsStateWithLifecycle()
-                } else {
-                    player.videoFps.collectAsStateWithLifecycle()
-                }
-                tv.own.owntv.player.AutoFrameRatePrompt(
-                    fps = activeFps,
-                    afrEnabled = autoFrameRate,
-                    alreadyPrompted = afrPrompted,
-                    // Mark it answered on BOTH paths. Enabling only set the setting, so a user who later
-                    // turned Auto frame rate back off was offered the "once ever" suggestion all over again.
-                    onEnable = {
-                        scope.launch {
-                            settingsRepo.setAutoFrameRate(true)
-                            settingsRepo.setAutoFrameRatePrompted()
-                        }
-                    },
-                    onDismiss = { scope.launch { settingsRepo.setAutoFrameRatePrompted() } },
-                )
-            }
             if (isFull && !guideHandover) {
                 // Engine state still distinguishes the live edge from catch-up/archive playback for
                 // controls such as direct number tuning. It must not gate the physical CH keys below.
@@ -2022,14 +1998,10 @@ fun OwnTVShell(
                 LaunchedEffect(liveVm) {
                     liveVm.catchupUnavailable.collect { localSubToast.show(catchupUnavailable) }
                 }
-                // Back on a channel whose saved copy was kept: continue from there, or stay live.
+                // A saved copy of the channel was kept: no question about it, the picture stays live. Rewinding
+                // is the pause key's job (Jonathan, 27 Oct 2026: nothing pops up by itself).
                 val timeshiftResumeAt by liveVm.timeshiftResumeAt.collectAsStateWithLifecycle()
-                if (isFull && timeshiftResumeAt != null) {
-                    tv.own.owntv.ui.components.TimeshiftResumeDialog(
-                        onResume = liveVm::resumeTimeshift,
-                        onGoLive = liveVm::dismissTimeshiftResume,
-                    )
-                }
+                LaunchedEffect(timeshiftResumeAt) { if (timeshiftResumeAt != null) liveVm.dismissTimeshiftResume() }
                 // Left — the playing channel's own provider category.
                 if (showChannelList && isLiveChannel) {
                     if (showCategoryBrowser) {
@@ -2182,8 +2154,13 @@ fun OwnTVShell(
             if (updateCheckOnStart && !showStartupToast && !shellVm.startupUpdateCheckDone) {
                 kotlinx.coroutines.delay(5_000)
                 shellVm.startupUpdateCheckDone = true
-                showStartupToast = true
                 updateManager.check()
+                // The card shows up only when there is something to update to: no "Checking…" and no "latest
+                // version" on every start (Jonathan, 27 Oct 2026: nothing pops up by itself).
+                val outcome = updateManager.state.first {
+                    it is UpdateManager.State.Available || it is UpdateManager.State.UpToDate || it is UpdateManager.State.Failed
+                }
+                if (outcome is UpdateManager.State.Available) showStartupToast = true else updateManager.reset()
             }
         }
         if (showChangelog) {
