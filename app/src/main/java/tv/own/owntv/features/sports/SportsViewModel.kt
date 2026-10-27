@@ -214,11 +214,16 @@ class SportsViewModel(
             if (w != WatchWindow.Open) return@transformLatest emit(ChannelSearch.Closed(w as WatchWindow))
             val found = watchReader.found(m) { SportsMemory.rememberedFor(c, it) }
             when {
-                found != null -> emit(ChannelSearch.Found(found))
+                found != null -> {
+                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.cached(m))))
+                    emit(ChannelSearch.Found(GuideBroadcasts.merge(found, GuideBroadcasts.find(m))))
+                }
                 !asked -> emit(ChannelSearch.NotSearched)
                 else -> {
                     emit(ChannelSearch.Searching)
-                    emit(ChannelSearch.Found(watchReader.watchFor(listOf(m)) { SportsMemory.rememberedFor(c, it) }[m.key].orEmpty()))
+                    // Core's search and the guides "Für dich" reads, which find what core misses.
+                    val core = watchReader.watchFor(listOf(m)) { SportsMemory.rememberedFor(c, it) }[m.key].orEmpty()
+                    emit(ChannelSearch.Found(GuideBroadcasts.merge(core, GuideBroadcasts.find(m))))
                 }
             }
         }.flowOn(Dispatchers.Default)
@@ -346,7 +351,8 @@ class SportsViewModel(
     /** [match]'s channels if Find channels already ran for it (the hub's Remind me needs one); never searches. */
     suspend fun channelsFound(match: Match): List<WatchOption> {
         val c = config.first()
-        val options = watchReader.found(match) { SportsMemory.rememberedFor(c, it) } ?: return emptyList()
+        val options = watchReader.found(match) { SportsMemory.rememberedFor(c, it) }
+            ?.let { GuideBroadcasts.merge(it, GuideBroadcasts.cached(match)) } ?: return emptyList()
         return WatchList.of(options, WatchFilter.from(c, Locale.getDefault().language, liveSources.value)).shown
     }
 

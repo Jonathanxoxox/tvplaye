@@ -3,6 +3,9 @@ package tv.own.owntv.launcher
 import tv.own.owntv.core.sports.SportsCatalog
 import tv.own.owntv.core.sports.SportsConfig
 import tv.own.owntv.core.sports.TeamNames
+import tv.own.owntv.core.sports.model.League
+import tv.own.owntv.core.sports.model.Match
+import tv.own.owntv.core.sports.model.Team
 import java.text.Normalizer
 
 /**
@@ -82,6 +85,49 @@ internal class FootballMatcher(
         }
 
         fun team(name: String): Interest = interest(name, listOf(name) + TEAM_ALIASES[key(name)].orEmpty())
+
+        /**
+         * One match as guide titles name it, for a match page's "Übertragungen": both sides with their
+         * German spellings ("Hamburger SV", "HSV" for ESPN's "Hamburg SV") and the competition.
+         */
+        class Fixture(val home: Interest?, val away: Interest?, val competition: Interest?) {
+
+            /**
+             * Whether [title] shows this match: both sides, or one side with the competition or as a
+             * pairing ("DFB-Pokal: Hamburger SV - Eintracht Frankfurt", "HSV - SGE"). Only asked of
+             * programmes on at kick-off, when a team plays no other match. Another sport never counts.
+             */
+            fun shownIn(title: String): Boolean {
+                val t = titleTokens(title)
+                if (t.any { it in OTHER_SPORTS }) return false
+                val h = home?.foundIn(t) == true
+                val a = away?.foundIn(t) == true
+                return (h && a) || ((h || a) && (competition?.foundIn(t) == true || isPairing(title)))
+            }
+        }
+
+        fun fixture(match: Match): Fixture {
+            val league = SportsCatalog.league(League.keyOf(match.sport, match.leagueSlug))
+            val names = listOfNotNull(league?.name, match.leagueName.takeIf { it.isNotBlank() }).distinct()
+            val competition = names.firstOrNull()?.let { n ->
+                interest(n, names + league?.let { COMPETITION_ALIASES[it.key] }.orEmpty())
+            }
+            return Fixture(match.home?.team?.let(::side), match.away?.team?.let(::side), competition)
+        }
+
+        /** A side by every name it goes by: ESPN's names and abbreviation, and the German aliases. */
+        private fun side(t: Team): Interest {
+            val aliases = listOf(t.name, t.shortName).flatMap { TEAM_ALIASES[key(it)].orEmpty() }
+            val own = interest(t.name, listOf(t.name, t.shortName) + aliases).variants
+            val core = TeamNames.variantsOf(t).filter { !(it.size == 1 && it.single() in GENERIC) }
+            return Interest(t.name, (own + core).distinct())
+        }
+
+        /** A title's tokens, with German "-er" club names also as the city ("Hamburger" → "hamburg"). */
+        private fun titleTokens(title: String): Set<String> {
+            val tokens = TeamNames.tokens(title)
+            return (tokens + tokens.filter { it.length >= 7 && it.endsWith("er") }.map { it.dropLast(2) }).toSet()
+        }
 
         private fun interest(name: String, spellings: List<String>) = Interest(
             name,
