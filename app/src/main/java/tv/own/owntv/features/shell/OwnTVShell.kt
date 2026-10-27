@@ -671,6 +671,8 @@ fun OwnTVShell(
     // The strip at rest, the menu with names while it holds focus.
     val railState = if (railFocused) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
+    val guideStripHidden = tv.own.owntv.features.shell.components.StageRailOpen.guideFocused &&
+        railState != tv.own.owntv.features.shell.components.RailState.OPEN
     // The playlist chip reflects the active filter: "All playlists" when none is chosen (id <= 0), the
     // chosen playlist's name otherwise. With a single playlist there's nothing to switch, so just its name.
     val playlistLabel = when {
@@ -1100,7 +1102,9 @@ fun OwnTVShell(
                             // the strip never lies over text. Only the open menu covers the content.
                             Modifier
                                 .padding(
-                                    start = tv.own.owntv.features.shell.components.StageRailStripWidth,
+                                    // In the guide the strip steps aside and the guide takes its room. No animation:
+                                    // a sliding padding would lay the whole grid out again on every frame.
+                                    start = if (guideStripHidden) 0.mpx else tv.own.owntv.features.shell.components.StageRailStripWidth,
                                 )
                                 // The open menu pushes the page aside instead of covering its left edge.
                                 .graphicsLayer { translationX = railPush.value.toPx() * if (contentLtr) 1f else -1f }
@@ -1407,6 +1411,7 @@ fun OwnTVShell(
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
                 nowPlaying = nowPlayingRail,
                 onNowPlaying = enterNowPlaying,
+                modifier = Modifier.graphicsLayer { alpha = if (guideStripHidden) 0f else 1f },
             )
           }
         }

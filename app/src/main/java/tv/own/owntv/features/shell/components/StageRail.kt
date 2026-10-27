@@ -253,6 +253,8 @@ object StageRailOpen {
     var open by mutableStateOf(false)
     /** The guide's categories are out (focused or being entered): the status cluster steps aside for them too. */
     var guideGroups by mutableStateOf(false)
+    /** The guide holds focus: the strip steps aside, as in TiviMate, and the guide takes its room. ◀ brings it back. */
+    var guideFocused by mutableStateOf(false)
 }
 
 /**

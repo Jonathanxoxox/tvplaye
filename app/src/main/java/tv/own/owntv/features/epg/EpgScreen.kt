@@ -461,6 +461,7 @@ fun EpgScreen(
     BoxWithConstraints(
         modifier
             .fillMaxSize()
+            .onFocusChanged { tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = it.hasFocus }
             // Entering from the rail lands in the grid, on the row focus was on. Not while the search field
             // is opening: the Search button it replaces held focus, so the field's own request enters from
             // outside too, and redirecting it would send focus to the grid instead. Nor when ▶ from the open
@@ -492,7 +493,7 @@ fun EpgScreen(
         val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld
         val groupsW = fx(400)
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
-        DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false } }
+        DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx)
         Column(Modifier.fillMaxSize().graphicsLayer { translationX = groupsShift.value.toPx() }) {
         // Top (40 → 280): the video, and beside it the programme under the cursor. Kept low (Jonathan,
