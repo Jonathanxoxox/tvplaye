@@ -52,6 +52,8 @@ enum class OwnTVIcon {
     EQ,
     // The Sports Hub's trophy (rail, Settings → Sports).
     SPORTS,
+    // Voice search beside every search field.
+    MIC,
 }
 
 /** Parsed once: [StageGlyphPaths] in 24-unit coordinates. */
@@ -328,6 +330,11 @@ fun OwnTVIcon(
                 drawLineStroke(p(14.5f, 19f), p(17.7f, 11f), tint, stroke)
                 drawLineStroke(p(17.7f, 11f), p(21f, 19f), tint, stroke)
                 drawLineStroke(p(15.6f, 16.2f), p(19.8f, 16.2f), tint, stroke)
+            }
+            OwnTVIcon.MIC -> { // Capsule on a stand: speak instead of typing.
+                drawRoundRectStroke(p(9f, 3f), p(15f, 14f), 3f * s, tint, stroke)
+                drawArc(tint, 0f, 180f, false, p(5.5f, 5.5f), Size(13f * s, 13f * s), style = stroke)
+                drawLineStroke(p(12f, 18.5f), p(12f, 21f), tint, stroke)
             }
             OwnTVIcon.BACKUP -> { // Archive box: lid, body, handle. A backup is not a download.
                 drawRoundRectStroke(p(3f, 4f), p(21f, 8.5f), 1.5f * s, tint, stroke)

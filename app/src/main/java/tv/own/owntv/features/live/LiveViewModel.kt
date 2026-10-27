@@ -2057,7 +2057,8 @@ class LiveViewModel(
         _moveState.value = s.copy(items = list, activeIndex = to)
     }
 
-    fun commitMove() {
+    /** [onSaved] runs once the new order is stored (the guide rebuilds its rows from it). */
+    fun commitMove(onSaved: () -> Unit = {}) {
         val s = _moveState.value ?: return
         _moveState.value = null
         sortBeforeMove = null // the new order IS playlist order — staying on it is the point
@@ -2071,6 +2072,7 @@ class LiveViewModel(
                     ContentOrderEntity(profileId = pid, mediaType = MediaType.LIVE, contextKey = s.contextKey, itemId = ch.id, position = i)
                 },
             )
+            onSaved()
         }
     }
 
