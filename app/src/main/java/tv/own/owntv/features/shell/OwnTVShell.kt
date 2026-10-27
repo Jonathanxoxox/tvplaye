@@ -994,20 +994,45 @@ fun OwnTVShell(
             lastLiveChannel?.let { liveVm.restorePreview(it) }
         }
     }
+    // A live channel to full screen. The channel already playing in the guide's corner grows from there into
+    // full screen, the same picture, no new stream (Jonathan, 27 Oct 2026); anything else just opens. The guide's
+    // OK and a long Back both come through here, so both glide.
+    val openLiveFullscreen: (tv.own.owntv.core.database.entity.ChannelEntity) -> Unit = open@{ ch ->
+        if (guideHandover) return@open
+        val grow = playerMode == PlayerMode.NONE && previewChannel?.id == ch.id &&
+            liveVm.previewEngine.state.value == tv.own.owntv.player.LivePreviewEngine.State.PLAYING &&
+            tv.own.owntv.features.epg.GuidePreviewSpot.rect != null && tv.own.owntv.features.epg.GuidePreviewSpot.video
+        restoreFocus = false
+        liveVm.watchFromGuide(ch)
+        zapSource = MainSection.LIVE_TV
+        homeVm.stopPreview()
+        // Live TV set to play externally → the channel went to another app;
+        // don't mount the fullscreen player over it.
+        if (playerMode != PlayerMode.MINI && !liveVm.externalPlayerOn.value) {
+            if (grow && liveVm.liveOnExo.value && multiview == null) {
+                guideHandover = true
+                handoverGrow = true
+                scope.launch {
+                    handoverShrink.snapTo(0f)
+                    handoverShrink.animateTo(1f, handoverSpec)
+                    guideHandover = false
+                    handoverGrow = false
+                    handoverShrink.snapTo(0f)
+                }
+            }
+            playerMode = PlayerMode.FULLSCREEN
+        }
+    }
     val backToChannelArmed = playerMode == PlayerMode.NONE && !showExit && !showAvatarPicker && !showPlaylistPicker
     val backToChannel: () -> Unit = {
         scope.launch {
             val ch = previewChannel ?: lastLiveChannel
                 ?: runCatching { liveVm.historyChannels(1).firstOrNull()?.channel }.getOrNull()
             if (ch != null && playerMode == PlayerMode.NONE) {
-                restoreFocus = false
-                liveVm.watchFromGuide(ch)
-                zapSource = MainSection.LIVE_TV
-                homeVm.stopPreview()
                 // Back out of it lands in the guide on this channel, wherever Back was held (Jonathan, 27 Oct
                 // 2026): the guide is put behind the picture now, so it is there when the picture glides back.
                 if (selectedSection != MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections) onSelectSection(MainSection.LIVE_TV)
-                if (!liveVm.externalPlayerOn.value) playerMode = PlayerMode.FULLSCREEN
+                openLiveFullscreen(ch)
             }
         }
     }
@@ -1196,34 +1221,7 @@ fun OwnTVShell(
             ) {
                 // How the guide (Live TV) starts a channel or an archive programme: through LiveViewModel,
                 // the one live path.
-                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = play@{ ch, _ ->
-                    if (guideHandover) return@play
-                    // The channel already playing in the corner grows from there into full screen, the same
-                    // picture, no new stream (Jonathan, 27 Oct 2026).
-                    val grow = playerMode == PlayerMode.NONE && previewChannel?.id == ch.id &&
-                        liveVm.previewEngine.state.value == tv.own.owntv.player.LivePreviewEngine.State.PLAYING &&
-                        tv.own.owntv.features.epg.GuidePreviewSpot.rect != null
-                    restoreFocus = false
-                    liveVm.watchFromGuide(ch)
-                    zapSource = MainSection.LIVE_TV
-                    homeVm.stopPreview()
-                    // Live TV set to play externally → the channel went to another app;
-                    // don't mount the fullscreen player over it.
-                    if (playerMode != PlayerMode.MINI && !liveVm.externalPlayerOn.value) {
-                        if (grow && liveVm.liveOnExo.value && multiview == null) {
-                            guideHandover = true
-                            handoverGrow = true
-                            scope.launch {
-                                handoverShrink.snapTo(0f)
-                                handoverShrink.animateTo(1f, handoverSpec)
-                                guideHandover = false
-                                handoverGrow = false
-                                handoverShrink.snapTo(0f)
-                            }
-                        }
-                        playerMode = PlayerMode.FULLSCREEN
-                    }
-                }
+                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = { ch, _ -> openLiveFullscreen(ch) }
                 val guidePlayCatchup: (ChannelEntity, tv.own.owntv.core.database.entity.EpgProgrammeEntity) -> Unit = { ch, prog ->
                     restoreFocus = false
                     liveVm.playCatchupProgramme(ch, prog)
@@ -1878,7 +1876,7 @@ fun OwnTVShell(
                         onOpenGuide = if (isLiveChannel && MainSection.LIVE_TV in visibleSections) {
                             { exitToList() }
                         } else null,
-                        // Long Down: search, the channel carrying on in the preview.
+                        // Search (a key bound to it): the player closes first, and leaving Live TV stops the stream.
                         onOpenSearch = if (isLiveChannel) { { exitPlayer(); onSelectSection(MainSection.SEARCH) } } else null,
                         // The control panel's channel tiles: the channels watched last, with what is on now.
                         panelChannels = if (isTunedLive) {

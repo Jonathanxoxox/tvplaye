@@ -102,29 +102,6 @@ import tv.own.owntv.ui.theme.stageText
 
 private val Tabular = "tnum"
 
-/** "Live TV" 46/800, then the crumb: "‹ **Sky Cinema** · 9 channels" (no ‹ when the column is on screen). */
-@Composable
-internal fun LiveHeader(category: String, count: Int, showChevron: Boolean, modifier: Modifier = Modifier) {
-    Row(modifier, horizontalArrangement = Arrangement.spacedBy(22.mpx), verticalAlignment = Alignment.Bottom) {
-        Text(stringResource(R.string.common_nav_live_tv), style = stageText(46, 800, (-1).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Row(
-            Modifier.padding(bottom = 3.mpx),
-            horizontalArrangement = Arrangement.spacedBy(12.mpx),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            if (showChevron) OwnTVIcon(OwnTVIcon.CHEVRON_LEFT, StageColors.Muted, Modifier.size(20.mpx))
-            Text(
-                category, style = stageText(20, 700), color = stageAccent.accent,
-                maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false),
-            )
-            Text(
-                "· " + pluralStringResource(R.plurals.content_live_channel_count, count, count),
-                style = stageText(20, 500), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
-            )
-        }
-    }
-}
-
 /**
  * `.chrow`: 84 high, 20 padding, 18 gap — number (50, right-aligned, 20/600 dim), white logo plate
  * 76×54, name 22/700, "programme · time left" 17 muted (the time part at 60%), a 300×4 progress line;

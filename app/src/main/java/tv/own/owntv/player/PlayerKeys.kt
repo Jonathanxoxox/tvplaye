@@ -113,6 +113,9 @@ class PlayerKeyPress {
         when (e.type) {
             KeyEventType.KeyDown -> {
                 if (e.nativeKeyEvent.repeatCount == 0) {
+                    // A fresh press: whatever an earlier press left half-done (its release never came) is over.
+                    pending = null
+                    swallowUp = null
                     if (binding.long == PlayerKeyAction.NONE) {
                         pending = null
                         if (!run(binding.short, key, false)) return false
