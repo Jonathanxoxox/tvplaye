@@ -126,10 +126,10 @@ Gebaut wird über GitHub Actions, bei jedem Push auf `main` und auf Arbeitszweig
 | Workflow | Was er macht |
 |------|------|
 | [`tvplayer.yml`](.github/workflows/tvplayer.yml) | baut die signierte Release-APK und veröffentlicht sie als `latest` und `v1.0.<Lauf>` |
-| [`smoke.yml`](.github/workflows/smoke.yml) | JVM-Tests und Starttest im Emulator |
+| [`smoke.yml`](.github/workflows/smoke.yml) | alle JVM-Tests, Android Lint und Starttest im Emulator |
 | [`i18n.yml`](.github/workflows/i18n.yml) | prüft bei Pull Requests, dass keine neuen festen Texte im Code stehen (`tools/i18n/`) |
 | [`screens.yml`](.github/workflows/screens.yml) | nur von Hand: fährt im Emulator per Fernbedienung durch die App und legt Screenshots auf den Zweig `screens/<Zweig>` |
-| [`android.yml`](.github/workflows/android.yml) | nur von Hand: alle Unit-Tests und Lint |
+| [`android.yml`](.github/workflows/android.yml) | nur von Hand: OwnTVs alter Build mit Tests und Lint |
 
 Läuft ein Workflow für einen Push, den ein neuerer Push auf demselben Zweig schon überholt hat,
 überspringt er den Rest und endet grün. Die Läufe werden nicht abgebrochen, weil jeder abgebrochene

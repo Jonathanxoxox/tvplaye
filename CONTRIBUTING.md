@@ -18,8 +18,8 @@ die App in `app/`.
 
 1. Zweig von `main` anlegen, ändern, committen. Commit-Nachrichten beschreiben für einen Leser, was
    sich für den Zuschauer ändert.
-2. Pull Request gegen `main` öffnen. CI baut die APK (`tvplayer.yml`), führt die JVM-Tests aus und
-   startet die App im Emulator (`smoke.yml`), und prüft auf feste Texte im Code (`i18n.yml`).
+2. Pull Request gegen `main` öffnen. CI baut die APK (`tvplayer.yml`), führt alle JVM-Tests und Android Lint
+   aus und startet die App im Emulator (`smoke.yml`), und prüft auf feste Texte im Code (`i18n.yml`).
 3. Gemergt wird, sobald alles grün ist.
 
 Vor dem Push lohnt sich die Textprüfung lokal, sie braucht kein Android SDK:
