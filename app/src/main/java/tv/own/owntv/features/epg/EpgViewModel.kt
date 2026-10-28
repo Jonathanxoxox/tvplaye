@@ -2,7 +2,6 @@
 
 package tv.own.owntv.features.epg
 
-import tv.own.owntv.core.epg.displayLogoUrl
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.FlowPreview
@@ -46,12 +45,9 @@ import tv.own.owntv.core.model.SourceType
 import tv.own.owntv.core.parser.XtreamClient
 import tv.own.owntv.core.customize.CustomizationStore
 import tv.own.owntv.core.customize.CustomizeKeys
-import tv.own.owntv.core.customize.applyCustomizations
-import tv.own.owntv.core.customize.railCategories
 import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.entity.EpgProgrammeEntity
 import tv.own.owntv.core.model.MediaType
-import tv.own.owntv.core.network.ConnectivityObserver
 import tv.own.owntv.core.repository.EpgRepository
 import tv.own.owntv.core.repository.SourceRepository
 import tv.own.owntv.core.repository.activeSourceIds
@@ -82,7 +78,6 @@ data class EpgUiState(
     val windowEnd: Long = 0,
     val now: Long = 0,
     val loading: Boolean = true,
-    val refreshing: Boolean = false,
     val message: EpgMessage? = null,
     /** False when the user hasn't added any EPG source yet → the screen shows an "Add EPG" prompt. */
     val hasEpgSources: Boolean = true,
@@ -101,7 +96,6 @@ class EpgViewModel(
     private val profileDao: ProfileDao,
     private val epgRepository: EpgRepository,
     private val epgSourceStore: tv.own.owntv.core.epg.EpgSourceStore,
-    private val connectivity: ConnectivityObserver,
     private val customize: CustomizationStore,
     private val sourceDao: SourceDao,
     private val xtream: XtreamClient,
@@ -736,48 +730,6 @@ class EpgViewModel(
     private fun finishRun(summary: EpgMatchSummary) {
         _matchSummary.value = summary
         _matchFinished.tryEmit(summary)
-    }
-
-    /**
-     * Scan every channel that has no working guide (no manual match and its tvg-id isn't in the EPG
-     * feed), match it by name, auto-apply high-confidence hits and queue the rest for review.
-     */
-    fun autoMatchEpg() {
-        if (_matching.value) return
-        viewModelScope.launch {
-            _matching.value = true
-            try {
-                val pid = settings.activeProfileId.first()
-                // The playlist(s) the guide is showing (the top-right choice), not every playlist on the
-                // profile: with a 400-channel playlist picked it scored a 55k lineup too.
-                val playlistIds = if (pid < 0) emptyList() else activeSourceIds(settings, sourceDao, pid, MediaType.LIVE)
-                if (playlistIds.isEmpty()) { _matchSummary.value = EpgMatchSummary.AddPlaylist; return@launch }
-                val cust = customize.observe(pid, MediaType.LIVE).first()
-
-                val outcome = autoMatcher.run(cust, playlistIds)
-                if (!outcome.hadCandidates) { finishRun(EpgMatchSummary.NoData); return@launch }
-
-                // Persist the confident hits — in one write, see [saveEpgMatches].
-                saveEpgMatches(pid, outcome.applied)
-
-                runApplied = outcome.applied.map { it.second }
-                openReview(outcome.review.map {
-                    EpgMatchSuggestion(it.channel, it.epgChannelId, it.displayName, it.score)
-                })
-                val applied = outcome.applied.size
-                finishRun(when {
-                    applied == 0 && outcome.review.isEmpty() -> EpgMatchSummary.AllMatched
-                    // Everything found pointed at a guide channel with nothing scheduled. Saying
-                    // "matched" here would be a success message for a row that stays blank.
-                    applied == 0 && outcome.withheldForNoProgrammes == outcome.review.size ->
-                        EpgMatchSummary.MatchedNoProgrammes
-                    else -> EpgMatchSummary.AutoMatched(applied, outcome.review.size)
-                })
-                if (applied > 0) fillMatchedInBackground(outcome.applied.map { it.second }) // off the spinner
-            } finally {
-                _matching.value = false
-            }
-        }
     }
 
     /**

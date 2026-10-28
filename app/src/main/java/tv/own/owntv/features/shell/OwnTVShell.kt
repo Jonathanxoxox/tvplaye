@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -29,7 +27,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -76,7 +73,6 @@ import tv.own.owntv.features.series.SeriesScreen
 import tv.own.owntv.features.series.SeriesViewModel
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutBindings
-import tv.own.owntv.player.MpvVideoSurface
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.player.PlayerHud
 import tv.own.owntv.features.shell.components.AvatarPickerDialog
@@ -742,11 +738,14 @@ fun OwnTVShell(
     // of [focusRail], or once a key is pressed while the rail holds focus.
     var railFocused by remember { mutableStateOf(false) }
     // Keyed on [railKeyAt] too: at start-up focus already counts as on the rail before [focusRail] runs.
-    LaunchedEffect(railHasFocus, railKeyAt) {
-        railFocused = railHasFocus && android.os.SystemClock.uptimeMillis() - railKeyAt <= RAIL_KEY_WINDOW_MS
+    // Never while the player is on screen: after a start in full screen focus still counts as on the rail, and
+    // the menu (with the guide's categories) must not slide in behind the picture when Back brings it down.
+    LaunchedEffect(railHasFocus, railKeyAt, playerMode) {
+        railFocused = railHasFocus && playerMode == PlayerMode.NONE &&
+            android.os.SystemClock.uptimeMillis() - railKeyAt <= RAIL_KEY_WINDOW_MS
     }
     // The strip at rest, the menu with names while it holds focus.
-    val railState = if (railFocused) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
+    val railState = if (railFocused && playerMode == PlayerMode.NONE) tv.own.owntv.features.shell.components.RailState.OPEN else tv.own.owntv.features.shell.components.RailState.CAPSULE
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
     // The guide, and a match page: pages that take the strip's room while they hold focus.
     val fullPage = selectedSection == MainSection.SPORTS && tv.own.owntv.features.shell.components.StageRailOpen.fullPage
@@ -1083,7 +1082,7 @@ fun OwnTVShell(
                 if (e.type == KeyEventType.KeyDown) {
                     if (e.key == Key.DirectionLeft || e.key == Key.DirectionRight) railKeyAt = android.os.SystemClock.uptimeMillis()
                     // A key pressed on the rail is the user using it, however focus got there.
-                    if (railHasFocus) railFocused = true
+                    if (railHasFocus && playerMode == PlayerMode.NONE) railFocused = true
                 }
                 if (e.key != Key.Back) return@onPreviewKeyEvent false
                 when (e.type) {

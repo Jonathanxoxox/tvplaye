@@ -11,9 +11,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -31,7 +28,6 @@ import tv.own.owntv.core.database.dao.CustomCategoryDao
 import tv.own.owntv.core.database.dao.ProfileDao
 import tv.own.owntv.core.database.entity.ContentOrderEntity
 import tv.own.owntv.core.live.LiveKey
-import tv.own.owntv.core.live.serialize
 import tv.own.owntv.core.model.MediaType
 import tv.own.owntv.core.settings.SettingsRepository
 import tv.own.owntv.features.customize.MoveTarget
@@ -271,38 +267,6 @@ internal class VodCategories(
                 railItems.first { list -> list.any { VodCatalogKeys.isCatalog(it.key) } }
             }?.firstOrNull { VodCatalogKeys.isCatalog(it.key) } ?: return@launch
             if (selected.value == LiveKey.All && lockedKey == null) selected.value = first.key
-        }
-    }
-
-    /**
-     * Remember the last selected category (Settings → Browsing & lists → "Remember last category",
-     * on by default): saved on change, restored once at startup. Mirrors LiveViewModel's block.
-     */
-    fun rememberLastCategory(
-        enabled: suspend () -> Boolean,
-        saved: suspend () -> LiveKey?,
-        save: suspend (String) -> Unit,
-    ) {
-        // Persist on change, debounced — the rail fires select() on focus as you scroll it.
-        scope.launch {
-            selected.drop(1).debounce(800).distinctUntilChanged()
-                .collect { if (lockedKey == null) save(it.serialize()) }
-        }
-        // Restore once at startup, and only while still on the default (never yank a user who already
-        // navigated). A saved folder is honoured only once it exists in this profile's rail.
-        scope.launch {
-            if (!enabled()) return@launch
-            val key = saved() ?: return@launch
-            // A saved Folder/Custom is honoured only while it still exists in this profile's rail —
-            // a deleted custom category or a re-synced-away folder must not resurrect on restart.
-            if (key is LiveKey.Folder || key is LiveKey.Custom) {
-                val ok = kotlinx.coroutines.withTimeoutOrNull(5_000) {
-                    railItems.first { list -> list.any { it.key == key } }
-                } != null
-                if (ok && selected.value == LiveKey.All) selected.value = key
-            } else if (selected.value == LiveKey.All) {
-                selected.value = key
-            }
         }
     }
 
