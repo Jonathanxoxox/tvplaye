@@ -48,7 +48,7 @@ android {
         applicationId = "io.github.jonathanxoxox.tvplayer"
         minSdk = 26
         targetSdk = 36
-        // CI injects these from the git tag (see .github/workflows/android.yml) so releases never
+        // CI injects these from the git tag (see the lint job in .github/workflows/smoke.yml) so releases never
         // need a manual edit here. The fallbacks are only used for local/debug builds — pinned HIGH
         // (99999, mirroring versionName 99.99.99) so a local/debug APK is always "newer" than any
         // published release and installs straight over it (no INSTALL_FAILED_VERSION_DOWNGRADE).
@@ -224,7 +224,7 @@ android {
     }
 
     lint {
-        // CI gates on this (see .github/workflows/android.yml), so an error must mean something.
+        // CI gates on this (see the lint job in .github/workflows/smoke.yml), so an error must mean something.
         abortOnError = true
         warningsAsErrors = false
         // A counted sentence must use Android plural resources; keep this invariant fatal so a new
