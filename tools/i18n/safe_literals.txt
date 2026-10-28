@@ -715,10 +715,12 @@
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	:
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	ass
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	epg-preload
+1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	last-channel
 1	log	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	player-first-frame
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	shell-composed
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	srt
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	ssa
+1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	start-mode
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	vtt
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	webvtt
 1	technical	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	·
@@ -1389,6 +1391,8 @@
 1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	update.dm
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	jank frames=${result.frames} janky=${result.janky} worstMs=${result.worstMs}
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	profile=${status.state.name.lowercase()}(${status.code})
+1	performance	app/src/main/java/tv/own/owntv/perf/StartLog.kt	slow-frame ${total / 1_000_000} ms $name
+1	performance	app/src/main/java/tv/own/owntv/perf/StartLog.kt	start
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	start-jank
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR apply failed: ${it.message}
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR reset failed: ${it.message}

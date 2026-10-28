@@ -33,6 +33,9 @@ object StartLog {
     /** Frames from the first composition to 10 s after the destination was ready. */
     data class Jank(val frames: Int, val janky: Int, val worstMs: Long)
 
+    /** Frames per area ([area]: section and player) since the start, so a photo after scrolling says where it stutters. */
+    data class AreaJank(val area: String, val frames: Int, val janky: Int, val worstMs: Long)
+
     private const val MAX_ENTRIES = 64
 
     @Volatile private var t0 = SystemClock.elapsedRealtime()
@@ -46,6 +49,12 @@ object StartLog {
 
     private val _jank = MutableStateFlow<Jank?>(null)
     val jank: StateFlow<Jank?> = _jank.asStateFlow()
+
+    private val _areas = MutableStateFlow<List<AreaJank>>(emptyList())
+    val areas: StateFlow<List<AreaJank>> = _areas.asStateFlow()
+
+    /** Where the frames are counted now, set by the shell (section and player mode). */
+    @Volatile var area: String = "start"
 
     /** The zero point: the first line of [Application.onCreate]. */
     fun begin() {
@@ -89,16 +98,25 @@ object StartLog {
     }
 
     /**
-     * Counts frames over [Window] until [finish]: the first composition up to 10 s after the destination was
-     * ready. A frame is janky past 1.5 refresh intervals (the rule the tour's MayoJank report uses).
+     * Counts frames over [Window]: the first composition up to 10 s after the destination was ready for the
+     * start line ([finish]), and per [area] for as long as the Activity lives. A frame is janky past 1.5 refresh
+     * intervals (the rule the tour's MayoJank report uses). The first few very slow frames are stamped into the
+     * timeline as they happen, so the photo shows what they sat next to.
      */
     class JankWatch(private val window: Window) {
         private val frames = AtomicInteger()
         private val janky = AtomicInteger()
         private val worstNs = AtomicLong()
+        @Volatile private var startWindow = true
         private val thread = HandlerThread("start-jank").apply { start() }
         private val handler = Handler(thread.looper)
         private val listener: Window.OnFrameMetricsAvailableListener
+
+        // Touched on [thread] only.
+        private class Count(var frames: Int = 0, var janky: Int = 0, var worstNs: Long = 0L)
+        private val perArea = LinkedHashMap<String, Count>()
+        private var slowStamped = 0
+        private var publishedAtNs = 0L
 
         init {
             val refreshHz = window.decorView.display?.refreshRate?.takeIf { it > 1f } ?: 60f
@@ -106,22 +124,50 @@ object StartLog {
             listener = Window.OnFrameMetricsAvailableListener { _, metrics, _ ->
                 if (metrics.getMetric(FrameMetrics.FIRST_DRAW_FRAME) == 1L) return@OnFrameMetricsAvailableListener
                 val total = metrics.getMetric(FrameMetrics.TOTAL_DURATION)
-                frames.incrementAndGet()
-                if (total > jankNs) janky.incrementAndGet()
-                worstNs.accumulateAndGet(total) { a, b -> maxOf(a, b) }
+                val isJanky = total > jankNs
+                if (startWindow) {
+                    frames.incrementAndGet()
+                    if (isJanky) janky.incrementAndGet()
+                    worstNs.accumulateAndGet(total) { a, b -> maxOf(a, b) }
+                }
+                val name = area
+                val count = perArea.getOrPut(name) { Count() }
+                count.frames++
+                if (isJanky) count.janky++
+                if (total > count.worstNs) count.worstNs = total
+                if (total >= SLOW_FRAME_NS && slowStamped < MAX_SLOW_STAMPS) {
+                    slowStamped++
+                    stamp("slow-frame ${total / 1_000_000} ms $name")
+                }
+                val now = System.nanoTime()
+                if (now - publishedAtNs >= PUBLISH_EVERY_NS) {
+                    publishedAtNs = now
+                    _areas.value = perArea.map { (a, c) -> AreaJank(a, c.frames, c.janky, c.worstNs / 1_000_000) }
+                }
             }
             window.addOnFrameMetricsAvailableListener(listener, handler)
         }
 
+        /** The start window is over: publish its line. Counting per area goes on. */
         fun finish() {
-            runCatching { window.removeOnFrameMetricsAvailableListener(listener) }
+            startWindow = false
             // Frames still queued on the thread land before this runs.
             handler.post {
                 val result = Jank(frames.get(), janky.get(), worstNs.get() / 1_000_000)
                 _jank.value = result
                 Perf.stamp("jank frames=${result.frames} janky=${result.janky} worstMs=${result.worstMs}")
-                thread.quitSafely()
             }
         }
+
+        /** The Activity is going: stop listening to its window. */
+        fun release() {
+            runCatching { window.removeOnFrameMetricsAvailableListener(listener) }
+            handler.post { thread.quitSafely() }
+        }
     }
+
+    /** At least this long, a frame is stamped into the timeline (a fifth of a second: plainly visible). */
+    private const val SLOW_FRAME_NS = 200_000_000L
+    private const val MAX_SLOW_STAMPS = 8
+    private const val PUBLISH_EVERY_NS = 1_000_000_000L
 }

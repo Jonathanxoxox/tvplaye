@@ -13,6 +13,7 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.withTimeoutOrNull
 
 /**
  * Keeps the launcher rows current: every 15 minutes (the shortest period Android allows), after a
@@ -25,7 +26,15 @@ import java.util.concurrent.TimeUnit
  */
 class LauncherRowsWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result = try {
-        if (!AppVisibility.foreground || inputData.getBoolean(KEY_FORCE, false)) {
+        // A run that is due when the process starts (the forced one the launcher asks for after an update, or
+        // the one queued on leaving the app and left over when the box killed it, or one that ran before
+        // MainActivity.onStart) scanned every channel during the first picture (Start-Protokoll 1.0.218:
+        // recent-decorate @ 746 ms). Let the start through first, then decide; a process nobody
+        // opens (boot, the launcher asking) waits a few seconds at most. Found the app on screen after that:
+        // a forced run is not owed either, since leaving the app queues the next one.
+        val atStart = !tv.own.owntv.StartupGate.isSettled
+        if (atStart) withTimeoutOrNull(START_WAIT_MS) { tv.own.owntv.StartupGate.awaitSettled() }
+        if (!AppVisibility.foreground || (inputData.getBoolean(KEY_FORCE, false) && !atStart)) {
             LauncherRows(applicationContext).refresh()
         }
         Result.success()
@@ -39,6 +48,7 @@ class LauncherRowsWorker(context: Context, params: WorkerParameters) : Coroutine
         private const val PERIODIC = "tvplayer-launcher-rows"
         private const val NOW = "tvplayer-launcher-rows-now"
         private const val KEY_FORCE = "force"
+        private const val START_WAIT_MS = 10_000L
 
         fun schedule(context: Context) {
             val request = PeriodicWorkRequestBuilder<LauncherRowsWorker>(15, TimeUnit.MINUTES).build()
