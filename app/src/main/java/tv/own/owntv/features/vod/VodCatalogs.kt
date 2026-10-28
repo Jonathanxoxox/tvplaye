@@ -395,7 +395,11 @@ class VodCatalogSource(
                 val id = o.optInt(F_PROVIDER_ID, 0)
                 val name = o.optString(F_PROVIDER_NAME).value() ?: return@mapNotNull null
                 val priority = o.optJSONObject(F_PRIORITIES)?.optInt(region, Int.MAX_VALUE) ?: Int.MAX_VALUE
-                if (id > 0) Triple(id, name, priority) else null
+                if (id > 0 && id !in RENTAL_PROVIDERS && RENTAL_NAME_HINTS.none { name.contains(it, ignoreCase = true) }) {
+                    Triple(id, name, priority)
+                } else {
+                    null
+                }
             }.sortedBy { it.third }.map { it.first to it.second }
         }
 
@@ -458,6 +462,10 @@ class VodCatalogSource(
         private const val MIN_VOTES = 50
         private const val MAX_SERVICES = 8
         private const val MATCH_CHUNK = 150
+
+        /** Rent/buy shops and ad-tier duplicates: not a subscription, so not "Auch im Abo bei". */
+        private val RENTAL_PROVIDERS = setOf(2, 3, 10, 35, 40, 68, 130, 178, 192, 1796)
+        private val RENTAL_NAME_HINTS = listOf("Store", "with Ads", "Channel")
 
         private const val F_RESULTS = "results"
         private const val F_GENRES = "genres"
