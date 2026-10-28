@@ -693,7 +693,10 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
     }
 }
 
-/** The start timeline for a photo of the TV: profile status, the first 10 s of frames, every stamp in two columns. */
+/** Area lines on the start log: more do not fit above the timeline. */
+private const val MAX_AREA_LINES = 4
+
+/** The start timeline for a photo of the TV: profile status, the first 10 s of frames, frames per area, every stamp in three columns. */
 @Composable
 private fun StartLogPanel(modifier: Modifier = Modifier) {
     val entries by StartLog.entries.collectAsStateWithLifecycle()
@@ -739,10 +742,20 @@ private fun StartLogPanel(modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(top = 4.mpx),
             )
         }
-        val half = (entries.size + 1) / 2
-        Row(Modifier.padding(top = 12.mpx), horizontalArrangement = Arrangement.spacedBy(40.mpx)) {
-            for (column in listOf(entries.take(half), entries.drop(half))) {
-                Column(Modifier.width(560.mpx)) {
+        // Frames per area since the start, busiest first: scroll the guide or a grid, come back, take the photo.
+        val areas by StartLog.areas.collectAsStateWithLifecycle()
+        for (a in areas.sortedByDescending { it.frames }.take(MAX_AREA_LINES)) {
+            Text(
+                stringResource(R.string.tvplayer_startlog_area, a.area, a.janky, a.frames, a.worstMs),
+                style = stageText(16, 600), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 2.mpx),
+            )
+        }
+        // Three columns: the slow-frame stamps make the timeline longer than two fit on the page.
+        val third = (entries.size + 2) / 3
+        Row(Modifier.padding(top = 12.mpx), horizontalArrangement = Arrangement.spacedBy(30.mpx)) {
+            for (column in entries.chunked(third.coerceAtLeast(1))) {
+                Column(Modifier.width(520.mpx)) {
                     for (e in column) {
                         Text(
                             stringResource(R.string.tvplayer_startlog_entry, e.label, e.atMs, e.sinceLastMs),

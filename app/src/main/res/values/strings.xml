@@ -16,6 +16,7 @@
     <string name="tvplayer_startlog_profile_error" translatable="false">Fehler</string>
     <string name="tvplayer_startlog_jank" translatable="false">Ruckler in den ersten 10 s – ruckelnd: %1$d, Bilder gesamt: %2$d, längstes Bild: %3$d ms</string>
     <string name="tvplayer_startlog_jank_pending" translatable="false">Ruckler: noch nicht gemessen (10 s nach dem Start)</string>
+    <string name="tvplayer_startlog_area" translatable="false">%1$s – ruckelnd %2$d/%3$d, längstes Bild %4$d ms</string>
     <string name="tvplayer_startlog_entry" translatable="false">%1$s @ %2$d ms (+%3$d)</string>
     <string name="tvplayer_update_allow_install" translatable="false">Erlaube Mayo TV im geöffneten Fenster, Apps zu installieren, und drücke dann Zurück. Das Update startet danach von selbst.</string>
     <string name="tvplayer_no_guide" translatable="false">Keine Programminfo</string>

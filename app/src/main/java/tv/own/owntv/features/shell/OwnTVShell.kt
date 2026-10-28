@@ -435,9 +435,13 @@ fun OwnTVShell(
         // A launcher tile chose what to show; the start mode would only overwrite it (last channel over a match page).
         if (startedByLink || playerMode != PlayerMode.NONE) return@LaunchedEffect
         val pid = resumeSettings.activeProfileId.first()
-        when (resumeSettings.startupMode(pid).first()) {
+        val mode = resumeSettings.startupMode(pid).first()
+        // shell-composed → tune-start took 575 ms on the TV: these two say which part.
+        tv.own.owntv.perf.StartLog.stampOnce("start-mode")
+        when (mode) {
             tv.own.owntv.core.settings.StartupMode.LAST_CHANNEL -> {
                 val ch = liveVm.lastWatchedLiveChannel()
+                tv.own.owntv.perf.StartLog.stampOnce("last-channel")
                 if (ch != null && playerMode == PlayerMode.NONE && sportsMatchRequests.pendingMatch.value == null) {
                     zapSource = MainSection.LIVE_TV
                     // There is no caller-owned browse rail here. Let LiveViewModel build the channel's
@@ -855,9 +859,11 @@ fun OwnTVShell(
         )
     }
 
-    // The screen the tour's frame report counts against (a no-op unless the build logs frames).
+    // The screen the tour's frame report and the start log's per-area frames count against.
     LaunchedEffect(selectedSection, playerMode) {
-        tv.own.owntv.ui.FrameJankLog.screen = selectedSection.name + ":" + playerMode.name
+        val area = selectedSection.name + ":" + playerMode.name
+        tv.own.owntv.ui.FrameJankLog.screen = area
+        tv.own.owntv.perf.StartLog.area = area
     }
 
     // The first picture of the process, for the start log (either engine).

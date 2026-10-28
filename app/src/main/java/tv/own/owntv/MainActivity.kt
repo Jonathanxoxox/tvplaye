@@ -100,6 +100,15 @@ open class MainActivity : ComponentActivity() {
     /** The process was started by a launcher tile (channel, movie, match…): the start mode must not also pick a picture. */
     private var startedByLink = false
 
+    /** Frames for the start log: the first seconds, then per area while this Activity lives. */
+    private var startJank: StartLog.JankWatch? = null
+
+    override fun onDestroy() {
+        startJank?.release()
+        startJank = null
+        super.onDestroy()
+    }
+
     /**
      * Wrap the Activity base with the selected locale so its own `Resources` resolve correctly —
      * Application wrapping alone leaves the Activity wrong, because
@@ -206,7 +215,7 @@ open class MainActivity : ComponentActivity() {
         if (BuildConfig.PERF_LOG) tv.own.owntv.ui.FrameJankLog.attach(window)
         // Frames of the first seconds for the start log (More > About), in every build.
         // Once per process: a recreated Activity (language switch) is not a start.
-        val startJank = if (StartLog.firstTime("jank-watch")) StartLog.JankWatch(window) else null
+        startJank = if (StartLog.firstTime("jank-watch")) StartLog.JankWatch(window) else null
         setContent {
             // First composition pass — splits "process start → Compose is running" from
             // "Compose is running → the destination's data arrived".
