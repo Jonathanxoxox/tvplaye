@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -83,6 +84,14 @@ internal fun ScreenUnits.text(px: Number, weight: Int): TextStyle = TextStyle(
     shadow = Shadow(Color.Black.copy(alpha = 0.6f), Offset(0f, toPx(2)), toPx(4)),
 )
 
+/**
+ * What the info bar shows for the channel on screen. [channel] names the channel just picked, before
+ * its stream (and with it the engine's metadata) is open; [guidePending] is true while its programme
+ * is still being looked up.
+ */
+@Immutable
+data class ZapInfo(val guide: EpgNowNext?, val channel: MediaMeta? = null, val guidePending: Boolean = false)
+
 /** The dark wash the panel and the zap bar sit on, rising from the bottom edge. */
 internal val PanelWash = Brush.verticalGradient(
     0f to Color.Transparent,
@@ -104,6 +113,7 @@ internal fun ZapInfoBlock(
     chips: List<String>,
     nowMs: Long,
     modifier: Modifier = Modifier,
+    guidePending: Boolean = false,
 ) {
     val u = rememberScreenUnits()
     val formatTime = rememberSystemTimeFormatter()
@@ -141,7 +151,8 @@ internal fun ZapInfoBlock(
                         Text(stringResource(R.string.player_duration_minutes, left.toInt()), style = row, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 } else {
-                    Text(stringResource(R.string.tvplayer_no_guide), style = row, color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    // Kept in the layout while the programme is looked up, so the line does not jump when it arrives.
+                    Text(stringResource(R.string.tvplayer_no_guide), style = row, color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.alpha(if (guidePending) 0f else 1f))
                 }
                 subtitle?.takeIf { it.isNotBlank() }?.let {
                     Text(it, style = u.text(26, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -199,31 +210,40 @@ internal fun ProgrammeSeekLine(guide: EpgNowNext?, nowMs: Long, modifier: Modifi
 
 /** The info bar along the bottom of the picture after a channel change: the programme block and its seek line. */
 @Composable
-internal fun ZapInfoBar(player: PlaybackEngine, guide: EpgNowNext?, modifier: Modifier = Modifier) {
+internal fun ZapInfoBar(player: PlaybackEngine, info: ZapInfo?, modifier: Modifier = Modifier) {
     val u = rememberScreenUnits()
+    val guide = info?.guide
     // The bar is up for a few seconds, so the moment it opened is precise enough.
     val nowMs = remember(guide) { System.currentTimeMillis() }
     Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60), bottom = u.dp(56))) {
-        PlayerZapInfoBlock(player, guide, nowMs)
+        PlayerZapInfoBlock(player, info, nowMs)
         Spacer(Modifier.height(u.dp(8)))
         ProgrammeSeekLine(guide, nowMs)
     }
 }
 
-/** [ZapInfoBlock] for whatever the engine is playing, read from its metadata like [ChannelCard]. */
+/**
+ * [ZapInfoBlock] for the channel on screen. The engine's metadata as long as it is about that channel
+ * (it carries the rewind line); until the new stream is open, the picked channel's own name, number
+ * and logo, and no badges, since those still describe the stream before.
+ */
 @Composable
-internal fun PlayerZapInfoBlock(player: PlaybackEngine, guide: EpgNowNext?, nowMs: Long, modifier: Modifier = Modifier) {
-    val meta by player.currentMeta.collectAsStateWithLifecycle()
+internal fun PlayerZapInfoBlock(player: PlaybackEngine, info: ZapInfo?, nowMs: Long, modifier: Modifier = Modifier) {
+    val engineMeta by player.currentMeta.collectAsStateWithLifecycle()
     val chips by player.streamChips.collectAsStateWithLifecycle()
+    val picked = info?.channel
+    val engineCaughtUp = picked == null || engineMeta.title == picked.title
+    val meta = if (engineCaughtUp || picked == null) engineMeta else picked
     ZapInfoBlock(
         title = meta.title?.takeIf { it.isNotBlank() },
         subtitle = meta.localizedSubtitle(),
         logoUrl = meta.logoUrl,
-        guide = guide,
+        guide = info?.guide,
         // The aspect and the bitrate are the player's own business; the panel shows FHD, FPS and sound.
-        chips = chips.filterNot { it.contains(':') || it.endsWith("Mbps") },
+        chips = if (engineCaughtUp) chips.filterNot { it.contains(':') || it.endsWith("Mbps") } else emptyList(),
         nowMs = nowMs,
         modifier = modifier,
+        guidePending = info?.guidePending == true,
     )
 }
 

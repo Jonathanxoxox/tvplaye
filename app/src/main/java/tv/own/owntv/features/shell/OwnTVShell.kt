@@ -1776,7 +1776,13 @@ fun OwnTVShell(
                     // The bottom info bar after a channel change, and with it the list-first remote.
                     // Tuned live only: a catch-up programme keeps the classic controls, its seek bar.
                     zapInfo = if (isTunedLive) {
-                        { liveVm.zapGuide.collectAsStateWithLifecycle().value }
+                        {
+                            tv.own.owntv.player.ZapInfo(
+                                guide = liveVm.zapGuide.collectAsStateWithLifecycle().value,
+                                channel = liveVm.zapChannel.collectAsStateWithLifecycle().value,
+                                guidePending = liveVm.zapGuidePending.collectAsStateWithLifecycle().value,
+                            )
+                        }
                     } else null,
                     remote = tv.own.owntv.player.LiveRemoteActions(
                         // Long Menu and the control panel's first tile: the guide, with the channel in its preview.
@@ -1796,7 +1802,7 @@ fun OwnTVShell(
                                 LaunchedEffect(recent) { liveVm.ensureNowPlayingFetched(recent) }
                                 val now by liveVm.nowPlaying.collectAsStateWithLifecycle()
                                 recent.map { ch ->
-                                    tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.ensurePlaying(ch) }
+                                    tv.own.owntv.player.PanelTile(ch.id, ch.name, logoUrl = ch.displayLogoUrl, caption = now[ch.id]) { liveVm.playInPlayer(ch) }
                                 }
                             }
                         } else null,
@@ -1966,7 +1972,7 @@ fun OwnTVShell(
                         title = stringResource(R.string.content_category_recently_watched),
                         showNumbers = directTuneEnabled,
                         alignEnd = true,
-                        onSelect = { liveVm.ensurePlaying(it); showHistoryList = false },
+                        onSelect = { liveVm.playInPlayer(it); showHistoryList = false },
                         onDismiss = { showHistoryList = false },
                         modifier = Modifier.fillMaxSize(),
                     )
