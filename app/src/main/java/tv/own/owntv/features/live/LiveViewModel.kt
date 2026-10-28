@@ -386,6 +386,12 @@ class LiveViewModel(
         epg.takeIf { id != null && id == ch?.id }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    /** True while [zapGuide] is still being looked up for the channel on screen, so the info bar can
+     *  leave the line empty instead of saying "no guide" for a moment on every zap. */
+    val zapGuidePending: StateFlow<Boolean> = combine(keyedNowNext, _previewChannel) { (id, _), ch ->
+        ch != null && id != ch.id
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)
+
     /**
      * "PLAYING / THEN" — what was on air at the moment being replayed. Null unless an archive is on
      * screen, so the HUD simply omits the card the rest of the time.
@@ -976,6 +982,13 @@ class LiveViewModel(
     val zapListTitle: StateFlow<String?> = zapList.title
     val zapListKey: StateFlow<LiveKey?> = zapList.key
 
+    /** Name, number and logo of the channel just picked, for the info bar. The engine's own metadata
+     *  only changes once the new stream is opened — after the CH+/- wait, or a Stalker link — so the
+     *  bar named the channel before while it showed the new one's programme. */
+    val zapChannel: StateFlow<tv.own.owntv.player.MediaMeta?> = combine(_previewChannel, zapChannels, showChannelNumbers) { ch, _, _ ->
+        ch?.let { tv.own.owntv.player.MediaMeta(title = it.name, subtitle = channelNumberLabel(it), logoUrl = it.displayLogoUrl) }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
     // --- Category browser (second Left press shows all categories) ---
     /** The categories' search text. Here, not in the list, so it survives the player: the browse UI
      *  is removed while a channel plays full screen, and a search lost on return meant pressing Up
@@ -1191,6 +1204,14 @@ class LiveViewModel(
         else zapList.armFromBrowse(zapChannels, title = null, key = null, categoryId = null)
         ensurePlaying(channel)
         recordLiveHistory(channel, immediate = true)
+    }
+
+    /** A channel picked from the player's history list or the OK panel's tiles. One outside the list
+     *  CH+/- steps through (a channel watched in another category) brings its own category along, as
+     *  [previousChannel] does; without that ▲▼ found no place to step from and did nothing at all. */
+    fun playInPlayer(channel: ChannelEntity) {
+        if (zapList.channels.value.none { it.id == channel.id }) zapList.armFor(channel)
+        ensurePlaying(channel)
     }
 
     /** Zap to the neighbouring channel ([delta] = +1 down / -1 up) — see [LiveZapList.next] for how
