@@ -1,53 +1,35 @@
-# Contributing to OwnTV
+# Mitmachen bei Mayo TV
 
-Thanks for your interest in improving OwnTV! Contributions of all sizes are welcome — bug fixes,
-features, docs, or ideas.
+Mayo TV ist eine veränderte Fassung von [OwnTV](https://github.com/ahXN00/OwnTV). Die Kernbibliothek
+(Datenbank, Parser, EPG, Player-Engines) kommt unverändert als Maven-Paket von dort; geändert wird nur
+die App in `app/`.
 
-## Ground rules
+## Grundregeln
 
-- OwnTV is a **player only**. Please keep its bring-your-own-source positioning — no bundled channels,
-  playlists, or content, and nothing that facilitates access to unauthorized streams.
-- It targets **Android TV** (D-pad / leanback first). Keep navigation remote-friendly.
-- Match the existing code style and structure (Kotlin, Jetpack Compose for TV, Koin, Room).
+- Mayo TV ist **nur ein Player**. Keine mitgelieferten Sender, Playlists oder Streams.
+- Gebaut für **Android TV** mit Fernbedienung: jede Seite muss sich mit dem Steuerkreuz bedienen lassen.
+- **Eine feste Bedienung**: keine neuen Layout-Schalter oder Varianten. Wenn etwas falsch aussieht,
+  wird die eine Ansicht repariert.
+- Keine Pop-ups, die von selbst erscheinen, und keine bewegten Hintergründe. Kurze Übergänge
+  zwischen Ansichten sind erwünscht.
+- Code-Stil wie im Rest: Kotlin, Jetpack Compose for TV, Koin, Room.
 
-## Project setup
+## Ablauf
 
-1. Install **Android Studio** (a version that supports **AGP 9.x**).
-2. Clone your fork and open the project; let Gradle sync.
-3. Run the `app` config on an **Android TV emulator or device**, or build from the CLI:
-   ```bash
-   ./gradlew assembleDebug
-   ```
+1. Zweig von `main` anlegen, ändern, committen. Commit-Nachrichten beschreiben für einen Leser, was
+   sich für den Zuschauer ändert.
+2. Pull Request gegen `main` öffnen. CI baut die APK (`tvplayer.yml`), führt die JVM-Tests aus und
+   startet die App im Emulator (`smoke.yml`), und prüft auf feste Texte im Code (`i18n.yml`).
+3. Gemergt wird, sobald alles grün ist.
 
-A quick tour of the codebase lives in the [README](README.md#%EF%B8%8F-how-it-works-backend), and the
-full design/architecture is in [`extras/`](extras/).
+Vor dem Push lohnt sich die Textprüfung lokal, sie braucht kein Android SDK:
 
-## Workflow (branch → Pull Request)
+```bash
+python3 tools/i18n/check_hardcoded_strings.py verify-ci --base-sha "$(git merge-base HEAD origin/main)"
+```
 
-We use a simple fork-and-PR flow:
+Eigene Texte gehören nach `app/src/main/res/values/strings.xml` (Präfix `tvplayer_`, Deutsch).
 
-1. **Fork** the repo (or, if you're a collaborator, create a branch directly).
-2. Create a branch off `main`:
-   ```bash
-   git checkout -b feature/short-description
-   ```
-3. Make your changes and **commit** them with clear messages — these become the release changelog,
-   so write them for a reader (e.g. `Fix EPG grid scroll desync on D-pad`).
-4. Push your branch and **open a Pull Request** against `main`.
-5. CI builds the app on your PR — please make sure it's green.
-6. A maintainer reviews and merges.
+## Lizenz
 
-> Keep each PR focused on one thing. Small, reviewable PRs get merged faster.
-
-## Commit messages
-
-- Write in the imperative: "Add…", "Fix…", "Refactor…".
-- One logical change per commit where practical.
-- Add `[skip ci]` to the message for doc-only or config commits that don't need a build.
-
-## Reporting bugs / requesting features
-
-Open an issue with what you expected, what happened, your device / Android TV version, and steps to
-reproduce. Logs (`adb logcat`) help a lot for playback issues.
-
-By contributing, you agree your contributions are licensed under the project's [GPLv3 License](LICENSE).
+Beiträge stehen wie das ganze Projekt unter der [GPLv3](LICENSE).

@@ -57,3 +57,6 @@ replay_pid*.log
 
 # Local-only archive (old detailed changelogs etc.), never committed
 /archive/
+
+# Python bytecode from tools/
+__pycache__/
