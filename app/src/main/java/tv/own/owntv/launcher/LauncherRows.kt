@@ -16,6 +16,7 @@ import androidx.tvprovider.media.tv.ChannelLogoUtils
 import androidx.tvprovider.media.tv.PreviewProgram
 import androidx.tvprovider.media.tv.TvContractCompat
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
@@ -35,7 +36,16 @@ import tv.own.owntv.core.model.MediaType
 import tv.own.owntv.core.parser.XtEpgEntry
 import tv.own.owntv.core.repository.activeProfileSources
 import tv.own.owntv.core.settings.SettingsRepository
+import tv.own.owntv.core.sports.Demand
+import tv.own.owntv.core.sports.FollowedTeam
+import tv.own.owntv.core.sports.MatchNotifications
+import tv.own.owntv.core.sports.SportsConfig
+import tv.own.owntv.core.sports.SportsRepository
+import tv.own.owntv.core.sports.model.Match
+import tv.own.owntv.core.sports.model.MatchState
+import tv.own.owntv.core.sports.model.Sport
 import tv.own.owntv.features.sports.GuideBroadcasts
+import tv.own.owntv.features.sports.leagueName
 import java.security.MessageDigest
 import java.text.DateFormat
 import java.util.Calendar
@@ -44,10 +54,11 @@ import java.util.Locale
 
 /**
  * The app's own rows on the launcher home screen (Projectivity, Google TV, the stock launcher):
- * "Für dich" with football on now or soon, the user's teams first, and "Favoriten" with what the
- * favourite channels show right now. A tile opens the channel straight in the player. Every row,
- * core's "Zuletzt gesehen" included (see [decorateRecent]), shows the same tile: the channel logo
- * large, what is on below it.
+ * "Für dich" with the Sports section's matches under way or still to come today, the user's teams first,
+ * and "Favoriten" with what the favourite channels show right now. A match tile opens its match page in
+ * Sports, where a channel is picked; a channel tile opens the channel straight in the player. Every
+ * channel row, core's "Zuletzt gesehen" included (see [decorateRecent]), shows the same tile: the
+ * channel logo large, what is on below it. A match tile shows both crests in the logo's place.
  *
  * Written to the system TvProvider, where launchers read them. Rows are replaced as a whole, new
  * tiles first and old ones after, so a row never flashes empty.
@@ -113,7 +124,7 @@ internal class LauncherRows(private val context: Context) {
                 poster = tiles.tile("f:${ch.id}:${current?.startMs}", content(ch, current, now)),
                 intent = playUri(ch),
                 type = TvContractCompat.PreviewPrograms.TYPE_CHANNEL,
-                live = current != null,
+                live = false,
                 start = current?.startMs,
                 end = current?.stopMs,
             )
@@ -142,11 +153,7 @@ internal class LauncherRows(private val context: Context) {
                 picks += Pick(ch, p, hit.score + bonus, hit)
             }
         }
-        // The same match on several channels (HD, FHD, backup …) becomes one tile on the best of them.
         val groups = picks.groupBy { FootballMatcher.fold(it.programme.title) + "@" + it.programme.startMs / FIVE_MINUTES }.values
-        val matches = groups.map { group -> group.maxBy { it.score } to group.map { it.channel.id }.distinct().size - 1 }
-            .sortedWith(compareByDescending<Pair<Pick, Int>> { it.first.score }.thenBy { it.first.programme.startMs })
-        val forYou = matches.filter { it.first.programme.startMs < now + LOOKAHEAD_MS }.take(MAX_FOR_YOU)
 
         // The channel group: running matches first (best first), then today's in kick-off order. Every
         // variant of a match is listed, right below each other, the best one leading.
@@ -167,21 +174,22 @@ internal class LauncherRows(private val context: Context) {
         runCatching { FootballReminders.clear(context, profile.profileId) }
             .onFailure { android.util.Log.w(TAG, "old football reminders not cleared", it) }
 
-        val forYouTiles = forYou.map { (pick, alternatives) ->
-            val p = pick.programme
-            val running = p.startMs <= now
-            val label = if (running) context.getString(R.string.tvplayer_tile_now) else time.format(Date(p.startMs))
-            val more = if (alternatives > 0) SEPARATOR + context.resources.getQuantityString(R.plurals.tvplayer_more_channels, alternatives, alternatives) else ""
+        // "Für dich" holds the matches of the Sports section: the followed teams' and leagues' matches under
+        // way and still to come today. A tile opens the match page, where its channels are picked.
+        val forYouTiles = sportsMatches(sportsConfig, now).map { m ->
+            val channels = runCatching { GuideBroadcasts.find(m).last().options }.getOrDefault(emptyList())
+            val more = if (channels.size > 1) SEPARATOR + context.resources.getQuantityString(R.plurals.tvplayer_more_channels, channels.size - 1, channels.size - 1) else ""
+            val league = leagueName(m)
             Tile(
-                id = "s:${pick.channel.id}:${p.startMs}",
-                title = "$label: ${p.title}",
-                description = pick.channel.name + SEPARATOR + range(p) + more,
-                poster = tiles.tile("s:${pick.channel.id}:${p.startMs}", content(pick.channel, p, now)),
-                intent = playUri(pick.channel),
+                id = "m:${m.key}",
+                title = MatchNotifications.pair(context, m),
+                description = listOfNotNull(league, time.format(Date(m.startMs)), channels.firstOrNull()?.let { it.channel.name + more }).joinToString(SEPARATOR),
+                poster = tiles.tile("m:${m.key}:${m.state}", matchContent(m, league, now)),
+                intent = matchUri(m),
                 type = TvContractCompat.PreviewPrograms.TYPE_EVENT,
-                live = running,
-                start = p.startMs,
-                end = p.stopMs,
+                live = false,
+                start = m.startMs,
+                end = null,
             )
         }.ifEmpty {
             listOf(
@@ -270,13 +278,53 @@ internal class LauncherRows(private val context: Context) {
         }
     }
 
+    /**
+     * The Sports section's matches for "Für dich": followed teams' and leagues' matches under way, then the
+     * ones kicking off up to midnight (at least [LOOKAHEAD_MS] ahead), the user's teams first. The board is
+     * the one the section shows; asking for it loads its stored copy and refreshes what is live.
+     */
+    private suspend fun sportsMatches(config: SportsConfig, now: Long): List<Match> {
+        val repository = GlobalContext.get().get<SportsRepository>()
+        val board = withTimeoutOrNull(BOARD_WAIT_MS) {
+            repository.observe(Demand.HomeRow).first { it.matches.isNotEmpty() || it.rebuiltAt != null }
+        } ?: repository.board.value
+        val teams = config.teams.map { it.key }.toSet()
+        val leagues = config.leagues.toSet()
+        fun mine(m: Match) = m.competitors.any { FollowedTeam(m.sport, it.team.id, "").key in teams }
+        val horizon = maxOf(now + LOOKAHEAD_MS, endOfDay(now))
+        return board.matches
+            .filter { m ->
+                (m.state == MatchState.IN || (m.state == MatchState.PRE && m.startMs > now - STALE_MS && m.startMs < horizon)) &&
+                    (mine(m) || m.feed in leagues)
+            }
+            .sortedWith(compareBy({ it.state != MatchState.IN && it.startMs > now }, { !mine(it) }, { it.startMs }))
+            .take(MAX_FOR_YOU)
+    }
+
+    /** A match's tile: both crests on the plate, the pairing below, and the kick-off or how far it is in. */
+    private fun matchContent(m: Match, league: String, now: Long): LauncherTiles.Content {
+        val running = m.state == MatchState.IN || m.startMs <= now
+        val minutes = (now - m.startMs) / 60_000f
+        return LauncherTiles.Content(
+            channelName = m.title,
+            logoUrl = null,
+            title = MatchNotifications.pair(context, m),
+            badge = if (running) null else startLabel(m.startMs, now),
+            live = running,
+            timeRange = listOfNotNull(time.format(Date(m.startMs)).takeIf { running }, league).joinToString(SEPARATOR),
+            progress = if (running && m.sport == Sport.SOCCER) (minutes / MATCH_MINUTES).coerceIn(0f, 1f) else null,
+            crests = m.competitors.takeIf { it.size == 2 }?.let { listOf(m.home?.team?.logoUrl, m.away?.team?.logoUrl) },
+        )
+    }
+
     private fun content(ch: ChannelEntity, p: XtEpgEntry?, now: Long): LauncherTiles.Content {
         val running = p != null && p.startMs <= now && p.stopMs > now
         return LauncherTiles.Content(
             channelName = ch.name,
             logoUrl = ch.displayLogoUrl,
             title = p?.title,
-            badge = p?.let { if (running) context.getString(R.string.tvplayer_tile_live) else startLabel(it.startMs, now) },
+            // No badge on a running programme: "LIVE" stood under every one of them and said nothing.
+            badge = p?.takeIf { !running }?.let { startLabel(it.startMs, now) },
             live = running,
             timeRange = p?.let { range(it) },
             progress = p?.takeIf { running }?.let { (now - it.startMs).toFloat() / (it.stopMs - it.startMs).coerceAtLeast(1) },
@@ -425,6 +473,12 @@ internal class LauncherRows(private val context: Context) {
         private const val MAX_GROUP = 250
         private const val LOOKAHEAD_MS = 6 * 3_600_000L
         private const val FIVE_MINUTES = 5 * 60_000L
+        /** A kick-off ESPN still calls upcoming this long after counts as under way, as on the Sports hub. */
+        private const val STALE_MS = 3 * 3_600_000L
+        private const val BOARD_WAIT_MS = 8_000L
+        /** A football match with half-time and stoppage, for the tile's progress bar. */
+        private const val MATCH_MINUTES = 110f
+        const val PARAM_MATCH = "tvplayer_match"
         private val OPEN_APP: Uri = Uri.Builder().scheme(SCHEME).authority(HOST_OPEN).build()
 
         /** One pass at a time: the watcher's and the 15-minute refresh's. */
@@ -456,6 +510,15 @@ internal class LauncherRows(private val context: Context) {
             .appendQueryParameter(PARAM_CHANNEL, ch.id.toString())
             .appendQueryParameter(PARAM_SOURCE, ch.sourceId.toString())
             .build()
+
+        /** owntv://open?tvplayer_match=<match key>, read back by [matchFrom]. */
+        fun matchUri(m: Match): Uri = Uri.Builder().scheme(SCHEME).authority(HOST_OPEN)
+            .appendQueryParameter(PARAM_MATCH, m.key)
+            .build()
+
+        /** The key of the match a "Für dich" tile asked for, or null for any other link. */
+        fun matchFrom(uri: Uri?): String? =
+            uri?.takeIf { it.scheme == SCHEME }?.getQueryParameter(PARAM_MATCH)?.takeIf { it.isNotBlank() }
 
         /** The (source, channel id) a launcher tile asked for, or null for any other link. */
         fun channelFrom(uri: Uri?): Pair<Long, Long>? {

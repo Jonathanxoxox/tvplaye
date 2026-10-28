@@ -26,8 +26,6 @@
     <string name="content_search_series">Search series…</string>
     <string name="tvplayer_row_for_you" translatable="false">Für dich</string>
     <string name="tvplayer_row_favorites" translatable="false">Favoriten</string>
-    <string name="tvplayer_tile_now" translatable="false">Jetzt</string>
-    <string name="tvplayer_tile_live" translatable="false">LIVE</string>
     <plurals name="tvplayer_tile_in_minutes" translatable="false">
         <item quantity="one">In %1$d Min.</item>
         <item quantity="other">In %1$d Min.</item>

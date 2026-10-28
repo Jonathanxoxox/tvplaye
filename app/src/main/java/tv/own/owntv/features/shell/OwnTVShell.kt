@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import tv.own.owntv.R
@@ -737,7 +738,6 @@ fun OwnTVShell(
             tv.own.owntv.ui.theme.stageSlide(),
         )
     }
-    val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
     val railPushTarget = tv.own.owntv.features.shell.components.railPushTarget(railState)
     val guideStripTarget = if (guideSection && !guideStripHidden) tv.own.owntv.features.shell.components.StageRailStripWidth else 0.mpx
     // The guide's corner picture moves with the page in the same frame (see GuidePreviewSpot.shift).
@@ -894,6 +894,24 @@ fun OwnTVShell(
                     onDeepLinkConsumed()
                 }
             }
+        }
+    }
+
+    // A "Für dich" match tile on the launcher: its match page in Sports, where a channel is picked. Back
+    // from a channel played there returns to the page, as for any match opened in Sports.
+    // Collected for as long as a profile is active, so it calls the shell's current closePlayer and section.
+    val closeForMatch by rememberUpdatedState { closePlayer(toRail = false) }
+    val selectForMatch by rememberUpdatedState(onSelectSection)
+    val profileReady = activeProfileId?.let { it >= 0 } == true
+    LaunchedEffect(profileReady) {
+        if (!profileReady) return@LaunchedEffect
+        sportsMatchRequests.launcherMatch.filterNotNull().collect { key ->
+            sportsMatchRequests.launcherMatch.value = null
+            val match = sportsMatchRequests.matchByKey(key)
+            if (playerMode != PlayerMode.NONE) closeForMatch()
+            sportsMatchRequests.returnToMatch = null
+            if (match != null) sportsMatchRequests.pendingMatch.value = match to null
+            selectForMatch(MainSection.SPORTS)
         }
     }
 
@@ -1479,7 +1497,16 @@ fun OwnTVShell(
                 },
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
                 itemsFocusable = { playerMode == PlayerMode.NONE && !guideHandover },
-                modifier = Modifier.graphicsLayer { alpha = stripAlpha.value }.onFocusChanged { railTrulyFocused = it.hasFocus },
+                // In the guide the strip steps aside by sliding off the edge together with the page, not by fading:
+                // a fade drew the whole screen once more offscreen on every frame, nested with the page's own
+                // layer, which the Nokia 8010 could not keep up with between the categories and the menu
+                // (28 Oct 2026). The open menu then comes in glued to the page's edge.
+                modifier = Modifier.graphicsLayer {
+                    if (guideSection) {
+                        translationX = (guideStripRoom.value - tv.own.owntv.features.shell.components.StageRailStripWidth).toPx() *
+                            if (contentLtr) 1f else -1f
+                    }
+                }.onFocusChanged { railTrulyFocused = it.hasFocus },
             )
           }
         }
