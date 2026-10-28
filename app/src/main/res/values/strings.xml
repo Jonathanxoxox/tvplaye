@@ -43,6 +43,9 @@
     <string name="tvplayer_football_group" translatable="false">⚽ Fußball jetzt &amp; heute</string>
     <string name="tvplayer_sports_later_today" translatable="false">Heute noch</string>
     <string name="tvplayer_sports_coming_up" translatable="false">Demnächst</string>
+    <string name="tvplayer_sports_timeline_before" translatable="false">Tore, Karten und Wechsel erscheinen hier ab dem Anpfiff.</string>
+    <string name="tvplayer_sports_league_none" translatable="false">Heute und morgen keine Spiele in diesem Wettbewerb.</string>
+    <string name="tvplayer_sports_timeline_none" translatable="false">Zu diesem Spiel sind noch keine Ereignisse gemeldet.</string>
     <string name="tvplayer_football_heading" translatable="false">Mayo TV</string>
     <string name="tvplayer_football_group_setting" translatable="false">Gruppe „Fußball jetzt &amp; heute“</string>
     <string name="tvplayer_football_group_desc" translatable="false">Eine Gruppe ganz oben in der Senderliste und im TV-Guide mit allen Sendern, die heute Fußball deiner Teams und Ligen zeigen. Laufende Spiele stehen vorn.</string>
