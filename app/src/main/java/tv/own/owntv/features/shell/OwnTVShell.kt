@@ -50,6 +50,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 import tv.own.owntv.R
@@ -885,6 +886,24 @@ fun OwnTVShell(
                     onDeepLinkConsumed()
                 }
             }
+        }
+    }
+
+    // A "Für dich" match tile on the launcher: its match page in Sports, where a channel is picked. Back
+    // from a channel played there returns to the page, as for any match opened in Sports.
+    // Collected for as long as a profile is active, so it calls the shell's current closePlayer and section.
+    val closeForMatch by rememberUpdatedState { closePlayer(toRail = false) }
+    val selectForMatch by rememberUpdatedState(onSelectSection)
+    val profileReady = activeProfileId?.let { it >= 0 } == true
+    LaunchedEffect(profileReady) {
+        if (!profileReady) return@LaunchedEffect
+        sportsMatchRequests.launcherMatch.filterNotNull().collect { key ->
+            sportsMatchRequests.launcherMatch.value = null
+            val match = sportsMatchRequests.matchByKey(key)
+            if (playerMode != PlayerMode.NONE) closeForMatch()
+            sportsMatchRequests.returnToMatch = null
+            if (match != null) sportsMatchRequests.pendingMatch.value = match to null
+            selectForMatch(MainSection.SPORTS)
         }
     }
 

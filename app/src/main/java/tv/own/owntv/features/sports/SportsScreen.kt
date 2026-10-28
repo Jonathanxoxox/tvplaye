@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.Dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import kotlinx.coroutines.flow.filterNotNull
 import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import tv.own.owntv.core.database.entity.ChannelEntity
@@ -18,7 +19,7 @@ import tv.own.owntv.features.live.LiveViewModel
 
 /**
  * The Sports section: the hub, and the match page opened from it (Back returns to the hub) — or from the
- * player's *Match* button, when Back plays that channel again.
+ * player's *Match* button, when Back plays that channel again, or from a launcher "Für dich" tile.
  */
 @Composable
 fun SportsScreen(
@@ -45,13 +46,16 @@ fun SportsScreen(
     val open: (Match?) -> Unit = { m -> if (m != null) lastKey = m.key; match = m; vm.open(m) }
     val playback = koinInject<SportsPlayback>()
     LaunchedEffect(Unit) {
-        playback.pendingMatch.value?.let { (m, ch) ->
-            playback.pendingMatch.value = null
-            returnTo = ch
-            open(m)
-        } ?: playback.returnToMatch?.let { m ->
+        if (playback.pendingMatch.value == null) playback.returnToMatch?.let { m ->
             playback.returnToMatch = null
             playback.returnedFromPlayer = true
+            open(m)
+        }
+        // Collected, not read once: a launcher "Für dich" tile can ask for a match while Sports is already open.
+        playback.pendingMatch.filterNotNull().collect { (m, ch) ->
+            playback.pendingMatch.value = null
+            returnTo = ch
+            if (league != null) openLeague(null)
             open(m)
         }
     }

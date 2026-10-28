@@ -91,6 +91,7 @@ open class MainActivity : ComponentActivity() {
     private val engines: tv.own.owntv.player.PlaybackEngines by inject()
     // Activity-scoped: the same instance Compose retrieves via koinViewModel() inside setContent.
     private val shellViewModel: ShellViewModel by viewModel()
+    private val sportsPlayback: tv.own.owntv.features.sports.SportsPlayback by inject()
     // The sole locale authority (SharedPreferences-backed; see docs/internationalization.md 0b).
     private val localeStore: tv.own.owntv.core.i18n.LocaleStore by inject()
     private var pendingDeepLink by mutableStateOf<LauncherDeepLink?>(null)
@@ -106,10 +107,19 @@ open class MainActivity : ComponentActivity() {
         super.attachBaseContext(tv.own.owntv.core.i18n.AppLocale.wrap(newBase, tag))
     }
 
-    /** A tile from the app's own launcher rows names the channel directly; everything else is core's. */
-    private fun deepLinkOf(uri: android.net.Uri?): LauncherDeepLink? =
-        tv.own.owntv.launcher.LauncherRows.channelFrom(uri)?.let { (source, id) -> LauncherDeepLink.Live(sourceId = source, itemId = id) }
+    /**
+     * A tile from the app's own launcher rows names the channel directly; everything else is core's. A
+     * "Für dich" match tile is no core link: it is handed to Sports ([SportsPlayback.launcherMatch]) and
+     * must not reach core, which reads its owntv://open as "open Live TV".
+     */
+    private fun deepLinkOf(uri: android.net.Uri?): LauncherDeepLink? {
+        tv.own.owntv.launcher.LauncherRows.matchFrom(uri)?.let { key ->
+            sportsPlayback.launcherMatch.value = key
+            return null
+        }
+        return tv.own.owntv.launcher.LauncherRows.channelFrom(uri)?.let { (source, id) -> LauncherDeepLink.Live(sourceId = source, itemId = id) }
             ?: LauncherDeepLink.parse(uri)
+    }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)

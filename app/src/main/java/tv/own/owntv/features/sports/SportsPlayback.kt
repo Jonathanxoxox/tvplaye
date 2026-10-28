@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withTimeoutOrNull
 import tv.own.owntv.core.database.entity.ChannelEntity
 import tv.own.owntv.core.database.dao.SourceDao
 import tv.own.owntv.core.repository.activeProfileSources
@@ -50,6 +51,9 @@ class SportsPlayback(
     /** The match page the player's *Match* button asked for, and the channel Back from it returns to. */
     val pendingMatch = MutableStateFlow<Pair<Match, ChannelEntity?>?>(null)
 
+    /** The key of the match a launcher "Für dich" tile opened, until the shell has shown its page. */
+    val launcherMatch = MutableStateFlow<String?>(null)
+
     /** The hub's chosen sport and league chips: kept while the app runs, back to All on a fresh start. */
     var hubChip: Any? = null
     var hubLeague: Any? = null
@@ -64,6 +68,13 @@ class SportsPlayback(
     var returnedFromPlayer = false
 
     fun start(match: Match, options: List<WatchOption>) { _session.value = SportsSession(match, options) }
+
+    /**
+     * The match with [key] from the board the Sports section shows; asking loads its stored copy on a
+     * cold start. Null when the board has no such match within a few seconds.
+     */
+    suspend fun matchByKey(key: String): Match? =
+        withTimeoutOrNull(MATCH_WAIT_MS) { repository.observe(Demand.Hub).first { it.match(key) != null } }?.match(key)
 
     /** [match] as it stands now, refreshed while collected (`Demand.PlayerScore`: that one league, 30 s live). */
     fun score(match: Match): Flow<Match> =
@@ -101,5 +112,9 @@ class SportsPlayback(
         val options = watchReader.found(match) { SportsMemory.rememberedFor(config, it) } ?: return emptyList()
         val liveSources = activeProfileSources(settings, sourceDao).first().liveSourceIds
         return WatchList.of(options, WatchFilter.from(config, Locale.getDefault().language, liveSources)).shown
+    }
+
+    private companion object {
+        const val MATCH_WAIT_MS = 10_000L
     }
 }
