@@ -237,6 +237,31 @@ class MoodSearch(
         return found
     }
 
+    /**
+     * The global search's actor and director finds: the playlist's films and series of a person called
+     * [query] ("Tom Cruise", "Nolan"). Empty when no well-known person has that name; null when a call failed.
+     */
+    suspend fun people(query: String, sources: ActiveProfileSources): MoodResults? {
+        val wish = query.trim()
+        if (wish.length < MIN_SECTION_LENGTH) return MoodResults()
+        val key = cacheKey(wish) + "#people"
+        synchronized(cache) { cache[key] }?.let { return it }
+        val tmdb = tmdbAccess() ?: return MoodResults()
+        val found = withTimeoutOrNull(PERSON_TIMEOUT_MS) {
+            coroutineScope {
+                val m = async { if (sources.movieSourceIds.isEmpty()) emptyList() else personTitles(wish, MetadataType.MOVIE, tmdb, sources.movieSourceIds) }
+                val s = async { if (sources.seriesSourceIds.isEmpty()) emptyList() else personTitles(wish, MetadataType.TV, tmdb, sources.seriesSourceIds) }
+                val movieIds = m.await() ?: return@coroutineScope null
+                val seriesIds = s.await() ?: return@coroutineScope null
+                val movieRows = if (movieIds.isEmpty()) emptyMap() else movieDao.getByIds(movieIds).associateBy { it.id }
+                val seriesRows = if (seriesIds.isEmpty()) emptyMap() else seriesDao.getSeriesByIds(seriesIds).associateBy { it.id }
+                MoodResults(movieIds.mapNotNull { movieRows[it] }, seriesIds.mapNotNull { seriesRows[it] })
+            }
+        } ?: return null
+        synchronized(cache) { cache[key] = found }
+        return found
+    }
+
     /** Playlist ids of the best-known person called [wish]: their films or series, most popular first. Null = a call failed. */
     private suspend fun personTitles(wish: String, type: MetadataType, tmdb: Tmdb, sourceIds: List<Long>): List<Long>? {
         val personId = tmdb.person(wish) ?: return emptyList()
