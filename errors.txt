@@ -1,0 +1,400 @@
+10-28 21:58:43.760  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:43.845  2526  3789 E system_server: Invalid class loader spec: =UnsupportedClassLoaderContext=
+10-28 21:58:43.845  2526  3789 E PackageDexUsage: Unsupported context?
+10-28 21:58:43.985  3714  4113 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793224723772
+10-28 21:58:43.985  3714  4113 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793224723772
+10-28 21:58:44.116  3714  3918 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/refreshzeroprefixtask/shared/ZeroPrefixTaskStats.pb.tmp
+10-28 21:58:44.149  8264  8282 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 21:58:44.149  8264  8282 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@22f47f0} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@66f7ee} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@fd8f31c} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@5cea4fa} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.206  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@f102508} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@6d216c6} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.208  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@70689b4} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@48d952} with executor MoreExecutors.directExecutor()
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 21:58:44.209  3714  4104 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 21:58:48.481  3714  3898 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-28 21:58:48.481  3714  3898 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-28 21:58:49.775  3714  3919 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-28 21:58:49.775  3714  3919 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-28 21:58:51.593  3350  4181 E native  : android-decoder-jni.cc:521 Failed to load dynamic LM from /data/user/0/com.google.android.inputmethod.latin/files/personal/blacklist.de.list
+10-28 21:58:51.606  3350  4181 E native  : dynamic-lm.cc:754 Cannot load dynamic lm from /data/user/0/com.google.android.inputmethod.latin/files/personal/userhistory/UserHistory.de.dict, openBuffer failed.
+10-28 21:58:51.866  2526  2526 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 21:58:58.449  3350  3350 E SessionManager: SessionManager.beginSession():60 Try to begin a session [IME_SESSION] whose parent [INPUT_VIEW_SESSION] hasn't begun.
+10-28 21:58:58.649  3350  3350 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#869b396 mMissingMethods=}
+10-28 21:58:58.652  3350  3350 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#869b396 mMissingMethods=}
+10-28 21:58:58.655  3350  3350 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#869b396 mMissingMethods=}
+10-28 21:59:37.434  2526  2526 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 21:59:37.550  3350  6234 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-28 21:59:44.553  3350  3350 E SessionManager: SessionManager.beginSession():60 Try to begin a session [IME_SESSION] whose parent [INPUT_VIEW_SESSION] hasn't begun.
+10-28 21:59:44.663  3350  3350 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#869b396 mMissingMethods=}
+10-28 21:59:44.676  3350  3350 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#869b396 mMissingMethods=}
+10-28 21:59:59.837  7339  9169 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 21:59:59.838  7339  9169 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:00:14.278  8264  8418 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:00:14.278  8264  8418 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: Error inserting format=12289 owner_package_name=null parent=-1 volume_name=internal date_modified=1721855142 _display_name=ringtones _data=/product/media/audio/ringtones is_download=0 relative_path=null
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: android.database.sqlite.SQLiteDatabaseLockedException: database is locked (code 5 SQLITE_BUSY)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.nativeExecuteForLastInsertedRowId(Native Method)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.executeForLastInsertedRowId(SQLiteConnection.java:938)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteSession.executeForLastInsertedRowId(SQLiteSession.java:790)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteStatement.executeInsert(SQLiteStatement.java:88)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insertWithOnConflict(SQLiteDatabase.java:1701)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insert(SQLiteDatabase.java:1570)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertDirectory(MediaProvider.java:2783)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.getParent(MediaProvider.java:2804)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14(MediaProvider.java:3070)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14$MediaProvider(Unknown Source:0)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.-$$Lambda$MediaProvider$FjHWs2-fjgG761OzVFzdTX4EWZg.apply(Unknown Source:13)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.DatabaseHelper.runWithTransaction(DatabaseHelper.java:564)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertAllowingUpsert(MediaProvider.java:3066)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertFile(MediaProvider.java:3048)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertInternal(MediaProvider.java:3486)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insert(MediaProvider.java:3208)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.applyInternal(ContentProviderOperation.java:375)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.apply(ContentProviderOperation.java:347)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2422)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.applyBatch(MediaProvider.java:3538)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2413)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.content.ContentResolver.applyBatch(ContentResolver.java:2186)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.applyPending(ModernMediaScanner.java:700)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.maybeApplyPending(ModernMediaScanner.java:690)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.visitFile(ModernMediaScanner.java:650)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.visitFile(ModernMediaScanner.java:273)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2670)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2742)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.walkFileTree(ModernMediaScanner.java:367)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.run(ModernMediaScanner.java:330)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner.scanDirectory(ModernMediaScanner.java:227)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.scanDirectory(MediaProvider.java:1111)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:148)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:117)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:108)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onHandleWork(MediaService.java:71)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:391)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:382)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at android.os.AsyncTask$3.call(AsyncTask.java:394)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:02:37.159  3458  4468 E SQLiteDatabase: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:02:41.179  3178  6728 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:02:44.347  8264  9942 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:02:44.348  8264  9942 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:03:28.984  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:03:29.021  7339 10239 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:03:29.022  7339 10239 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:07:13.067  8264  9942 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:07:13.067  8264  9942 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:08:01.425  3178  9985 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: Error inserting format=12289 owner_package_name=null parent=-1 volume_name=internal date_modified=1721855142 _display_name=alarms _data=/product/media/audio/alarms is_download=0 relative_path=null
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: android.database.sqlite.SQLiteDatabaseLockedException: database is locked (code 5 SQLITE_BUSY)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.nativeExecuteForLastInsertedRowId(Native Method)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.executeForLastInsertedRowId(SQLiteConnection.java:938)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteSession.executeForLastInsertedRowId(SQLiteSession.java:790)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteStatement.executeInsert(SQLiteStatement.java:88)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insertWithOnConflict(SQLiteDatabase.java:1701)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insert(SQLiteDatabase.java:1570)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertDirectory(MediaProvider.java:2783)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.getParent(MediaProvider.java:2804)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14(MediaProvider.java:3070)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14$MediaProvider(Unknown Source:0)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.-$$Lambda$MediaProvider$FjHWs2-fjgG761OzVFzdTX4EWZg.apply(Unknown Source:13)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.DatabaseHelper.runWithTransaction(DatabaseHelper.java:564)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertAllowingUpsert(MediaProvider.java:3066)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertFile(MediaProvider.java:3048)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertInternal(MediaProvider.java:3486)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insert(MediaProvider.java:3208)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.applyInternal(ContentProviderOperation.java:375)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.apply(ContentProviderOperation.java:347)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2422)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.applyBatch(MediaProvider.java:3538)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2413)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.content.ContentResolver.applyBatch(ContentResolver.java:2186)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.applyPending(ModernMediaScanner.java:700)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.postVisitDirectory(ModernMediaScanner.java:667)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.postVisitDirectory(ModernMediaScanner.java:273)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2688)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2742)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.walkFileTree(ModernMediaScanner.java:367)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.run(ModernMediaScanner.java:330)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner.scanDirectory(ModernMediaScanner.java:227)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.scanDirectory(MediaProvider.java:1111)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:148)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:117)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:108)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onHandleWork(MediaService.java:71)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:391)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:382)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at android.os.AsyncTask$3.call(AsyncTask.java:394)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:08:39.761  3458  4468 E SQLiteDatabase: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:08:53.359  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:09:06.262  2526  2620 E NsdService: Failed to execute mdnssd [start-service]
+10-28 22:09:06.262  2526  2620 E NsdService: com.android.server.NativeDaemonConnector$NativeDaemonFailureException: command '1 mdnssd start-service' failed with '402 1 Service already running'
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NativeDaemonConnector.executeForList(NativeDaemonConnector.java:516)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:412)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:407)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NsdService$DaemonConnection.execute(NsdService.java:695)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NsdService$DaemonConnection.start(NsdService.java:704)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.server.NsdService$NsdStateMachine$EnabledState.processMessage(NsdService.java:257)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.processMsg(StateMachine.java:992)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.handleMessage(StateMachine.java:809)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at android.os.Looper.loop(Looper.java:223)
+10-28 22:09:06.262  2526  2620 E NsdService: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-28 22:09:24.357  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:09:44.655  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: Error inserting format=12289 owner_package_name=null parent=-1 volume_name=internal date_modified=1721855142 _display_name=ui _data=/product/media/audio/ui is_download=0 relative_path=null
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: android.database.sqlite.SQLiteDatabaseLockedException: database is locked (code 5 SQLITE_BUSY)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.nativeExecuteForLastInsertedRowId(Native Method)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteConnection.executeForLastInsertedRowId(SQLiteConnection.java:938)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteSession.executeForLastInsertedRowId(SQLiteSession.java:790)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteStatement.executeInsert(SQLiteStatement.java:88)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insertWithOnConflict(SQLiteDatabase.java:1701)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.database.sqlite.SQLiteDatabase.insert(SQLiteDatabase.java:1570)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertDirectory(MediaProvider.java:2783)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.getParent(MediaProvider.java:2804)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14(MediaProvider.java:3070)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.lambda$insertAllowingUpsert$14$MediaProvider(Unknown Source:0)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.-$$Lambda$MediaProvider$FjHWs2-fjgG761OzVFzdTX4EWZg.apply(Unknown Source:13)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.DatabaseHelper.runWithTransaction(DatabaseHelper.java:564)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertAllowingUpsert(MediaProvider.java:3066)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertFile(MediaProvider.java:3048)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insertInternal(MediaProvider.java:3486)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.insert(MediaProvider.java:3208)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.applyInternal(ContentProviderOperation.java:375)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.content.ContentProviderOperation.apply(ContentProviderOperation.java:347)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2422)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.applyBatch(MediaProvider.java:3538)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.content.ContentProvider.applyBatch(ContentProvider.java:2413)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.content.ContentResolver.applyBatch(ContentResolver.java:2186)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.applyPending(ModernMediaScanner.java:700)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.postVisitDirectory(ModernMediaScanner.java:667)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.postVisitDirectory(ModernMediaScanner.java:273)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2688)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.nio.file.Files.walkFileTree(Files.java:2742)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.walkFileTree(ModernMediaScanner.java:367)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner$Scan.run(ModernMediaScanner.java:330)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.scan.ModernMediaScanner.scanDirectory(ModernMediaScanner.java:227)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaProvider.scanDirectory(MediaProvider.java:1111)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:148)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:117)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onScanVolume(MediaService.java:108)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at com.android.providers.media.MediaService.onHandleWork(MediaService.java:71)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:391)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at androidx.core.app.JobIntentService$CommandProcessor.doInBackground(JobIntentService.java:382)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at android.os.AsyncTask$3.call(AsyncTask.java:394)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:10:04.496  3458  4468 E SQLiteDatabase: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:10:04.978  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:10:25.272  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:10:45.504  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:11:05.802  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:11:33.008  3458  7719 E StorageManager: Failed to set extended attributes for /storage/emulated/0/Android to set project id.: Permission denied
+10-28 22:11:33.009  3458  7719 E StorageManager: Failed to set extended attributes for /storage/emulated/0/Android/media to set project id.: Permission denied
+10-28 22:11:53.577  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:11:59.768  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:12:05.924  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:12:11.649  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:12:54.067  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:12:56.775  2526  2560 E libprocessgroup: AddTidToCgroup failed to write '15252'; fd=66: Invalid argument
+10-28 22:12:56.775  2526  2560 E libprocessgroup: Failed to add task into cgroup
+10-28 22:13:01.774  3178 12735 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:13:01.776  3178 12735 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 22:13:07.735  3178 15396 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 22:14:34.537  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:15:07.788  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:15:41.169  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:15:42.783  8264  8418 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:15:42.783  8264  8418 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:16:19.624  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:17:08.752  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:17:23.838  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:17:25.849  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:17:59.055  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:18:37.402  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:19:10.733  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:19:44.026  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:20:22.268  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:20:55.555  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:21:28.820  2526  2544 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:21:35.283 21058 21058 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-28 22:21:35.474  3466  3466 E HwDetectorWithState: a: 3
+10-28 22:21:35.948 21058 21089 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:21:42.041   415   415 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:21:43.097 21144 21167 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:21:43.097 21144 21167 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:21:47.917 21058 21089 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:21:54.780   415   415 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:21:56.124 21235 21270 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:21:56.125 21235 21270 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:22:00.656 21058 21087 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:22:07.525   415   415 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:22:08.437 21318 21343 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:22:08.437 21318 21343 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:22:13.498 21058 21087 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:22:17.743  3178 15393 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:22:20.360   415   415 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:22:21.454 21401 21440 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:22:21.454 21401 21440 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:22:26.258 21058 21088 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:22:33.158   415   415 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:22:34.197 21492 21528 E ActivityThread: Failed to find provider info for android.media.tv
