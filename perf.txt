@@ -1,0 +1,150 @@
+Kaltstart TotalTime ms: Median 2505 (alle: [2441, 2503, 2505, 2558, 2716])
+Bildschirm: Frames, ruckelnd (>1.5 Frames), Anteil, längster Frame ms
+start: 150, 141, 94.0 %, 3666
+SEARCH:NONE: 127, 117, 92.1 %, 325
+MOVIES:NONE: 108, 108, 100.0 %, 1168
+SERIES:NONE: 88, 88, 100.0 %, 193
+HOME:NONE: 52, 52, 100.0 %, 2234
+
+Start-Stempel (OwnTVPerf):
+10-28 23:35:30.401 D/OwnTVPerf( 7580): process-begin @0ms
+10-28 23:35:30.698 D/OwnTVPerf( 7580): koin-started @298ms
+10-28 23:35:30.831 D/OwnTVPerf( 7580): db-open(sqlite=3.50.1, journal=wal, heal=clean) @430ms
+10-28 23:35:30.835 D/OwnTVPerf( 7580): db-probed @434ms
+10-28 23:35:30.879 D/OwnTVPerf( 7580): first-composition @478ms
+10-28 23:35:31.056 D/OwnTVPerf( 7580): profile-id-loaded @655ms
+10-28 23:35:31.085 D/OwnTVPerf( 7580): profiles-loaded @684ms
+10-28 23:35:31.085 D/OwnTVPerf( 7580): destination-ready @684ms
+10-28 23:35:34.756 D/OwnTVPerf( 7580): slow-frame 3666 ms start @4355ms
+10-28 23:35:35.085 D/OwnTVPerf( 7580): startup-first-frame @4684ms
+10-28 23:35:36.810 D/OwnTVPerf( 7580): profile=error(262144) @6409ms
+10-28 23:35:37.086 D/OwnTVPerf( 7580): startup-settled @6686ms
+10-28 23:35:41.085 D/OwnTVPerf( 7580): jank frames=1 janky=1 worstMs=3666 @10685ms
+10-28 23:35:55.237 D/OwnTVPerf( 7580): slow-frame 435 ms start @24836ms
+10-28 23:36:19.631 D/OwnTVPerf( 7580): slow-frame 546 ms start @49230ms
+10-28 23:36:19.685 D/OwnTVPerf( 7580): slow-frame 583 ms start @49284ms
+10-28 23:36:26.201 D/OwnTVPerf( 7580): slow-frame 748 ms start @55800ms
+10-28 23:36:26.277 D/OwnTVPerf( 7580): slow-frame 809 ms start @55876ms
+10-28 23:36:26.348 D/OwnTVPerf( 7580): slow-frame 829 ms start @55947ms
+10-28 23:36:26.427 D/OwnTVPerf( 7580): slow-frame 209 ms start @56026ms
+10-28 23:41:08.016 D/OwnTVPerf( 7580): launcher-refresh-start @337615ms
+10-28 23:41:08.021 D/OwnTVPerf( 7580): autorefresh-check @337621ms
+10-28 23:41:08.035 D/OwnTVPerf( 7580): shell-composed @337634ms
+10-28 23:41:08.082 D/OwnTVPerf( 7580): start-mode @337681ms
+10-28 23:41:08.330 D/OwnTVPerf( 7580): launcher-refresh-end @337929ms
+10-28 23:41:08.430 D/OwnTVPerf( 7580): last-channel @338029ms
+10-28 23:41:08.463 D/OwnTVPerf( 7580): guide-base @338063ms
+10-28 23:41:08.465 D/OwnTVPerf( 7580): home-data @338064ms
+10-28 23:46:21.188 D/OwnTVPerf(12809): process-begin @0ms
+10-28 23:46:21.302 D/OwnTVPerf(12809): koin-started @115ms
+10-28 23:46:21.360 D/OwnTVPerf(12809): db-open(sqlite=3.50.1, journal=wal, heal=clean) @160ms
+10-28 23:46:21.367 D/OwnTVPerf(12809): db-probed @179ms
+10-28 23:46:21.402 D/OwnTVPerf(12809): first-composition @214ms
+10-28 23:46:21.531 D/OwnTVPerf(12809): profile-id-loaded @343ms
+10-28 23:46:21.624 D/OwnTVPerf(12809): profiles-loaded @436ms
+10-28 23:46:21.624 D/OwnTVPerf(12809): destination-ready @436ms
+10-28 23:46:21.628 D/OwnTVPerf(12809): shell-composed @440ms
+10-28 23:46:21.639 D/OwnTVPerf(12809): start-mode @451ms
+10-28 23:46:23.587 D/OwnTVPerf(12809): slow-frame 1967 ms HOME:NONE @2399ms
+10-28 23:46:23.666 D/OwnTVPerf(12809): last-channel @2478ms
+10-28 23:46:23.709 D/OwnTVPerf(12809): home-data @2521ms
+10-28 23:46:24.266 D/OwnTVPerf(12809): slow-frame 2614 ms HOME:NONE @3078ms
+10-28 23:46:24.315 D/OwnTVPerf(12809): slow-frame 596 ms HOME:NONE @3127ms
+10-28 23:46:24.349 D/OwnTVPerf(12809): slow-frame 580 ms HOME:NONE @3161ms
+10-28 23:46:24.666 D/OwnTVPerf(12809): startup-first-frame @3479ms
+10-28 23:46:26.667 D/OwnTVPerf(12809): startup-settled @5480ms
+10-28 23:46:26.667 D/OwnTVPerf(12809): autorefresh-check @5480ms
+10-28 23:46:26.668 D/OwnTVPerf(12809): launcher-refresh-start @5481ms
+10-28 23:46:26.675 D/OwnTVPerf(12809): launcher-refresh-end @5487ms
+10-28 23:46:26.955 D/OwnTVPerf(12809): profile=error(262144) @5768ms
+10-28 23:46:31.624 D/OwnTVPerf(12809): jank frames=4 janky=4 worstMs=2614 @10437ms
+10-28 23:46:33.783 D/OwnTVPerf(12894): process-begin @0ms
+10-28 23:46:33.879 D/OwnTVPerf(12894): koin-started @96ms
+10-28 23:46:33.902 D/OwnTVPerf(12894): db-open(sqlite=3.50.1, journal=wal, heal=clean) @120ms
+10-28 23:46:33.912 D/OwnTVPerf(12894): db-probed @129ms
+10-28 23:46:33.960 D/OwnTVPerf(12894): first-composition @178ms
+10-28 23:46:34.088 D/OwnTVPerf(12894): profile-id-loaded @305ms
+10-28 23:46:34.186 D/OwnTVPerf(12894): profiles-loaded @403ms
+10-28 23:46:34.186 D/OwnTVPerf(12894): destination-ready @403ms
+10-28 23:46:34.189 D/OwnTVPerf(12894): shell-composed @407ms
+10-28 23:46:34.201 D/OwnTVPerf(12894): start-mode @418ms
+10-28 23:46:34.203 D/OwnTVPerf(12894): last-channel @421ms
+10-28 23:46:36.198 D/OwnTVPerf(12894): slow-frame 2029 ms HOME:NONE @2415ms
+10-28 23:46:36.234 D/OwnTVPerf(12894): startup-first-frame @2452ms
+10-28 23:46:36.240 D/OwnTVPerf(12894): home-data @2457ms
+10-28 23:46:37.012 D/OwnTVPerf(12894): slow-frame 2793 ms HOME:NONE @3229ms
+10-28 23:46:37.077 D/OwnTVPerf(12894): slow-frame 826 ms HOME:NONE @3295ms
+10-28 23:46:38.239 D/OwnTVPerf(12894): autorefresh-check @4457ms
+10-28 23:46:38.240 D/OwnTVPerf(12894): launcher-refresh-start @4457ms
+10-28 23:46:38.243 D/OwnTVPerf(12894): startup-settled @4460ms
+10-28 23:46:38.246 D/OwnTVPerf(12894): launcher-refresh-end @4464ms
+10-28 23:46:39.020 D/OwnTVPerf(12894): profile=error(262144) @5238ms
+10-28 23:46:44.186 D/OwnTVPerf(12894): jank frames=3 janky=3 worstMs=2793 @10404ms
+10-28 23:46:46.405 D/OwnTVPerf(12979): process-begin @0ms
+10-28 23:46:46.473 D/OwnTVPerf(12979): koin-started @69ms
+10-28 23:46:46.522 D/OwnTVPerf(12979): db-open(sqlite=3.50.1, journal=wal, heal=clean) @118ms
+10-28 23:46:46.533 D/OwnTVPerf(12979): db-probed @128ms
+10-28 23:46:46.587 D/OwnTVPerf(12979): first-composition @182ms
+10-28 23:46:46.709 D/OwnTVPerf(12979): profile-id-loaded @304ms
+10-28 23:46:46.796 D/OwnTVPerf(12979): profiles-loaded @391ms
+10-28 23:46:46.796 D/OwnTVPerf(12979): destination-ready @391ms
+10-28 23:46:46.799 D/OwnTVPerf(12979): shell-composed @395ms
+10-28 23:46:46.813 D/OwnTVPerf(12979): start-mode @408ms
+10-28 23:46:48.743 D/OwnTVPerf(12979): slow-frame 1958 ms HOME:NONE @2339ms
+10-28 23:46:48.820 D/OwnTVPerf(12979): last-channel @2416ms
+10-28 23:46:48.864 D/OwnTVPerf(12979): home-data @2460ms
+10-28 23:46:49.419 D/OwnTVPerf(12979): slow-frame 667 ms HOME:NONE @3014ms
+10-28 23:46:49.495 D/OwnTVPerf(12979): slow-frame 625 ms HOME:NONE @3090ms
+10-28 23:46:49.529 D/OwnTVPerf(12979): slow-frame 627 ms HOME:NONE @3124ms
+10-28 23:46:49.821 D/OwnTVPerf(12979): startup-first-frame @3417ms
+10-28 23:46:51.780 D/OwnTVPerf(12979): profile=error(262144) @5375ms
+10-28 23:46:51.822 D/OwnTVPerf(12979): startup-settled @5417ms
+10-28 23:46:51.822 D/OwnTVPerf(12979): autorefresh-check @5418ms
+10-28 23:46:51.823 D/OwnTVPerf(12979): launcher-refresh-start @5418ms
+10-28 23:46:51.828 D/OwnTVPerf(12979): launcher-refresh-end @5423ms
+10-28 23:46:58.945 D/OwnTVPerf(13066): process-begin @0ms
+10-28 23:46:59.001 D/OwnTVPerf(13066): koin-started @56ms
+10-28 23:46:59.050 D/OwnTVPerf(13066): db-open(sqlite=3.50.1, journal=wal, heal=clean) @105ms
+10-28 23:46:59.095 D/OwnTVPerf(13066): db-probed @151ms
+10-28 23:46:59.136 D/OwnTVPerf(13066): first-composition @191ms
+10-28 23:46:59.245 D/OwnTVPerf(13066): profile-id-loaded @301ms
+10-28 23:46:59.355 D/OwnTVPerf(13066): profiles-loaded @410ms
+10-28 23:46:59.355 D/OwnTVPerf(13066): destination-ready @410ms
+10-28 23:46:59.359 D/OwnTVPerf(13066): shell-composed @414ms
+10-28 23:46:59.370 D/OwnTVPerf(13066): start-mode @425ms
+10-28 23:47:01.330 D/OwnTVPerf(13066): slow-frame 1994 ms HOME:NONE @2385ms
+10-28 23:47:01.474 D/OwnTVPerf(13066): last-channel @2529ms
+10-28 23:47:01.680 D/OwnTVPerf(13066): home-data @2735ms
+10-28 23:47:01.917 D/OwnTVPerf(13066): slow-frame 582 ms HOME:NONE @2972ms
+10-28 23:47:01.984 D/OwnTVPerf(13066): slow-frame 299 ms HOME:NONE @3039ms
+10-28 23:47:02.020 D/OwnTVPerf(13066): slow-frame 318 ms HOME:NONE @3075ms
+10-28 23:47:02.475 D/OwnTVPerf(13066): startup-first-frame @3530ms
+10-28 23:47:04.476 D/OwnTVPerf(13066): startup-settled @5531ms
+10-28 23:47:04.476 D/OwnTVPerf(13066): launcher-refresh-start @5531ms
+10-28 23:47:04.476 D/OwnTVPerf(13066): autorefresh-check @5531ms
+10-28 23:47:04.482 D/OwnTVPerf(13066): launcher-refresh-end @5537ms
+10-28 23:47:05.107 D/OwnTVPerf(13066): profile=error(262144) @6163ms
+10-28 23:47:09.356 D/OwnTVPerf(13066): jank frames=4 janky=4 worstMs=1994 @10411ms
+10-28 23:47:11.539 D/OwnTVPerf(13151): process-begin @0ms
+10-28 23:47:11.620 D/OwnTVPerf(13151): koin-started @81ms
+10-28 23:47:11.631 D/OwnTVPerf(13151): db-open(sqlite=3.50.1, journal=wal, heal=clean) @93ms
+10-28 23:47:11.666 D/OwnTVPerf(13151): db-probed @128ms
+10-28 23:47:11.713 D/OwnTVPerf(13151): first-composition @174ms
+10-28 23:47:11.828 D/OwnTVPerf(13151): profile-id-loaded @290ms
+10-28 23:47:11.922 D/OwnTVPerf(13151): profiles-loaded @383ms
+10-28 23:47:11.922 D/OwnTVPerf(13151): destination-ready @384ms
+10-28 23:47:11.927 D/OwnTVPerf(13151): shell-composed @388ms
+10-28 23:47:11.940 D/OwnTVPerf(13151): start-mode @401ms
+10-28 23:47:14.137 D/OwnTVPerf(13151): slow-frame 2234 ms HOME:NONE @2598ms
+10-28 23:47:14.228 D/OwnTVPerf(13151): last-channel @2689ms
+10-28 23:47:14.271 D/OwnTVPerf(13151): home-data @2733ms
+10-28 23:47:14.931 D/OwnTVPerf(13151): slow-frame 2978 ms HOME:NONE @3392ms
+10-28 23:47:15.028 D/OwnTVPerf(13151): slow-frame 743 ms HOME:NONE @3489ms
+10-28 23:47:15.124 D/OwnTVPerf(13151): slow-frame 822 ms HOME:NONE @3586ms
+10-28 23:47:15.229 D/OwnTVPerf(13151): startup-first-frame @3690ms
+10-28 23:47:17.229 D/OwnTVPerf(13151): startup-settled @5690ms
+10-28 23:47:17.230 D/OwnTVPerf(13151): autorefresh-check @5691ms
+10-28 23:47:17.230 D/OwnTVPerf(13151): launcher-refresh-start @5692ms
+10-28 23:47:17.236 D/OwnTVPerf(13151): launcher-refresh-end @5697ms
+10-28 23:47:17.681 D/OwnTVPerf(13151): profile=error(262144) @6142ms
+10-28 23:47:21.923 D/OwnTVPerf(13151): jank frames=4 janky=4 worstMs=2978 @10384ms
