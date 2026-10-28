@@ -438,11 +438,15 @@ fun OwnTVShell(
         homeVm.continueTarget.collect { value = it }
     }
 
+    // Completed when the startup action below has decided what the start looks like (a picture, or none).
+    val startModeDone = remember { kotlinx.coroutines.CompletableDeferred<Unit>() }
     // Per-profile startup action runs once when the authenticated shell first appears. With one unlocked
     // profile that is immediately; profile/PIN gates keep the shell out of composition until authorized.
     val resumeSettings = koinInject<tv.own.owntv.core.settings.SettingsRepository>()
     val startupChannelUnavailable = androidx.compose.ui.res.stringResource(tv.own.owntv.R.string.settings_startup_channel_unavailable)
     LaunchedEffect(Unit) {
+        // Settled whichever way this ends: the parts of the start that depend on the start mode wait for it.
+        coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion { startModeDone.complete(Unit) }
         if (playerMode != PlayerMode.NONE) return@LaunchedEffect
         val pid = resumeSettings.activeProfileId.first()
         when (resumeSettings.startupMode(pid).first()) {
@@ -863,8 +867,10 @@ fun OwnTVShell(
         tv.own.owntv.perf.StartLog.stampOnce("player-first-frame")
         tv.own.owntv.StartupGate.markFirstFrame()
     }
-    // No player a second after the shell stood (start page): nothing to wait for.
+    // No player a second after the start mode decided against one (start page): nothing to wait for. Not counted
+    // from the shell's first frame: the start mode needs a database read first and opens the player later.
     LaunchedEffect(Unit) {
+        startModeDone.await()
         kotlinx.coroutines.delay(1_000)
         if (playerMode == PlayerMode.NONE) tv.own.owntv.StartupGate.markFirstFrame()
     }
@@ -947,6 +953,8 @@ fun OwnTVShell(
 
     LaunchedEffect(selectedSection, playerMode, activeProfileId, activePlaylistId) {
         if (selectedSection == MainSection.HOME && playerMode == PlayerMode.NONE && (activeProfileId?.let { it >= 0 } == true)) {
+            // Home is only the section before the start mode has moved to Live TV: do not load its rails first.
+            startModeDone.await()
             homeVm.refresh(activeProfileId)
         }
     }

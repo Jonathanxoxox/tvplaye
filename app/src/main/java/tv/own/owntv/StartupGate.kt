@@ -19,8 +19,10 @@ import tv.own.owntv.perf.StartLog
  *
  * [firstFrame]: the player showed its first picture; or the shell stood for a second without starting a
  * player (start page); or, at the latest, 4 s after the destination was ready.
- * [settled]: 2 s after [firstFrame], at the latest 8 s after the process started (so a background
- * process that is never shown still gets to its work).
+ * [settled]: 2 s after [firstFrame], at the latest 8 s after the Activity was created. A process nobody opens
+ * (a background start) lets it go after 2 minutes. The deadline is not counted from the process start: on the
+ * television the process was already running for 45 s when the Activity came (Start-Protokoll, 28 Oct 2026),
+ * so the window had closed before anything was shown.
  */
 object StartupGate {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -30,12 +32,24 @@ object StartupGate {
 
     @Volatile private var destinationTimerStarted = false
 
+    /** When the first MainActivity was created (elapsedRealtime), 0 until then. */
+    @Volatile private var activityAt = 0L
+
     init {
+        val processStart = Process.getStartElapsedRealtime()
         scope.launch {
-            val deadline = Process.getStartElapsedRealtime() + SETTLED_DEADLINE_MS
-            delay((deadline - SystemClock.elapsedRealtime()).coerceAtLeast(0))
-            settle()
+            while (!settled.isCompleted) {
+                delay(DEADLINE_POLL_MS)
+                val activity = activityAt
+                val deadline = if (activity != 0L) activity + SETTLED_DEADLINE_MS else processStart + UNSEEN_PROCESS_DEADLINE_MS
+                if (SystemClock.elapsedRealtime() >= deadline) settle()
+            }
         }
+    }
+
+    /** The first MainActivity onCreate: from here the start window is counted. */
+    fun activityStarted() {
+        if (activityAt == 0L) activityAt = SystemClock.elapsedRealtime()
     }
 
     suspend fun awaitFirstFrame() = firstFrame.await()
@@ -70,4 +84,6 @@ object StartupGate {
     private const val FIRST_FRAME_FALLBACK_MS = 4_000L
     private const val SETTLE_AFTER_FIRST_FRAME_MS = 2_000L
     private const val SETTLED_DEADLINE_MS = 8_000L
+    private const val UNSEEN_PROCESS_DEADLINE_MS = 120_000L
+    private const val DEADLINE_POLL_MS = 250L
 }

@@ -175,6 +175,7 @@ open class MainActivity : ComponentActivity() {
         // postSplashScreenTheme (Theme.OwnTV), so the activity ends up in the same theme as before.
         val splash = installSplashScreen()
         super.onCreate(savedInstanceState)
+        StartupGate.activityStarted()
         val splashDeadline = SystemClock.uptimeMillis() + SPLASH_TIMEOUT_MS
         splash.setKeepOnScreenCondition { !contentReady && SystemClock.uptimeMillis() < splashDeadline }
         pendingDeepLink = deepLinkOf(intent.data)
@@ -317,8 +318,8 @@ open class MainActivity : ComponentActivity() {
                 }
             }
             // The start log's frame count ends 10 s after the destination was ready.
-            LaunchedEffect(contentReady) {
-                if (contentReady) {
+            LaunchedEffect(destinationReady) {
+                if (destinationReady) {
                     kotlinx.coroutines.delay(10_000)
                     startJank?.finish()
                 }
