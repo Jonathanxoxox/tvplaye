@@ -1,0 +1,108 @@
+name: Mayo TV Härtetest
+
+# Richtet die App im Emulator wie die Bildschirm-Tour ein und quält sie dann: Stream-Server weg, kein
+# Internet, kaputte Playlist und EPG, Prozess-Tod im Hintergrund, neu gebaute Activity, Tasten-Sturm und
+# monkey. Ergebnis (summary.txt, Fotos, Absturz-Puffer) im Zweig screens/<Arbeitszweig>-haertetest.
+# Läuft nur per Start (workflow_dispatch), nicht bei jedem Push.
+on:
+  push:
+    branches: [ "claude/project-thread-m2q3w7" ]  # TEMP: nur bis die Datei auf main liegt
+  workflow_dispatch:
+    inputs:
+      parts:
+        description: "Teile (all oder z. B. stream,offline,playlist,lifecycle,keys,monkey,persist)"
+        default: all
+
+permissions:
+  contents: write
+
+# Kein cancel-in-progress: ein abgebrochener Lauf schickt eine Mail. Ein zweiter Start läuft daneben.
+
+jobs:
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build x86_64 APK
+        env:
+          FLUTLICHT_TMDB_KEY: ${{ secrets.TMDB_API_KEY }}
+          MAYO_TYPESAFE_KEY: ${{ secrets.TYPESAFE_API_KEY }}
+          MAYO_ELEVENLABS_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          KEYSTORE_PASSWORD: android
+          KEY_ALIAS: sideload
+          KEY_PASSWORD: android
+        run: |
+          KS="$RUNNER_TEMP/release.keystore"
+          keytool -genkeypair -keystore "$KS" -storepass android -keypass android -alias sideload \
+            -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Mayo TV"
+          export KEYSTORE_FILE="$KS"
+          chmod +x ./gradlew
+          ./gradlew assembleX86_64Release --stacktrace
+          mkdir -p dist
+          cp "$(ls app/build/outputs/apk/x86_64/release/*.apk | head -n1)" dist/app.apk
+
+      - name: Test playlist, guide and stream
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg >/dev/null
+          pip install -q pillow
+          python3 tools/smoke/fixtures.py fx
+          mkdir -p fx/stream
+          ffmpeg -loglevel error -f lavfi -i testsrc2=size=1280x720:rate=25 -f lavfi -i sine=frequency=440 \
+            -t 120 -c:v libx264 -preset veryfast -pix_fmt yuv420p -c:a aac -f hls -hls_time 4 \
+            -hls_list_size 0 fx/stream/index.m3u8
+          nohup python3 -m http.server 8080 --directory fx > http.log 2>&1 &
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Stress test on emulator
+        env:
+          STRESS_PARTS: ${{ inputs.parts || 'all' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: google_apis
+          profile: tv_1080p
+          disable-animations: true
+          script: bash tools/smoke/stress.sh
+
+      - name: Summary
+        if: always()
+        run: cat stress/summary.txt 2>/dev/null || echo "keine Zusammenfassung"
+
+      - name: Publish results
+        if: always()
+        env:
+          BRANCH: screens/${{ github.ref_name }}-haertetest
+        run: |
+          [ -d stress ] || exit 0
+          python3 - <<'PY'
+          import glob, os
+          from PIL import Image
+          for p in sorted(glob.glob("stress/*.png")):
+              try:
+                  Image.open(p).convert("RGB").save(p[:-4] + ".jpg", quality=75)
+              except Exception as e:
+                  print(p, e)
+              os.remove(p)
+          PY
+          cp http.log http-stress.log stress/ 2>/dev/null || true
+          cd stress
+          git init -q -b screens
+          git config user.name "mayotv-ci"; git config user.email "ci@users.noreply.github.com"
+          echo "Lauf ${{ github.run_id }} · ${{ github.sha }}" > README.md
+          git add -A && git commit -q -m "Härtetest ${{ github.sha }}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" HEAD:refs/heads/$BRANCH
