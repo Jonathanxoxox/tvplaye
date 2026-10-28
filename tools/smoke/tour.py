@@ -544,6 +544,100 @@ def scenes_tour():
         shot(f"szene-{slug(name)}-live-liste")
 
 
+def probe(name, *keys_, wait=1.2):
+    """Tasten drücken und festhalten, wo der Fokus danach steht (leer = Fokus verloren)."""
+    for k in keys_:
+        key(k.removesuffix("_LONG"), wait=wait, long=k.endswith("_LONG"))
+    root = shot(f"nav-{name}")
+    f = focused_text(root)
+    with open(os.path.join(OUT, "nav.txt"), "a", encoding="utf-8") as nf:
+        nf.write(f"{name:40s} fokus={f!r}{'   <-- FOKUS WEG' if not f and focused(root) is None else ''}\n")
+    return root
+
+
+def nav_tour():
+    """Fernbedienung: jeder Bereich rein, runter, Zurück, Zurück, und wohin der Fokus dabei geht."""
+    for name in ["Startseite", "Suche", "Live-TV", "Sport", "Filme", "Serien", "Downloads", "Mehr"]:
+        if not open_section(name):
+            continue
+        s = slug(name)
+        probe(f"{s}-ok-auf-menue")
+        probe(f"{s}-rechts", "DPAD_RIGHT")
+        probe(f"{s}-runter", "DPAD_DOWN", "DPAD_DOWN")
+        probe(f"{s}-rechts2", "DPAD_RIGHT")
+        probe(f"{s}-zurueck1", "BACK", wait=1.5)
+        probe(f"{s}-zurueck2", "BACK", wait=1.5)
+        root = probe(f"{s}-zurueck3", "BACK", wait=1.5)
+        dismiss_exit(root)
+    # Ein Titel öffnen und zurück: der Fokus soll auf dem Titel stehen.
+    for name in ["Filme", "Serien", "Sport"]:
+        if not open_section(name):
+            continue
+        s = slug(name)
+        key("DPAD_RIGHT", wait=1.5)
+        probe(f"{s}-titel-vorher")
+        probe(f"{s}-titel-ok", "DPAD_CENTER", wait=5)
+        probe(f"{s}-titel-zurueck", "BACK", wait=3)
+        probe(f"{s}-titel-zurueck2", "BACK", wait=2)
+        dismiss_exit(dump())
+    # Einstellungen: Kachel auf, Zurück auf die Kachel, Zurück nach Mehr.
+    if open_section("Mehr"):
+        key("DPAD_RIGHT", wait=0.8)
+        if goto(r"^Einstellungen$"):
+            time.sleep(2)
+            probe("einst-geoeffnet")
+            key("DPAD_RIGHT", wait=0.8)
+            key("DPAD_DOWN", wait=0.8)
+            probe("einst-kachel")
+            probe("einst-kachel-ok", "DPAD_CENTER", wait=2)
+            probe("einst-kachel-runter", "DPAD_DOWN", "DPAD_DOWN")
+            probe("einst-kachel-zurueck", "BACK", wait=2)
+            probe("einst-zurueck-mehr", "BACK", wait=2)
+            probe("einst-zurueck-menue", "BACK", wait=2)
+            dismiss_exit(dump())
+    # Suche: Text, Ergebnis öffnen, Zurück in die Suche.
+    if open_section("Suche"):
+        key("DPAD_RIGHT", wait=1.0)
+        probe("suche-feld")
+        type_text("Sport")
+        key("BACK", wait=1.0)  # Tastatur zu
+        time.sleep(3)
+        probe("suche-nach-text")
+        probe("suche-runter", "DPAD_DOWN", "DPAD_DOWN")
+        probe("suche-ergebnis-ok", "DPAD_CENTER", wait=4)
+        probe("suche-ergebnis-zurueck", "BACK", wait=3)
+        probe("suche-ergebnis-zurueck2", "BACK", wait=2)
+        dismiss_exit(dump())
+    # Player: Vollbild aus dem Guide, Zurück, ◀ ◀, und langes Zurück von der Startseite.
+    if open_section("Live-TV"):
+        key("DPAD_RIGHT", wait=1.0)
+        if goto(r"^Sky Sport Bundesliga 1"):
+            time.sleep(3)
+            if not in_fullscreen():
+                key("DPAD_CENTER", wait=5)
+            probe("player-vollbild")
+            probe("player-zurueck-guide", "BACK", wait=3)
+            probe("player-guide-links", "DPAD_LEFT")
+            probe("player-guide-links2", "DPAD_LEFT")
+            probe("player-guide-rechts", "DPAD_RIGHT")
+            probe("player-guide-rechts2", "DPAD_RIGHT")
+    if open_section("Startseite"):
+        probe("lang-zurueck", "BACK_LONG", wait=5)
+        probe("lang-zurueck-dann-zurueck", "BACK", wait=3)
+        probe("lang-zurueck-zurueck2", "BACK", wait=2)
+        dismiss_exit(dump())
+    # Sport-Spiel: Sender abspielen und zurück auf die Spielseite.
+    if open_section("Sport"):
+        key("DPAD_RIGHT", wait=1.5)
+        probe("sport-spiel-ok", "DPAD_CENTER", wait=3)
+        probe("sport-spiel-sender-ok", "DPAD_CENTER", wait=5)
+        probe("sport-spiel-sender-ok2", "DPAD_CENTER", wait=5)
+        probe("sport-spiel-zurueck", "BACK", wait=3)
+        probe("sport-spiel-zurueck2", "BACK", wait=2)
+        probe("sport-spiel-zurueck3", "BACK", wait=2)
+        dismiss_exit(dump())
+
+
 def main():
     step("einrichtung", setup)
     # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
@@ -556,6 +650,7 @@ def main():
         ("menu", "menue", rail_tour), ("vod", "filme-serien", vod_tour), ("more", "mehr-tour", more_tour),
         ("guide", "guide", guide_tour), ("player", "player", player_tour),
         ("settings", "einstellungen-tour", settings_tour), ("scenes", "szenen", scenes_tour),
+        ("nav", "navigation", nav_tour),
     ]:
         if "all" in parts or part in parts:
             step(name, fn)
