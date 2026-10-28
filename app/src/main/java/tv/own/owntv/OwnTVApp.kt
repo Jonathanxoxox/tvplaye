@@ -228,6 +228,11 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         tv.own.owntv.launcher.RecentRowWatcher.start(this, appScope)
         appScope.launch { runCatching { refreshLauncherRowsOnFavoriteChange() } }
         appScope.launch { runCatching { refreshLauncherRowsOnSportsChange() } }
+        // Updates: the pre-compiled start profile rides along into the install session (see DexMetadataHook).
+        appScope.launch {
+            StartupGate.awaitSettled()
+            runCatching { tv.own.owntv.perf.DexMetadataHook.start(this@OwnTVApp, appScope) }
+        }
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
         // or older than the chosen hours). It reads one small file and touches no database.
         appScope.launch {

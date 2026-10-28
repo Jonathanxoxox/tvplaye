@@ -88,6 +88,21 @@ jobs:
           # bekommen vorerst dieselbe APK.
           cp dist/MayoTV.apk dist/Flutlicht.apk
 
+      # Dex-Metadaten: das mitgelieferte Basisprofil als .dm neben die APK. Die App legt es beim Update
+      # in die Installation, damit Android den Code gleich beim Einspielen vorübersetzt. Scheitert das,
+      # bleibt es beim bisherigen Weg (Profil wartet auf die nächtliche Kompilierung).
+      - name: Build dex metadata (.dm)
+        continue-on-error: true
+        run: |
+          set -e
+          work=$(mktemp -d)
+          unzip -p dist/MayoTV.apk assets/dexopt/baseline.prof > "$work/primary.prof"
+          unzip -p dist/MayoTV.apk assets/dexopt/baseline.profm > "$work/primary.profm" || rm -f "$work/primary.profm"
+          echo "primary.prof header:"; head -c 8 "$work/primary.prof" | xxd
+          ls -l "$work"
+          (cd "$work" && zip -q -X "$GITHUB_WORKSPACE/dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.dm" primary.prof $( [ -f primary.profm ] && echo primary.profm ))
+          unzip -l "dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.dm"
+
       - uses: actions/upload-artifact@v7
         with:
           name: MayoTV
@@ -164,4 +179,6 @@ jobs:
           prerelease: ${{ github.ref_name != 'main' }}
           make_latest: ${{ github.ref_name == 'main' }}
           body_path: dist/notes.md
-          files: dist/MayoTV-v1.0.${{ github.run_number }}.apk
+          files: |
+            dist/MayoTV-v1.0.${{ github.run_number }}.apk
+            dist/MayoTV-v1.0.${{ github.run_number }}.dm
