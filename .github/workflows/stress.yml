@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       parts:
-        description: "Teile (all oder z. B. stream,offline,playlist,lifecycle,keys,monkey,persist)"
+        description: "Teile (all oder z. B. stream,offline,playlist,lifecycle,links,keys,monkey,persist)"
         default: all
 
 permissions:
