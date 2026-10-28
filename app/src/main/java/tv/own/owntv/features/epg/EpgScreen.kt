@@ -532,6 +532,10 @@ fun EpgScreen(
     // Set while the groups are being entered (▶ from the menu, ◀ from the guide): the list then focuses
     // its selected group itself.
     var groupsEnter by remember { mutableStateOf(false) }
+    // Set while focus goes from the groups to the menu: the groups stay where they are until the menu is open
+    // beside them. Between the two, for a frame or two, nothing held them out, so they began to slide away and
+    // came straight back, and the whole guide was redrawn on every frame of the menu's slide (28 Oct 2026).
+    var groupsToMenu by remember { mutableStateOf(false) }
     val focusRows = {
         if (state.channels.isEmpty()) runCatching { emptyAction.requestFocus() }.getOrDefault(false)
         else runCatching { rowFocus(focusedRow.coerceIn(0, state.channels.size - 1)).requestFocus() }.getOrDefault(false)
@@ -583,7 +587,10 @@ fun EpgScreen(
         LaunchedEffect(timelineW) { timelinePx = with(density) { timelineW.roundToPx() } }
 
         // With the menu open, or the groups in use, they stand at the left and the guide moves over by their width.
-        val showGroups = tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld
+        // Derived, so the menu opening beside groups already out recomposes none of the guide.
+        val showGroups by remember {
+            derivedStateOf { tv.own.owntv.features.shell.components.StageRailOpen.open || groupsFocused || groupsEnter || groupsHeld || groupsToMenu }
+        }
         val groupsW = fx(400)
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
         DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
@@ -759,6 +766,8 @@ fun EpgScreen(
         }
         LaunchedEffect(browsedGroup) {
             val idx = browsedGroup ?: return@LaunchedEffect
+            // Entering the groups focuses the open one: nothing to load, and no work while they slide in.
+            if (railItems.getOrNull(idx)?.key == (categoryKey ?: LiveKey.All)) return@LaunchedEffect
             // Its first rows start loading once the focus rests on it, so a held key does not start a load per row.
             delay(150)
             railItems.getOrNull(idx)?.key?.let(vm::prefetchCategory)
@@ -777,10 +786,9 @@ fun EpgScreen(
                 Modifier
                     .width(groupsW)
                     .fillMaxHeight()
-                    .graphicsLayer {
-                        alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f)
-                        translationX = (groupsShift.value - groupsW).toPx()
-                    }
+                    // Only moved, never faded: they come in from beyond the screen's edge, and a fading layer
+                    // needs a picture of its own drawn offscreen.
+                    .graphicsLayer { translationX = (groupsShift.value - groupsW).toPx() }
                     .background(palette.glassTint)
                     .drawBehind {
                         val line = 2.mpx.toPx()
@@ -833,10 +841,25 @@ fun EpgScreen(
                     .width(groupsW - fx(40))
                     .fillMaxHeight()
                     .graphicsLayer {
-                        alpha = (groupsShift.value / groupsW).coerceIn(0f, 1f)
                         translationX = (groupsShift.value - groupsW).toPx()
+                        compositingStrategy = tv.own.owntv.ui.theme.slideCompositing(groupsShift.value != groupsTarget)
                     }
-                    .onFocusChanged { groupsFocused = it.hasFocus },
+                    .onFocusChanged {
+                        if (groupsFocused && !it.hasFocus) {
+                            groupsToMenu = true
+                            scope.launch {
+                                // Back into the guide (▶): let them go a frame later. To the menu: until it is open.
+                                withFrameNanos { }
+                                repeat(10) {
+                                    val waiting = !tv.own.owntv.features.shell.components.StageRailOpen.guideFocused &&
+                                        !tv.own.owntv.features.shell.components.StageRailOpen.open
+                                    if (waiting) withFrameNanos { }
+                                }
+                                groupsToMenu = false
+                            }
+                        }
+                        groupsFocused = it.hasFocus
+                    },
             )
         }
 

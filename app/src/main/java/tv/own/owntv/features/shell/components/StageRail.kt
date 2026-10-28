@@ -150,16 +150,20 @@ fun StageRail(
     // bright as before, as in the classic IPTV player. Pages that add a column beside the menu read it.
     val openOverPage = state == RailState.OPEN
     androidx.compose.runtime.SideEffect { StageRailOpen.open = openOverPage }
-    // Opening, the menu slides in from the left edge alongside the page it pushes, as in TiviMate.
+    // Opening, the menu slides in from the left edge alongside the page it pushes, as in TiviMate. Closing,
+    // it slides back out the same way: it keeps its names until it is in, instead of snapping to the strip
+    // on the first frame while the page still slid (28 Oct 2026).
     val openness = androidx.compose.animation.core.animateFloatAsState(if (expanded) 1f else 0f, tv.own.owntv.ui.theme.stageSlide())
+    val stillOut by remember { androidx.compose.runtime.derivedStateOf { openness.value > 0f } }
+    val drawnOpen = expanded || stillOut
     Box(modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .align(Alignment.CenterStart)
                 .fillMaxHeight()
-                .width(if (expanded) MenuWidth else StripWidth)
+                .width(if (drawnOpen) MenuWidth else StripWidth)
                 .graphicsLayer {
-                    if (expanded) translationX = -(1f - openness.value) * (MenuWidth - StripWidth).toPx() * if (rtl) -1f else 1f
+                    if (drawnOpen) translationX = -(1f - openness.value) * (MenuWidth - StripWidth).toPx() * if (rtl) -1f else 1f
                     compositingStrategy = tv.own.owntv.ui.theme.slideCompositing(openness.value != 0f && openness.value != 1f)
                 }
                 .onFocusChanged {
@@ -196,19 +200,19 @@ fun StageRail(
                     true
                 }
                 .focusGroup()
-                .background(tv.own.owntv.ui.theme.inScene(if (expanded) MenuPanel else StripPanel))
-                .padding(horizontal = if (expanded) 26.mpx else 14.mpx, vertical = 40.mpx),
-            horizontalAlignment = if (expanded) Alignment.Start else Alignment.CenterHorizontally,
+                .background(tv.own.owntv.ui.theme.inScene(if (drawnOpen) MenuPanel else StripPanel))
+                .padding(horizontal = if (drawnOpen) 26.mpx else 14.mpx, vertical = 40.mpx),
+            horizontalAlignment = if (drawnOpen) Alignment.Start else Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.mpx),
         ) {
-            MenuLogo(expanded)
+            MenuLogo(drawnOpen)
             Spacer(Modifier.weight(0.55f))
             items.forEach { section ->
                 RailItem(
                     icon = section.stageIcon,
                     label = stringResource(section.labelRes),
                     trailing = if (counts) count(section)?.let { NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(it) } else null,
-                    expanded = expanded,
+                    expanded = drawnOpen,
                     active = section == selected,
                     onClick = { onSelect(section) },
                     modifier = (if (section == focusSection) Modifier.focusRequester(selectedItemFocusRequester) else Modifier)
@@ -221,7 +225,7 @@ fun StageRail(
                 icon = OwnTVIcon.GEAR,
                 label = stringResource(MainSection.MORE.labelRes),
                 trailing = null,
-                expanded = expanded,
+                expanded = drawnOpen,
                 active = selected == MainSection.MORE || selected == MainSection.SETTINGS,
                 onClick = { onSelect(MainSection.MORE) },
                 modifier = (if (focusSection == MainSection.MORE) Modifier.focusRequester(selectedItemFocusRequester) else Modifier)

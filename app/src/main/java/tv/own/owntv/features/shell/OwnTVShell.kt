@@ -738,7 +738,6 @@ fun OwnTVShell(
             tv.own.owntv.ui.theme.stageSlide(),
         )
     }
-    val stripAlpha = androidx.compose.animation.core.animateFloatAsState(if (guideStripHidden) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
     val railPushTarget = tv.own.owntv.features.shell.components.railPushTarget(railState)
     val guideStripTarget = if (guideSection && !guideStripHidden) tv.own.owntv.features.shell.components.StageRailStripWidth else 0.mpx
     // The guide's corner picture moves with the page in the same frame (see GuidePreviewSpot.shift).
@@ -1489,7 +1488,16 @@ fun OwnTVShell(
                 },
                 onFocused = { focusedLayer = ShellLayer.SIDEBAR },
                 itemsFocusable = { playerMode == PlayerMode.NONE && !guideHandover },
-                modifier = Modifier.graphicsLayer { alpha = stripAlpha.value }.onFocusChanged { railTrulyFocused = it.hasFocus },
+                // In the guide the strip steps aside by sliding off the edge together with the page, not by fading:
+                // a fade drew the whole screen once more offscreen on every frame, nested with the page's own
+                // layer, which the Nokia 8010 could not keep up with between the categories and the menu
+                // (28 Oct 2026). The open menu then comes in glued to the page's edge.
+                modifier = Modifier.graphicsLayer {
+                    if (guideSection) {
+                        translationX = (guideStripRoom.value - tv.own.owntv.features.shell.components.StageRailStripWidth).toPx() *
+                            if (contentLtr) 1f else -1f
+                    }
+                }.onFocusChanged { railTrulyFocused = it.hasFocus },
             )
           }
         }
