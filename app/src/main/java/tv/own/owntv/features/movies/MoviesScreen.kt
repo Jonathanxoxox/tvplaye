@@ -222,7 +222,10 @@ fun MoviesScreen(
     val startMovie: (MovieEntity) -> Unit = { m ->
         scope.launch {
             val pos = vm.savedPositionMs(m)
+            // Picked from "Weiterschauen": carrying on is what was asked for, so no Resume prompt.
+            val fromContinue = VodCatalogKeys.idOf(selectedKey) == tv.own.owntv.features.vod.VodCatalogSource.ID_CONTINUE
             when {
+                fromContinue && pos > 0 && resumeMode != SettingsRepository.ResumeMode.NEVER -> { vm.play(m, pos); goFullscreen() }
                 resumeMode == SettingsRepository.ResumeMode.ASK && pos >= 10_000 -> resumePrompt = m to pos
                 resumeMode == SettingsRepository.ResumeMode.AUTO && pos > 0 -> { vm.play(m, pos); goFullscreen() }
                 else -> { vm.play(m, 0); goFullscreen() }

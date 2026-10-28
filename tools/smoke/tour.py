@@ -453,10 +453,48 @@ def vod_section(name, layout):
         key("BACK", wait=1.5)
 
 
+def vod_details():
+    """Filme: OK halten auf einem Poster öffnet die Optionen, darin die TMDB-Detailseite."""
+    if not open_section("Filme"):
+        return
+    time.sleep(3)
+    key("DPAD_RIGHT", wait=1.0)
+    key("DPAD_DOWN", wait=1.0)
+    key("DPAD_CENTER", wait=1.5, long=True)
+    shot("vod-filme-optionen")
+    if goto(r"details", tries=12):
+        time.sleep(4)
+        shot("vod-filme-details")
+        key("DPAD_DOWN", n=2, wait=0.8)
+        shot("vod-filme-details-unten")
+        key("BACK", wait=1.5)
+
+
+def search_tour():
+    """Suche: ein Titel, ein Schauspieler (TMDB) und eine Beschreibung (Jev), jeweils Liste und erste Zeile."""
+    if not open_section("Suche"):
+        return
+    key("DPAD_RIGHT", wait=1.0)
+    shot("suche-leer")
+    for q, tag in [("top gun", "titel"), ("Tom Cruise", "schauspieler"), ("gruseliger Vampirfilm", "beschreibung")]:
+        key("DPAD_CENTER", wait=1.5)
+        type_text(q.replace(" ", "%s"))
+        key("ENTER", wait=1.0)
+        time.sleep(12)  # TMDB und Jev antworten nicht sofort
+        shot(f"suche-{tag}")
+        key("DPAD_DOWN", n=2, wait=0.8)
+        time.sleep(3)
+        shot(f"suche-{tag}-zeile")
+        # Zurück leert die Suche und setzt den Fokus wieder ins Feld.
+        key("BACK", wait=1.5)
+
+
 def vod_tour():
     # Filme und Serien haben nur noch das filmische Layout.
     vod_section("Filme", "filmisch")
     vod_section("Serien", "filmisch")
+    vod_details()
+    search_tour()
 
 
 def settings_tour():

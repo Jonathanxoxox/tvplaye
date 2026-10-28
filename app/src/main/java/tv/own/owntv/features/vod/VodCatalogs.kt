@@ -170,7 +170,7 @@ internal fun vodCatalogs(
         combine(continueIds(c), built) { cont, b ->
             val discover = VodCatalog.Group.DISCOVER
             buildList {
-                if (cont.isNotEmpty()) add(VodCatalog("continue", discover, context.getString(R.string.vod_catalog_continue), cont.take(VodCatalogSource.MAX_PER_CATALOG)))
+                if (cont.isNotEmpty()) add(VodCatalog(VodCatalogSource.ID_CONTINUE, discover, context.getString(R.string.vod_catalog_continue), cont.take(VodCatalogSource.MAX_PER_CATALOG)))
                 b.tmdb.firstOrNull { it.id == VodCatalogSource.ID_TRENDING }?.let(::add)
                 if (b.newest.size >= MIN_TMDB) add(VodCatalog("newest", discover, context.getString(R.string.vod_catalog_newest), b.newest))
                 if (b.forYou.size >= MIN_TMDB) add(VodCatalog("for_you", discover, context.getString(R.string.vod_catalog_for_you), b.forYou))
@@ -229,14 +229,17 @@ class VodCatalogSource(
 ) {
     private val http = okHttp.newBuilder().callTimeout(20, TimeUnit.SECONDS).build()
     private val lock = Mutex()
-    private val memory = HashMap<String, Stored>()
+    private val memory = java.util.concurrent.ConcurrentHashMap<String, Stored>()
 
     private data class Stored(val builtAt: Long, val language: String, val catalogs: List<VodCatalog>)
 
-    /** What was built last for this section, however old: shown at once while [catalogs] renews it. */
-    suspend fun stored(type: MediaType, sourceIds: List<Long>): List<VodCatalog> = lock.withLock {
+    /**
+     * What was built last for this section, however old: shown at once while [catalogs] renews it.
+     * Not behind [lock]: Serien opened while Filme builds would otherwise show no catalogs until then.
+     */
+    suspend fun stored(type: MediaType, sourceIds: List<Long>): List<VodCatalog> {
         val cacheKey = cacheKey(type, sourceIds)
-        (memory[cacheKey] ?: withContext(Dispatchers.IO) { read(cacheKey) })?.catalogs.orEmpty()
+        return (memory[cacheKey] ?: withContext(Dispatchers.IO) { read(cacheKey) })?.catalogs.orEmpty()
     }
 
     private fun cacheKey(type: MediaType, sourceIds: List<Long>) =
@@ -383,9 +386,13 @@ class VodCatalogSource(
                     JSONObject().put(F_ID, c.id).put(F_GROUP, c.group.name).put(F_TITLE, c.title).put(F_IDS, JSONArray(c.ids)),
                 )
             }
-            file(cacheKey).writeText(
+            // Written aside and renamed, so [stored] never reads half a file.
+            val target = file(cacheKey)
+            val tmp = File(target.parentFile, target.name + ".tmp")
+            tmp.writeText(
                 JSONObject().put(F_BUILT, stored.builtAt).put(F_LANGUAGE, stored.language).put(F_CATALOGS, list).toString(),
             )
+            if (!tmp.renameTo(target)) { target.delete(); tmp.renameTo(target) }
         }.onFailure { Log.w(TAG, "cache write failed: ${it.message}") }
     }
 
@@ -482,6 +489,7 @@ class VodCatalogSource(
         private const val MOVIE = "movie"
         private const val TV = "tv"
         const val ID_TRENDING = "trending"
+        const val ID_CONTINUE = "continue"
         const val MAX_PER_CATALOG = 120
         private const val MAX_AGE_MS = 24L * 60 * 60 * 1000
         private const val VALIDITY_SAMPLE = 60
