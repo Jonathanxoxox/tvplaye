@@ -71,6 +71,8 @@ class ShellViewModel(
                 .collect { pid ->
                     Log.d(TAG, "activeProfileChanged profile=$pid androidTvHomeEnabled=${settings.androidTvHomeEnabled.first()}")
                     if (pid >= 0 && settings.androidTvHomeEnabled.first()) {
+                        // The launcher rows are only seen after leaving the app: not in the first seconds.
+                        tv.own.owntv.StartupGate.awaitSettled()
                         tv.own.owntv.perf.StartLog.stampOnce("launcher-refresh-start")
                         runCatching { launcherIntegrationRepository.refreshProfile(pid, allowBrowsableRequest = true) }
                         tv.own.owntv.perf.StartLog.stampOnce("launcher-refresh-end")
