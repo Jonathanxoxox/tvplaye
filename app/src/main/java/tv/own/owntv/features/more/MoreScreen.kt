@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.em
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.androidx.compose.koinViewModel
 import tv.own.owntv.BuildConfig
@@ -109,8 +111,24 @@ fun MoreScreen(
     val enterPage: () -> Boolean = { pageEntry?.invoke() ?: runCatching { pageTarget.requestFocus() }.getOrDefault(false) }
     val backToSheet: () -> Unit = { runCatching { itemFocus.getValue(selected).requestFocus() } }
     // Like the rail: ▲ ▼ move focus, OK selects the item (its page shows, focus stays on the item),
-    // ▶ goes into the page that is shown.
+    // ▶ goes into the item's page. ▶ on an item not chosen yet chooses it first: it used to enter the page still
+    // shown, so ▶ on History opened Settings.
     val choose: (MoreItem) -> Unit = { item -> if (item != selected) { selected = item; pageEntry = null } }
+    var focusedItem by remember { mutableStateOf<MoreItem?>(null) }
+    val scope = rememberCoroutineScope()
+    val enterItem: () -> Boolean = enter@{
+        // On the profile row ▶ moves along the row (picture → Switch), as everywhere else.
+        val item = focusedItem ?: return@enter false
+        if (item == selected) return@enter enterPage()
+        choose(item)
+        // The new page is composed on the next frame; its entry is only known after that.
+        scope.launch {
+            withFrameNanos { }
+            withFrameNanos { }
+            enterPage()
+        }
+        true
+    }
 
     // The rail's ▶ lands on the item the sheet was last on.
     DisposableEffect(onEntryHook) {
@@ -154,7 +172,7 @@ fun MoreScreen(
                 // ◀ back from the page lands on the item that page belongs to.
                 .focusProperties { onEnter = { runCatching { itemFocus.getValue(selected).requestFocus() } } }
                 .onPreviewKeyEvent { e ->
-                    e.type == KeyEventType.KeyDown && e.key == Key.DirectionRight && enterPage()
+                    e.type == KeyEventType.KeyDown && e.key == Key.DirectionRight && enterItem()
                 }
                 .focusGroup(),
         ) {
@@ -164,7 +182,8 @@ fun MoreScreen(
                     text = label, icon = icon, value = value, warn = warn,
                     selected = selected == it,
                     onClick = { choose(it) },
-                    modifier = Modifier.focusRequester(itemFocus.getValue(it)),
+                    modifier = Modifier.focusRequester(itemFocus.getValue(it))
+                        .onFocusChanged { f -> if (f.hasFocus) focusedItem = it else if (focusedItem == it) focusedItem = null },
                 )
             }
             item(MoreItem.SETTINGS, OwnTVIcon.SETTINGS, stringResource(R.string.common_nav_settings), null, false)

@@ -107,6 +107,9 @@ fun StageSearchField(
     val micFocus = remember { FocusRequester() }
     val micInteraction = remember { MutableInteractionSource() }
     val micFocused by micInteraction.collectIsFocusedAsState()
+    // The mic is reached only by ▶ from the field. A host asking for the field's focus (its requester sits on the
+    // whole row) found the mic first, so opening Search landed on the microphone instead of the field.
+    var micArmed by remember { mutableStateOf(false) }
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     LaunchedEffect(editing) {
         onEditingChange(editing)
@@ -134,7 +137,10 @@ fun StageSearchField(
                 val toMic = if (rtl) Key.DirectionLeft else Key.DirectionRight
                 val toField = if (rtl) Key.DirectionRight else Key.DirectionLeft
                 when {
-                    e.key == toMic && pillFocused -> runCatching { micFocus.requestFocus() }.isSuccess
+                    e.key == toMic && pillFocused -> {
+                        micArmed = true
+                        runCatching { micFocus.requestFocus() }.getOrDefault(false).also { if (!it) micArmed = false }
+                    }
                     e.key == toField && micFocused -> runCatching { pillFocus.requestFocus() }.isSuccess
                     else -> false
                 }
@@ -209,6 +215,8 @@ fun StageSearchField(
                 .background(StageColors.ControlFill, RoundedCornerShape(radius))
                 .then(if (lit) Modifier.drawBehind { drawOuterRing(focus, 2.mpx.toPx(), radius.toPx()) } else Modifier)
                 .focusRequester(micFocus)
+                .focusProperties { canFocus = micArmed }
+                .onFocusChanged { if (!it.isFocused) micArmed = false }
                 .clickable(micInteraction, null) { voiceSearch.start() },
             contentAlignment = Alignment.Center,
         ) {

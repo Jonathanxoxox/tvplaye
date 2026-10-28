@@ -569,16 +569,23 @@ def nav_tour():
         probe(f"{s}-zurueck2", "BACK", wait=1.5)
         root = probe(f"{s}-zurueck3", "BACK", wait=1.5)
         dismiss_exit(root)
-    # Ein Titel öffnen und zurück: der Fokus soll auf dem Titel stehen.
+    # Ein Titel öffnen und zurück: der Fokus soll auf dem Titel stehen. ▶ ▶: über die Kategorien zu den Titeln.
     for name in ["Filme", "Serien", "Sport"]:
         if not open_section(name):
             continue
         s = slug(name)
-        key("DPAD_RIGHT", wait=1.5)
+        key("DPAD_RIGHT", n=1 if name == "Sport" else 2, wait=1.5)
         probe(f"{s}-titel-vorher")
-        probe(f"{s}-titel-ok", "DPAD_CENTER", wait=5)
+        probe(f"{s}-titel-ok", "DPAD_CENTER", wait=6)
         probe(f"{s}-titel-zurueck", "BACK", wait=3)
         probe(f"{s}-titel-zurueck2", "BACK", wait=2)
+        dismiss_exit(dump())
+    # Mehr: ▶ auf einer Zeile öffnet deren Seite.
+    if open_section("Mehr"):
+        key("DPAD_RIGHT", wait=0.8)
+        if goto(r"^Favoriten", press=False):
+            probe("mehr-favoriten-rechts", "DPAD_RIGHT")
+            probe("mehr-favoriten-zurueck", "BACK")
         dismiss_exit(dump())
     # Einstellungen: Kachel auf, Zurück auf die Kachel, Zurück nach Mehr.
     if open_section("Mehr"):
@@ -597,30 +604,29 @@ def nav_tour():
             dismiss_exit(dump())
     # Suche: Text, Ergebnis öffnen, Zurück in die Suche.
     if open_section("Suche"):
-        key("DPAD_RIGHT", wait=1.0)
         probe("suche-feld")
-        type_text("Sport")
-        key("BACK", wait=1.0)  # Tastatur zu
-        time.sleep(3)
-        probe("suche-nach-text")
+        key("DPAD_CENTER", wait=1.5)  # OK öffnet die Tastatur
+        type_text("Sky")
+        probe("suche-getippt", "BACK", wait=3)  # Tastatur zu, Fokus auf dem Feld
         probe("suche-runter", "DPAD_DOWN", "DPAD_DOWN")
         probe("suche-ergebnis-ok", "DPAD_CENTER", wait=4)
         probe("suche-ergebnis-zurueck", "BACK", wait=3)
         probe("suche-ergebnis-zurueck2", "BACK", wait=2)
+        probe("suche-ergebnis-zurueck3", "BACK", wait=2)
         dismiss_exit(dump())
-    # Player: Vollbild aus dem Guide, Zurück, ◀ ◀, und langes Zurück von der Startseite.
+    # Player: Vollbild aus dem Guide, Zurück, ◀ ◀.
     if open_section("Live-TV"):
-        key("DPAD_RIGHT", wait=1.0)
-        if goto(r"^Sky Sport Bundesliga 1"):
-            time.sleep(3)
-            if not in_fullscreen():
-                key("DPAD_CENTER", wait=5)
-            probe("player-vollbild")
-            probe("player-zurueck-guide", "BACK", wait=3)
-            probe("player-guide-links", "DPAD_LEFT")
-            probe("player-guide-links2", "DPAD_LEFT")
-            probe("player-guide-rechts", "DPAD_RIGHT")
-            probe("player-guide-rechts2", "DPAD_RIGHT")
+        key("DPAD_RIGHT", n=2, wait=1.2)
+        probe("player-guide-zeile")
+        key("DPAD_CENTER", wait=4)
+        if not in_fullscreen():
+            key("DPAD_CENTER", wait=5)
+        probe("player-vollbild")
+        probe("player-zurueck-guide", "BACK", wait=3)
+        probe("player-guide-links", "DPAD_LEFT")
+        probe("player-guide-links2", "DPAD_LEFT")
+        probe("player-guide-rechts", "DPAD_RIGHT")
+        probe("player-guide-rechts2", "DPAD_RIGHT")
     if open_section("Startseite"):
         probe("lang-zurueck", "BACK_LONG", wait=5)
         probe("lang-zurueck-dann-zurueck", "BACK", wait=3)
