@@ -135,7 +135,7 @@ fun StageAppear(
         enter = androidx.compose.animation.EnterTransition.None,
         exit = androidx.compose.animation.ExitTransition.None,
     ) {
-        val shown by transition.animateFloat({ spec }, label = "stageAppear") {
+        val shown by transition.animateFloat({ spec }) {
             if (it == androidx.compose.animation.EnterExitState.Visible) 1f else 0f
         }
         androidx.compose.foundation.layout.Box(
