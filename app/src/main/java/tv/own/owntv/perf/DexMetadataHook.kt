@@ -35,6 +35,7 @@ object DexMetadataHook {
 
     private const val PREFS = "dexmeta"
     private const val KEY_DISABLED = "disabled"
+    private const val KEY_LAST = "last"
     private const val SESSION_ENTRY = "owntv-update"
     private const val MAX_BYTES = 2L * 1024 * 1024
 
@@ -55,16 +56,18 @@ object DexMetadataHook {
         val installer = app.packageManager.packageInstaller
         installer.registerSessionCallback(object : PackageInstaller.SessionCallback() {
             override fun onCreated(sessionId: Int) {
-                val info = runCatching { installer.getSessionInfo(sessionId) }.getOrNull() ?: return
-                if (info.appPackageName != app.packageName) return
-                addTo(installer, sessionId)
+                // Core's session never names the package (appPackageName stays null until the APK is read), so
+                // ownership is "one of this app's own sessions".
+                val mine = runCatching { installer.mySessions.any { it.sessionId == sessionId } }.getOrDefault(false)
+                if (!mine) return
+                addTo(app, installer, sessionId)
             }
 
             override fun onFinished(sessionId: Int, success: Boolean) {
                 if (sessionId != addedTo) return
                 if (!success) {
                     prefs.edit().putBoolean(KEY_DISABLED, true).apply()
-                    mutableState.value = State.FAILED
+                    record(app, State.FAILED, "Update mit Profil gescheitert")
                     StartLog.stamp("dexmeta-install-failed")
                 }
             }
@@ -86,44 +89,61 @@ object DexMetadataHook {
         if (!apkUrl.endsWith(".apk") || prepared != null) return
         mutableState.value = State.FETCHING
         val target = File(app.cacheDir, "update.dm")
+        var why = ""
         val ok = runCatching {
             val request = Request.Builder().url(apkUrl.removeSuffix(".apk") + ".dm").header("User-Agent", "OwnTV").build()
             OkHttpClient().newCall(request).execute().use { response ->
-                if (!response.isSuccessful) return@use false
-                val body = response.body ?: return@use false
-                if (body.contentLength() !in 1..MAX_BYTES) return@use false
+                if (!response.isSuccessful) { why = "Download ${response.code}"; return@use false }
+                val body = response.body ?: run { why = "leere Antwort"; return@use false }
+                if (body.contentLength() !in 1..MAX_BYTES) { why = "Größe ${body.contentLength()}"; return@use false }
                 target.outputStream().use { out -> body.byteStream().copyTo(out) }
-                valid(target)
+                valid(target).also { if (!it) why = "Profilformat passt nicht (${header(target)})" }
             }
-        }.getOrDefault(false)
+        }.getOrElse { why = it.javaClass.simpleName; false }
         if (ok) {
             prepared = target
-            mutableState.value = State.READY
+            record(app, State.READY, "Datei geladen")
         } else {
             target.delete()
-            mutableState.value = State.SKIPPED
+            record(app, State.SKIPPED, why)
         }
         StartLog.stamp(if (ok) "dexmeta-ready" else "dexmeta-skipped")
     }
 
-    /** A real zip with a profile whose header version is the one this Android reads. */
-    private fun valid(file: File): Boolean = ZipFile(file).use { zip ->
-        val entry = zip.getEntry("primary.prof") ?: return false
-        val header = ByteArray(8)
-        val read = zip.getInputStream(entry).use { input ->
-            var n = 0
-            while (n < 8) { val r = input.read(header, n, 8 - n); if (r < 0) break; n += r }
-            n
+    /** First 8 bytes of primary.prof inside the .dm, or null when it is no zip or has none. */
+    private fun headerBytes(file: File): ByteArray? = runCatching {
+        ZipFile(file).use { zip ->
+            val entry = zip.getEntry("primary.prof") ?: return@use null
+            val header = ByteArray(8)
+            val read = zip.getInputStream(entry).use { input ->
+                var n = 0
+                while (n < 8) { val r = input.read(header, n, 8 - n); if (r < 0) break; n += r }
+                n
+            }
+            if (read == 8) header else null
         }
-        read == 8 && String(header, 0, 3, Charsets.ISO_8859_1) == "pro" &&
-            String(header, 4, 3, Charsets.ISO_8859_1) == profileVersion()
+    }.getOrNull()
+
+    /** The header as text for the status line, e.g. "pro 015". */
+    private fun header(file: File): String =
+        headerBytes(file)?.let { String(it, Charsets.ISO_8859_1).replace('\u0000', ' ').trim() } ?: "kein Profil"
+
+    /** A real zip with a profile whose header version is the one this Android reads. */
+    private fun valid(file: File): Boolean {
+        val h = headerBytes(file) ?: return false
+        return String(h, 0, 3, Charsets.ISO_8859_1) == "pro" && String(h, 4, 3, Charsets.ISO_8859_1) == profileVersion()
     }
 
     /** The profile format by Android version (ART's ProfileCompilationInfo): 015 from Android 12, 010 on 9–11. */
     private fun profileVersion(): String = if (Build.VERSION.SDK_INT >= 31) "015" else if (Build.VERSION.SDK_INT >= 28) "010" else "009"
 
-    private fun addTo(installer: PackageInstaller, sessionId: Int) {
-        val dm = prepared ?: return
+    private fun addTo(app: Context, installer: PackageInstaller, sessionId: Int) {
+        val dm = prepared
+        if (dm == null) {
+            record(app, State.SKIPPED, "Update ohne Datei gestartet (${mutableState.value.name})")
+            return
+        }
+        var why = ""
         val added = runCatching {
             installer.openSession(sessionId).use { session ->
                 session.openWrite("$SESSION_ENTRY.dm", 0, dm.length()).use { out ->
@@ -131,9 +151,19 @@ object DexMetadataHook {
                     session.fsync(out)
                 }
             }
-        }.isSuccess
+        }.onFailure { why = it.javaClass.simpleName + ": " + (it.message ?: "").take(60) }.isSuccess
         if (added) addedTo = sessionId
-        mutableState.value = if (added) State.ADDED else State.SKIPPED
+        record(app, if (added) State.ADDED else State.SKIPPED, if (added) "in die Installation gelegt" else why)
         StartLog.stamp(if (added) "dexmeta-added" else "dexmeta-add-failed")
     }
+
+    /** Sets the state and keeps the outcome across the restart the update causes. */
+    private fun record(app: Context, state: State, why: String) {
+        mutableState.value = state
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY_LAST, "${state.name} – $why").apply()
+    }
+
+    /** The outcome of the last update attempt, for the Start-Protokoll after the restart. */
+    fun lastResult(context: Context): String? =
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY_LAST, null)
 }

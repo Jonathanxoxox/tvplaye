@@ -1321,13 +1321,22 @@
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	LauncherRows
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row not decorated
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row watcher not registered
+3	empty	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	\0
 1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	$SESSION_ENTRY.dm
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	${state.name} – $why
 2	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	.apk
 1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	.dm
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	009
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	010
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	015
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	:
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Datei geladen
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Download ${response.code}
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Größe ${body.contentLength()}
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	OwnTV
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Profilformat passt nicht (${header(target)})
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Update mit Profil gescheitert
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	Update ohne Datei gestartet (${mutableState.value.name})
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	User-Agent
 1	preference-key	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta
 1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-add-failed
@@ -1336,6 +1345,10 @@
 1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-ready
 1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-skipped
 1	preference-key	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	disabled
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	in die Installation gelegt
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	kein Profil
+1	preference-key	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	last
+1	technical	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	leere Antwort
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	owntv-update
 1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	primary.prof
 1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	pro
