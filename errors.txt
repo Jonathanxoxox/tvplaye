@@ -1,0 +1,600 @@
+10-28 23:25:48.216   452  3330 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:25:48.216   452  3330 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:25:48.232 19869 21016 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.232 19869 21016 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.233   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.233   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.233 19869 21016 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.233   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.298   452 11420 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:25:48.384   454 21017 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.384 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:25:48.408  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:25:49.403   452  3330 E OMXNodeInstance: setConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:25:51.791  3600 18706 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 23:25:51.794  3600 18706 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:25:54.616 21036 21036 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:25:57.525  3600 21064 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:26:00.025 21071 21071 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:26:01.885 21096 21096 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:26:06.234 19869 21163 E EGL_emulation: eglQueryContext 32c0  EGL_BAD_ATTRIBUTE
+10-28 23:26:06.234 19869 21163 E EGL_emulation: tid 21163: eglQueryContext(2019): error 0x3004 (EGL_BAD_ATTRIBUTE)
+10-28 23:26:06.486 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:06.486 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:11.598 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:12.155 21214 21214 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:26:11.613 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:13.638  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:16.028 21254 21254 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:26:17.425  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:17.511  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:19.451 21291 21291 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:26:23.859  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:26.703  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:26.966 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:26.974 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:31.177  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:31.400  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:34.626 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:34.626 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:34.945  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:35.143 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:35.143 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:35.400  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:38.362  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:40.313 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:40.326 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:45.222  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:45.707  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:48.905 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:48.905 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:49.299  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:52.046  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:52.789  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:52.959  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:53.040 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:53.050 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:56.054 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:56.054 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:59.211  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:26:59.540 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:59.541 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:26:59.546  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:02.557  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:02.646  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:07.796 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:07.797 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:14.473  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:16.631  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:21.175  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:21.177  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:21.197  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:28.264 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:28.264 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:31.059  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:31.291  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:31.420  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:33.780     0     0 E ICMPv6  : RA: ndisc_router_discovery failed to add default route
+10-28 23:27:33.960 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:33.961 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:38.915  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:39.039 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:39.040 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:27:41.053  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:43.443  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:43.447  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:48.325  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:48.327  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:55.234  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:55.409  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:27:58.835  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:01.644  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:07.750  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:09.994  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:12.871 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:12.871 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:15.524 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:15.524 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:15.529  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:17.662  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:20.529 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:20.529 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:22.842  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:25.528 22855 22855 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:28:26.636  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:26.924  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:29.246 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:29.246 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:34.257 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:34.257 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:35.634  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:36.056  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:36.160  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:42.926 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:42.927 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:45.856 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:45.878 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:46.106 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:46.107 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:48.627  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:48.637  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:51.146 23157 23157 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:28:51.261 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:51.261 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:51.861  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:55.944  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:56.947 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:56.947 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:59.576  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:28:59.770 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:28:59.770 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:02.505  3052  3052 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 23:29:02.526 19869 23296 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:29:02.526   452  3330 E OMXNodeInstance: getParameter(0xf4c81660:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:29:02.527   452  3330 E OMXNodeInstance: setConfig(0xf4c81660:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:29:02.527   452  3330 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:29:02.527   452  3330 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:29:02.613   452 11420 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:29:02.614 19869 23299 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.614 19869 23299 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.614   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.614   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.615 19869 23299 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.615   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.627  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:02.689   454 23309 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.690 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:29:02.810 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:03.773   452 11421 E OMXNodeInstance: setConfig(0xf4c81660:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:29:02.810 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:05.691  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:07.954 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:07.954 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:11.794  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:12.146  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:12.253  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:12.486 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:12.486 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:15.064  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:15.466  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:17.532 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:17.533 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:17.704  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:23.924  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:24.409 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:24.409 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:28.553  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:29.415 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:29.415 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:33.036 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:33.036 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:35.169  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:40.131  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:42.600 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:42.600 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:45.239  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:45.248 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:45.251 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:50.178 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:50.178 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:52.349 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:52.350 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:52.511  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:29:54.614 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:54.614 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:59.616 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:29:59.616 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:03.068  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:08.358 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:08.358 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:10.741  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:13.358  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:15.406 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:15.406 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:15.410  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:17.939  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:19.650  3600 21064 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 23:30:19.651  3600 21064 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:30:20.043  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:20.044  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:20.703 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:20.703 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:22.451  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:22.455  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:24.626  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:26.713 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:27.202  3600 24553 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:30:26.714 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:27.332  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:31.718 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:31.718 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:34.214 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:34.215 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:37.072 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:37.072 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:40.657  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:40.661  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:42.115 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:42.115 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:42.813  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:47.524  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:48.091 19869 19901 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:48.091 19869 19901 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:50.373  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:54.076 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:54.076 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:54.548  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:30:59.157 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:30:59.157 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:00.561  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:02.347 25006 25006 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:03.800  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:05.945 25042 25042 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:07.131  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:09.330 25079 25079 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:10.111  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:10.781  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:12.909  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:13.020  2948  2948 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:13.284  3698  6018 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-28 23:31:15.234  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:21.727  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:23.784  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:23.795  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:23.959  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:24.084  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:26.879   337   337 E Layer   : [Surface(name=Task=10)/@0x5964f56 - animation-leash#0] No local sync point found
+10-28 23:31:26.879   337   337 E Layer   : [Surface(name=Task=10)/@0x5964f56 - animation-leash#0] No local sync point found
+10-28 23:31:26.879   337   337 E Layer   : [Surface(name=Task=1)/@0xd56fae9 - animation-leash#0] No local sync point found
+10-28 23:31:26.879   337   337 E Layer   : [Surface(name=Task=1)/@0xd56fae9 - animation-leash#0] No local sync point found
+10-28 23:31:27.188 13375 13472 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 23:31:27.979 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:28.417 19869 25423 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.417 19869 25423 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.417   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.417   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.419 19869 25423 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.419   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.461   454 25424 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.461 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:31:28.507 19869 25426 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:31:28.507   452 11420 E OMXNodeInstance: getParameter(0xf4c80940:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:31:28.509   452 11420 E OMXNodeInstance: setConfig(0xf4c80940:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:31:28.509   452 11420 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:31:28.509   452 11420 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:31:28.659   452  3330 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:31:27.980 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:29.094 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:29.386 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:32.833   429   429 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 23:31:29.386 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:33.376 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:33.377 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:41.691  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:44.174  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:49.352  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:51.925 25582 25582 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:52.580  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:53.852  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:31:55.039 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:55.757 25619 25619 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:55.040 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:59.151 25656 25656 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:31:59.978 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:31:59.978 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:02.286  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:04.002 25729 25729 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:32:04.955  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:05.738  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:07.363 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:07.717 25766 25766 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:32:07.364 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:08.416 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:08.424 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:13.446 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:13.447 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:17.129 25877 25877 E AccessibilityInteractionClient: Duplicate node.
+10-28 23:32:19.534 25913 25913 E AccessibilityInteractionClient: Duplicate node.
+10-28 23:32:20.027 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:20.027 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:20.074  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:24.626 25988 25988 E AccessibilityInteractionClient: Duplicate node.
+10-28 23:32:25.175  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:25.177  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:25.197  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:26.824 26025 26025 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:32:27.339  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:27.341  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:27.348 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:27.348 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:27.497  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:29.356 26061 26061 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:32:29.874  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:31.055  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:32.351 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:32.352 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:35.379  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:35.520  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:37.776  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:40.023  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:40.122  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:46.413 19869 26354 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:32:46.413   452  3330 E OMXNodeInstance: getParameter(0xf4c81660:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:32:46.437   452   486 E OMXNodeInstance: setConfig(0xf4c81660:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:32:46.437   452   486 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:32:46.438   452  3330 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:32:46.571 19869 26357 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.571 19869 26357 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.575   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.575   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.576 19869 26357 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.576   454  2914 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.710   452   486 E OMXNodeInstance: getConfig(0xf4c81660:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:32:46.805   454 26358 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:46.805 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:32:48.192 26367 26367 E AccessibilityInteractionClient: Duplicate node.
+10-28 23:32:49.051  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:50.253  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:50.255  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:50.977  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:51.506 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:53.322 26416 26416 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:32:51.506 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:32:57.602  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:32:59.485 26490 26490 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:02.754  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:03.767  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:03.780 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:03.780 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:06.635  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:06.646  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:08.561 26614 26614 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:08.800 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:08.800 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:09.339  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:13.572  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:13.578  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:15.318 26689 26689 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:15.926  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:15.929  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:15.930  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:17.500  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:19.500 26726 26726 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:20.695  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:20.924  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:21.176  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:23.052 26763 26763 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:24.629  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:24.729 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:24.729 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:27.557  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:28.112  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:29.862 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:30.194 26838 26838 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:33:29.862 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:30.825  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:30.832  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:30.834  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:33.965  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:34.588 19869 26904 E EGL_emulation: eglQueryContext 32c0  EGL_BAD_ATTRIBUTE
+10-28 23:33:34.588 19869 26904 E EGL_emulation: tid 26904: eglQueryContext(2019): error 0x3004 (EGL_BAD_ATTRIBUTE)
+10-28 23:33:34.804 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:34.819 19869 19902 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:39.748 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:40.627  3052  3055 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 23:33:40.645 19869 26974 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:33:40.645   452 11421 E OMXNodeInstance: getParameter(0xf4c81580:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:33:40.646   452 11421 E OMXNodeInstance: setConfig(0xf4c81580:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:33:40.646   452 11421 E OMXNodeInstance: getConfig(0xf4c81580:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:33:40.646   452 11421 E OMXNodeInstance: getConfig(0xf4c81580:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:33:40.731   452 11421 E OMXNodeInstance: getConfig(0xf4c81580:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:33:40.731 19869 26977 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.732 19869 26977 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.732   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.732   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.733 19869 26977 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.733   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.823   454 26978 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:40.824 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:33:41.722   452 11421 E OMXNodeInstance: setConfig(0xf4c81580:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:33:39.749 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:45.195  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:45.222  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:45.225  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:33:56.353 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:33:56.387 19869 19909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:03.061  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:06.403  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:06.525  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:06.546  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:08.349 27296 27296 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:34:08.470 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:08.473 19869 19898 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:08.991  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:09.345 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:09.345 19869 19899 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:14.891 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:14.892 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:17.510  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:18.139  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:21.899  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:21.905  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:25.410  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:26.198 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:26.198 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:26.624 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:26.965  3052  3055 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 23:34:27.024 19869 27522 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:34:27.025   452 11421 E OMXNodeInstance: getParameter(0xf4c80940:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:27.025   452 11421 E OMXNodeInstance: setConfig(0xf4c80940:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:27.025   452   486 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:27.026   452   486 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:34:27.070 19869 27528 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.070 19869 27528 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.071   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.071   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.071 19869 27528 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.071   454  1020 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.089   454 27529 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.089 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:27.165   452  3330 E OMXNodeInstance: getConfig(0xf4c80940:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:34:28.277   452  3330 E OMXNodeInstance: setConfig(0xf4c80940:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:26.624 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:31.004  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:31.018  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:31.475 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: Conv2QueryReflectionHelper.getConv2QueryPeriodicMetadata():63 Failed to get Conv2QueryPeriodicMetadata.
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: java.lang.NoSuchMethodException: com.google.android.apps.inputmethod.libs.search.sense.Conv2QueryMetadataHelper.getInstance []
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at java.lang.Class.getMethod(Class.java:2072)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at java.lang.Class.getDeclaredMethod(Class.java:2050)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at bvn.a(PG:769)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at bvo.a(PG:140)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at kpn.a(PG:3)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at bvn.a(PG:614)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at kqj.a(PG:35)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at kqj.handleMessage(PG:55)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at android.os.Handler.dispatchMessage(Handler.java:102)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at android.os.Looper.loop(Looper.java:223)
+10-28 23:34:32.740  3698  3949 E Conv2QueryReflectionHelper: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-28 23:34:33.057  3052  3055 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 23:34:33.180 19869 27596 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:34:33.180   452   486 E OMXNodeInstance: getParameter(0xf4c80080:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:33.181   452   486 E OMXNodeInstance: setConfig(0xf4c80080:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:33.181   452   486 E OMXNodeInstance: getConfig(0xf4c80080:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:33.182   452   486 E OMXNodeInstance: getConfig(0xf4c80080:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:34:33.259   452  3330 E OMXNodeInstance: getConfig(0xf4c80080:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:34:33.272 19869 27599 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.272 19869 27599 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.273   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.273   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.275 19869 27599 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.275   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.299   454 27600 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:33.299 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:34:34.384   452   486 E OMXNodeInstance: setConfig(0xf4c80080:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:34:31.477 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:35.883  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:39.828  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:44.645 19869 19901 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:44.645 19869 19901 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:34:45.584  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:45.585  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:47.930  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:50.177     0     0 E ICMPv6  : RA: ndisc_router_discovery failed to add default route
+10-28 23:34:50.148  3600 24553 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 23:34:50.150  3600 24553 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:34:51.774  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:34:55.788  3600 27853 E WakeLock: GCM_CONN_ALARM release without a matched acquire!
+10-28 23:34:58.261  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:03.266 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:03.266 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:09.522  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:14.755 28022 28022 E AccessibilityInteractionClient: Duplicate node.
+10-28 23:35:18.027 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:18.027 19869 19892 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:20.135 19869 28088 E EGL_emulation: eglQueryContext 32c0  EGL_BAD_ATTRIBUTE
+10-28 23:35:20.135 19869 28088 E EGL_emulation: tid 28088: eglQueryContext(2019): error 0x3004 (EGL_BAD_ATTRIBUTE)
+10-28 23:35:20.157  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:20.288 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:20.289 19869 19896 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:23.085 28100 28100 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:35:24.013  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:24.097  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:24.374  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:25.341 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:26.595 28136 28136 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:35:25.342 19869 21916 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:35:27.481   337   337 E Layer   : [SurfaceView - io.github.jonathanxoxox.tvplayer/tv.own.owntv.MainActivity#0] No local sync point found
+10-28 23:35:27.522  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:27.525  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:29.714  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:30.309  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:32.471  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:34.543  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:35.485 19869 28283 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.485 19869 28283 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.486   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.486   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.490 19869 28283 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.490   454  1020 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.532 19869 28287 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:35:35.532   452   486 E OMXNodeInstance: getParameter(0xf4c80b70:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:35:35.533   452   486 E OMXNodeInstance: setConfig(0xf4c80b70:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:35:35.533   452   486 E OMXNodeInstance: getConfig(0xf4c80b70:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:35:35.533   452   486 E OMXNodeInstance: getConfig(0xf4c80b70:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:35:35.569   454 28284 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.569 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:35:35.770   452 11421 E OMXNodeInstance: getConfig(0xf4c80b70:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:35:38.132  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:40.096 28334 28334 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:35:41.323  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:43.244 28370 28370 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 23:35:43.945  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:44.199  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:44.221  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:49.844  2948  2948 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:50.128  3698  6018 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-28 23:35:50.137  3698  3698 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 7 ms, mainThreadForSure=true.
+10-28 23:35:50.208  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:52.453  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:54.518  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:56.566  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:58.828  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:35:59.256   337   337 E Layer   : [Surface(name=Task=11)/@0x970b09d - animation-leash#0] No local sync point found
+10-28 23:35:59.256   337   337 E Layer   : [Surface(name=Task=11)/@0x970b09d - animation-leash#0] No local sync point found
+10-28 23:35:59.256   337   337 E Layer   : [Surface(name=Task=1)/@0xd56fae9 - animation-leash#0] No local sync point found
+10-28 23:35:59.256   337   337 E Layer   : [Surface(name=Task=1)/@0xd56fae9 - animation-leash#0] No local sync point found
+10-28 23:35:59.462 13375 13469 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 23:36:00.376 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:00.897 19869 28669 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:36:00.897   452 11421 E OMXNodeInstance: getParameter(0xf4c80400:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:00.898   452 11420 E OMXNodeInstance: setConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:00.898   452 11420 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:00.898   452   486 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:36:00.928 19869 28672 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.928 19869 28672 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.928   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.928   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.929 19869 28672 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.929   454  1021 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.999   452  3330 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:36:01.075   454 28673 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:01.075 19869 20283 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:00.376 19869 19893 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:01.316 19869 19897 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:01.492 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:05.218   429   429 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 23:36:01.493 19869 19895 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:05.833 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:05.833 19869 21915 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:15.903  2948  2971 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 23:36:24.483  2948  3024 E InputDispatcher: channel '1685534 io.github.jonathanxoxox.tvplayer/tv.own.owntv.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-28 23:36:24.483  2948  3024 E InputDispatcher: channel '721e79f io.github.jonathanxoxox.tvplayer/tv.own.owntv.MainActivity (server)' ~ Channel is unrecoverably broken and will be disposed!
+10-28 23:36:24.488   452  3330 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-28 23:36:24.488  2910  5332 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-28 23:36:24.488  2910  5332 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-28 23:36:24.631 13375 13469 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 23:36:27.885  3052  3052 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 23:36:28.028 28850 28931 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 23:36:28.028   452  3330 E OMXNodeInstance: getParameter(0xf4c80400:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:28.028   452  3330 E OMXNodeInstance: setConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:28.028   452  3330 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:28.028   452  3330 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:36:28.094 28850 28935 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.094 28850 28935 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.094   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.094   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.094 28850 28935 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-28 23:36:28.095 28850 28935 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.095   454   454 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.157   452 11420 E OMXNodeInstance: getConfig(0xf4c80400:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 23:36:28.248   454 28939 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:28.249 28850 28932 E FMQ     : grantorIdx must be less than 3
+10-28 23:36:29.246   452  3330 E OMXNodeInstance: setConfig(0xf4c80400:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 23:36:29.748   429   429 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 23:36:29.867 28850 28911 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:29.867 28850 28911 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:31.515 28850 28909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:31.700 28850 28909 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:32.869 28850 28904 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 23:36:32.870 28850 28904 E ActivityThread: Failed to find provider info for android.media.tv
