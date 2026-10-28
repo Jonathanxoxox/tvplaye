@@ -1259,8 +1259,10 @@ class LiveViewModel(
      *  Every live entry point funnels through here into [playChannel], so Prefer HLS, the
      *  ExoPlayer→mpv ladder, compatibility-mode pins, learned stream quirks, the per-playlist
      *  pre-buffer and the external-player toggle apply however the channel was found. */
-    fun watchFromGuide(channel: ChannelEntity) {
-        zapList.armFor(channel)
+    fun watchFromGuide(channel: ChannelEntity, zapChannels: List<ChannelEntity> = emptyList()) {
+        // The guide has no list of its own to step through; a match page in Sports brings the channels it listed.
+        if (zapChannels.isEmpty()) zapList.armFor(channel)
+        else zapList.armFromBrowse(zapChannels, title = null, key = null, categoryId = null)
         ensurePlaying(channel)
         recordLiveHistory(channel, immediate = true)
     }

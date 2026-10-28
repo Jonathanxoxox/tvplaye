@@ -546,6 +546,17 @@ fun OwnTVShell(
         }
         playerMode = PlayerMode.FULLSCREEN
     }
+    // Start something from a tile, the Home row, Search or a reminder: tune it, then go full screen. One copy
+    // of each, so every way in behaves the same (an external player takes the item instead of the screen).
+    val playLiveById: (Long, List<ChannelEntity>) -> Unit = { id, zap ->
+        scope.launch { if (liveVm.ensurePlayingByIdAsync(id, zap)) openFullscreen(MainSection.LIVE_TV) }
+    }
+    val playMovieById: (Long, Long) -> Unit = { id, pos ->
+        scope.launch { if (movieVm.playByIdAsync(id, pos) && !movieVm.externalPlayerOn.value) openFullscreen(MainSection.MOVIES) }
+    }
+    val playEpisodeById: (Long, Long, Long) -> Unit = { seriesId, epId, pos ->
+        scope.launch { if (seriesVm.playFromHomeAsync(seriesId, epId, pos) && !seriesVm.externalPlayerOn.value) openFullscreen(MainSection.SERIES) }
+    }
     // [toRail] false: the guide takes focus itself (its row, the channel carrying on in its corner), so the
     // menu does not flash open on the way.
     // [intoLive]: the caller has just chosen Live TV, but this function still sees the section it was composed
@@ -587,10 +598,19 @@ fun OwnTVShell(
     var exitPending by remember { mutableStateOf(false) }
     val exitToList: () -> Unit = exit@{
         if (guideHandover || exitPending) return@exit
+        // A channel played from a match page in Sports goes back to that page, the same glide as into the guide:
+        // the page is laid out behind the picture (sportsBehind) and reports its corner like the guide.
+        val toSports = selectedSection == MainSection.SPORTS && zapSource == MainSection.LIVE_TV && playerMode == PlayerMode.FULLSCREEN
         val toList = zapSource == MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections
-        val intoGuide = toList && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
+        val intoGuide = (toSports || toList) && playerMode == PlayerMode.FULLSCREEN && liveOnExo && !catchupActive &&
             livePreviewOn && multiview == null
         if (!intoGuide) {
+            if (toSports) {
+                // The page stayed behind the picture when the stream is on the preview engine: nothing to rebuild it from.
+                if (liveOnExo && multiview == null) sportsMatchRequests.returnToMatch = null
+                closePlayer(toRail = false, intoLive = livePreviewOn)
+                return@exit
+            }
             if (!toList) { exitPlayer(); return@exit }
             // A live channel without the glide (on mpv, catch-up, no corner preview) still lands in the guide on
             // its channel, not on the menu: the guide is chosen first, so leaving another section does not stop
@@ -605,7 +625,7 @@ fun OwnTVShell(
         // Opened from the guide, the guide is still laid out behind the picture (guideBehind) and its corner
         // known: the shrink starts on the very next frame. Building the guide afresh first is what kept the
         // shrink from showing on the television: its first frames were spent laying the grid out.
-        val fromScratch = selectedSection != MainSection.LIVE_TV
+        val fromScratch = !toSports && selectedSection != MainSection.LIVE_TV
         if (fromScratch) {
             onSelectSection(MainSection.LIVE_TV)
             tv.own.owntv.features.epg.GuidePreviewSpot.rect = null
@@ -619,12 +639,13 @@ fun OwnTVShell(
             // Back in the first seconds after the start is the one case where the guide is not standing yet: it
             // was kept from loading until the picture came. Longer for that window only.
             val maxFrames = if (tv.own.owntv.StartupGate.isSettled) 45 else 90
-            while (!tv.own.owntv.features.epg.GuidePreviewSpot.ready && frames++ < maxFrames) withFrameNanos { }
+            // (The match page is built already: it stayed behind the picture, so there is nothing to wait for.)
+            if (!toSports) while (!tv.own.owntv.features.epg.GuidePreviewSpot.ready && frames++ < maxFrames) withFrameNanos { }
             // Closed some other way while it got ready (a shortcut, the Home key): nothing left to glide.
             if (playerMode != PlayerMode.FULLSCREEN) { exitPending = false; return@launch }
             // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
             // focused, Compose hands focus to the first thing on screen, the top of the menu, which flashed open.
-            if (guideEntry?.invoke() != true) parkFocus()
+            if ((if (toSports) sportsEntry else guideEntry)?.invoke() != true) parkFocus()
             guideHandover = true
             handoverGrow = false
             exitPending = false
@@ -643,7 +664,9 @@ fun OwnTVShell(
             // running with no corner to show it would play on as sound alone. Given time first, as a guide
             // built from scratch on a slow box can take a while to claim it.
             kotlinx.coroutines.delay(2_500)
-            if (playerMode == PlayerMode.NONE && sectionNow == MainSection.LIVE_TV &&
+            // The page is back for good: what it was reopened from the player for is spent.
+            if (toSports) sportsMatchRequests.returnToMatch = null
+            if (playerMode == PlayerMode.NONE && (sectionNow == MainSection.LIVE_TV || sectionNow == MainSection.SPORTS) &&
                 !tv.own.owntv.features.epg.GuidePreviewSpot.video) {
                 val engineState = liveVm.previewEngine.state.value
                 if (engineState == tv.own.owntv.player.LivePreviewEngine.State.PLAYING ||
@@ -652,14 +675,10 @@ fun OwnTVShell(
         }
     }
     // Back from full screen returns to where the channel was opened. From Sports that is the match page
-    // (SportsScreen reopens it), with the channel carrying on in its preview; Back used to land in the guide
+    // (exitToList), with the channel carrying on in its corner; Back used to land in the guide
     // (Jonathan, 27 Oct 2026). Long Menu's "guide" still goes to the guide.
     val exitBack: () -> Unit = exit@{
         if (guideHandover) return@exit
-        if (selectedSection == MainSection.SPORTS && zapSource == MainSection.LIVE_TV && playerMode == PlayerMode.FULLSCREEN) {
-            closePlayer(toRail = false, intoLive = livePreviewOn)
-            return@exit
-        }
         exitToList()
     }
     // A one-stream playlist that a download was using: core paused the download; this asks what next.
@@ -777,15 +796,10 @@ fun OwnTVShell(
     }
     val continueLastWatched = {
         continueTarget?.let { target ->
-            scope.launch {
-                when (target.kind) {
-                    tv.own.owntv.features.home.ContinueKind.LIVE ->
-                        if (liveVm.ensurePlayingByIdAsync(target.channelId)) openFullscreen(MainSection.LIVE_TV)
-                    tv.own.owntv.features.home.ContinueKind.MOVIE ->
-                        if (movieVm.playByIdAsync(target.movieId, target.positionMs) && !movieVm.externalPlayerOn.value) openFullscreen(MainSection.MOVIES)
-                    tv.own.owntv.features.home.ContinueKind.EPISODE ->
-                        if (seriesVm.playFromHomeAsync(target.seriesId, target.episodeId, target.positionMs) && !seriesVm.externalPlayerOn.value) openFullscreen(MainSection.SERIES)
-                }
+            when (target.kind) {
+                tv.own.owntv.features.home.ContinueKind.LIVE -> playLiveById(target.channelId, emptyList())
+                tv.own.owntv.features.home.ContinueKind.MOVIE -> playMovieById(target.movieId, target.positionMs)
+                tv.own.owntv.features.home.ContinueKind.EPISODE -> playEpisodeById(target.seriesId, target.episodeId, target.positionMs)
             }
         }
         Unit
@@ -1029,13 +1043,13 @@ fun OwnTVShell(
     // A live channel to full screen. The channel already playing in the guide's corner grows from there into
     // full screen, the same picture, no new stream (Jonathan, 27 Oct 2026); anything else just opens. The guide's
     // OK and a long Back both come through here, so both glide.
-    val openLiveFullscreen: (tv.own.owntv.core.database.entity.ChannelEntity) -> Unit = open@{ ch ->
+    val openLiveFullscreen: (tv.own.owntv.core.database.entity.ChannelEntity, List<ChannelEntity>) -> Unit = open@{ ch, zap ->
         if (guideHandover) return@open
         val grow = playerMode == PlayerMode.NONE && previewChannel?.id == ch.id &&
             liveVm.previewEngine.state.value == tv.own.owntv.player.LivePreviewEngine.State.PLAYING &&
             tv.own.owntv.features.epg.GuidePreviewSpot.rect != null && tv.own.owntv.features.epg.GuidePreviewSpot.video
         restoreFocus = false
-        liveVm.watchFromGuide(ch)
+        liveVm.watchFromGuide(ch, zap)
         zapSource = MainSection.LIVE_TV
         homeVm.stopPreview()
         // Live TV set to play externally → the channel went to another app;
@@ -1064,7 +1078,7 @@ fun OwnTVShell(
                 // Back out of it lands in the guide on this channel, wherever Back was held (Jonathan, 27 Oct
                 // 2026): the guide is put behind the picture now, so it is there when the picture glides back.
                 if (selectedSection != MainSection.LIVE_TV && MainSection.LIVE_TV in visibleSections) onSelectSection(MainSection.LIVE_TV)
-                openLiveFullscreen(ch)
+                openLiveFullscreen(ch, emptyList())
             }
         }
     }
@@ -1171,7 +1185,11 @@ fun OwnTVShell(
       // glide straight back onto its corner (exitToList). Not drawn meanwhile: the picture covers it all.
       val guideBehind = playerMode == PlayerMode.FULLSCREEN && multiview == null && liveOnExo &&
           zapSource == MainSection.LIVE_TV && selectedSection == MainSection.LIVE_TV
-      if (playerMode != PlayerMode.FULLSCREEN || guideHandover || guideBehind) {
+      // The same for a match page in Sports: it stays behind the picture, so the picture can glide back onto its
+      // corner and the page is not built again.
+      val sportsBehind = playerMode == PlayerMode.FULLSCREEN && multiview == null && liveOnExo &&
+          zapSource == MainSection.LIVE_TV && selectedSection == MainSection.SPORTS
+      if (playerMode != PlayerMode.FULLSCREEN || guideHandover || guideBehind || sportsBehind) {
         val browseHidden = playerMode == PlayerMode.FULLSCREEN && !guideHandover
         Column(
             modifier = Modifier.fillMaxSize()
@@ -1205,7 +1223,7 @@ fun OwnTVShell(
             ) {
                 // How the guide (Live TV) starts a channel or an archive programme: through LiveViewModel,
                 // the one live path.
-                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = { ch, _ -> openLiveFullscreen(ch) }
+                val guidePlayChannel: (ChannelEntity, List<ChannelEntity>) -> Unit = { ch, _ -> openLiveFullscreen(ch, emptyList()) }
                 val guidePlayCatchup: (ChannelEntity, tv.own.owntv.core.database.entity.EpgProgrammeEntity) -> Unit = { ch, prog ->
                     restoreFocus = false
                     liveVm.playCatchupProgramme(ch, prog)
@@ -1263,9 +1281,9 @@ fun OwnTVShell(
                                 onSelectSection(MainSection.SETTINGS)
                             },
                             // The same paths Home uses, so the engine ladder, resume and Continue all apply.
-                            onPlayChannel = { id -> scope.launch { if (liveVm.ensurePlayingByIdAsync(id)) openFullscreen(MainSection.LIVE_TV) } },
-                            onPlayMovie = { id, pos -> scope.launch { if (movieVm.playByIdAsync(id, pos) && !movieVm.externalPlayerOn.value) openFullscreen(MainSection.MOVIES) } },
-                            onPlayEpisode = { seriesId, epId, pos -> scope.launch { if (seriesVm.playFromHomeAsync(seriesId, epId, pos) && !seriesVm.externalPlayerOn.value) openFullscreen(MainSection.SERIES) } },
+                            onPlayChannel = { id -> playLiveById(id, emptyList()) },
+                            onPlayMovie = playMovieById,
+                            onPlayEpisode = playEpisodeById,
                             onOpenSeries = { id -> seriesVm.openSeriesById(id); restoreFocus = true; onSelectSection(MainSection.SERIES) },
                             onChildFocused = { focusedLayer = ShellLayer.CONTENT },
                             onEntryHook = { moreEntry = it },
@@ -1301,9 +1319,9 @@ fun OwnTVShell(
                             vm = homeVm,
                             // Skip the fullscreen player when the global external-player toggle is on
                             // (mounting it spins up mpv even though playback went to the external app).
-                            onPlayMovie = { id, pos -> scope.launch { if (movieVm.playByIdAsync(id, pos) && !movieVm.externalPlayerOn.value) openFullscreen(MainSection.MOVIES) } },
-                            onPlayEpisode = { seriesId, epId, pos -> scope.launch { if (seriesVm.playFromHomeAsync(seriesId, epId, pos) && !seriesVm.externalPlayerOn.value) openFullscreen(MainSection.SERIES) } },
-                            onPlayChannel = { id, zap -> scope.launch { if (liveVm.ensurePlayingByIdAsync(id, zap)) openFullscreen(MainSection.LIVE_TV) } },
+                            onPlayMovie = playMovieById,
+                            onPlayEpisode = playEpisodeById,
+                            onPlayChannel = playLiveById,
                             onActivateTrending = { selected, onUnavailable ->
                                 scope.launch {
                                     when (val current = homeVm.revalidateTrendingItem(selected)) {
@@ -1441,7 +1459,8 @@ fun OwnTVShell(
                         )
 
                         selectedSection == MainSection.SPORTS -> tv.own.owntv.features.sports.SportsScreen(
-                            onPlayChannel = { ch, zap -> scope.launch { if (liveVm.ensurePlayingByIdAsync(ch.id, zap)) openFullscreen(MainSection.LIVE_TV) } },
+                            // Through the guide's way in: the channel in the page's corner grows into full screen.
+                            onPlayChannel = { ch, zap -> openLiveFullscreen(ch, zap) },
                             onAddPlaylist = { onSelectSection(MainSection.SETTINGS) },
                             onChildFocused = { focusedLayer = ShellLayer.CONTENT },
                             onEntryHook = { sportsEntry = it },
@@ -1955,7 +1974,7 @@ fun OwnTVShell(
                 val watchReminder: (tv.own.owntv.core.database.entity.ReminderEntity) -> Unit = { r ->
                     scope.launch {
                         reminderManager.dismiss(r.id)
-                        if (liveVm.ensurePlayingByIdAsync(r.channelId)) openFullscreen(MainSection.LIVE_TV)
+                        playLiveById(r.channelId, emptyList())
                     }
                 }
                 val reminderText = dueReminder?.let { listOfNotNull(it.title, tv.own.owntv.features.epg.reminderEyebrow(it)).joinToString(" · ") }
