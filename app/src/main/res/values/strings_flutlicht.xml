@@ -79,4 +79,14 @@
     <string name="voice_search_no_microphone">Microphone not allowed</string>
     <string name="voice_search_unavailable">This device has no speech recognition</string>
     <string name="content_move_in_group_only">only within a group</string>
+    <string name="vod_catalog_continue">Continue watching</string>
+    <string name="vod_catalog_trending">Trending now</string>
+    <string name="vod_catalog_newest">New in your playlist</string>
+    <string name="vod_catalog_for_you">For you</string>
+    <string name="vod_catalog_top_rated">Top rated</string>
+    <string name="vod_catalogs_discover">Discover</string>
+    <string name="vod_catalogs_genres">Genres</string>
+    <string name="vod_catalogs_collections">Collections</string>
+    <string name="vod_catalogs_services">Also streaming on</string>
+    <string name="vod_catalogs_playlist">Your playlist</string>
 </resources>

@@ -67,6 +67,8 @@ internal class VodCategories(
     /** Lets the browse screen tell core's drain which category to fill first. */
     private val catalogPriority: tv.own.owntv.core.sync.CatalogPriority,
     private val currentProfileId: suspend () -> Long?,
+    /** The TMDB and progress catalogs, listed above the playlist's own entries. */
+    private val catalogs: StateFlow<List<VodCatalog>>,
 ) {
 
     val folderContextKeys: StateFlow<Map<Long, String>> = ctx
@@ -182,7 +184,8 @@ internal class VodCategories(
                 customize.observe(c.profileId, type),
                 sortMode,
                 profileDao.observeById(c.profileId),
-            ) { cats, cust, sort, profile ->
+                catalogs,
+            ) { cats, cust, sort, profile, catalogList ->
                 // A–Z also sorts the category folders (custom categories included); manually moved
                 // categories stay pinned first. Custom categories ride the SAME customization keys,
                 // so renames/hides/reorders apply to them with no extra code.
@@ -193,7 +196,7 @@ internal class VodCategories(
                 )
                 val multiSourceNames = c.sourceNames.takeIf { it.size > 1 }.orEmpty()
                 val categoriesById = cats.associateBy { it.id }
-                DEFAULT_RAIL + folders.map { e ->
+                catalogList.map { LiveRailItem(it.key, title = it.title) } + DEFAULT_RAIL + folders.map { e ->
                     LiveRailItem(
                         key = e.categoryId?.let { LiveKey.Folder(it) } ?: LiveKey.Custom(e.customId!!),
                         title = e.displayName,
@@ -259,6 +262,19 @@ internal class VodCategories(
     }
 
     /**
+     * Mayo TV opens Movies and Series on the first catalog ("Weiterschauen" when something is
+     * started, else "Gerade angesagt"), once, while the user has not picked anything yet.
+     */
+    fun openOnFirstCatalog() {
+        scope.launch {
+            val first = kotlinx.coroutines.withTimeoutOrNull(OPEN_WAIT_MS) {
+                railItems.first { list -> list.any { VodCatalogKeys.isCatalog(it.key) } }
+            }?.firstOrNull { VodCatalogKeys.isCatalog(it.key) } ?: return@launch
+            if (selected.value == LiveKey.All && lockedKey == null) selected.value = first.key
+        }
+    }
+
+    /**
      * Remember the last selected category (Settings → Browsing & lists → "Remember last category",
      * on by default): saved on change, restored once at startup. Mirrors LiveViewModel's block.
      */
@@ -291,6 +307,7 @@ internal class VodCategories(
     }
 
     companion object {
+        private const val OPEN_WAIT_MS = 15_000L
         val DEFAULT_RAIL = listOf(
             LiveRailItem(LiveKey.Favorites, icon = OwnTVIcon.FAVORITE),
             LiveRailItem(LiveKey.History, icon = OwnTVIcon.HISTORY),

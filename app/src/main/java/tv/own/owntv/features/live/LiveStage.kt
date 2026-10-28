@@ -383,6 +383,8 @@ internal data class LiveCategoryEntry(
     val icon: OwnTVIcon?,
     val count: Int?,
     val mark: PlaylistMark?,
+    /** A heading drawn above this entry (Movies / Series: "ENTDECKEN", "GENRES" …); replaces the groups heading. */
+    val heading: String? = null,
 )
 
 /**
@@ -465,6 +467,9 @@ internal fun LiveCategories(
         if (q.isEmpty()) entries.indices.toList() else entries.indices.filter { entries[it].label.contains(q, ignoreCase = true) }
     }
     val rowFocusers = remember(visible.size) { List(visible.size) { FocusRequester() } }
+    // The list item of row [pos]: the search field is item 0, and each heading above it is one more.
+    fun lazyIndex(pos: Int): Int =
+        pos + 1 + if (query.isBlank()) visible.take(pos + 1).count { entries[it].heading != null } else 0
     val searchFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     // CH+/− in the categories changes the selection; the highlight follows it there.
@@ -476,8 +481,8 @@ internal fun LiveCategories(
         if (!hasFocus || pos < 0 || pos == focusedPos) return@LaunchedEffect
         // CH+/− moved the selection: bring the row in only when it is off screen (scrollToItem puts it at the top).
         // (+2 as well: the groups heading sits between the search field and the rows)
-        if (listState.layoutInfo.visibleItemsInfo.none { it.index == pos + 1 || it.index == pos + 2 }) {
-            runCatching { listState.scrollToItem(pos + 1) } // +1: the search field is item 0
+        if (listState.layoutInfo.visibleItemsInfo.none { it.index == lazyIndex(pos) || it.index == lazyIndex(pos) + 1 }) {
+            runCatching { listState.scrollToItem(lazyIndex(pos)) }
         }
         withFrameNanos { }
         runCatching { rowFocusers[pos].requestFocus() }
@@ -487,7 +492,7 @@ internal fun LiveCategories(
         visible.indexOf(target).takeIf { it >= 0 }?.let { pos ->
             // A row further than the screen (a CH± jump) is not composed yet: scroll to it first.
             if (!runCatching { rowFocusers[pos].requestFocus() }.getOrDefault(false)) {
-                runCatching { listState.scrollToItem(pos + 1) } // +1: the search field is item 0
+                runCatching { listState.scrollToItem(lazyIndex(pos)) }
                 withFrameNanos { }
                 runCatching { rowFocusers[pos].requestFocus() }
             }
@@ -506,6 +511,7 @@ internal fun LiveCategories(
     }
     // Where the fixed entries end and the provider groups begin (the "GROUPS · DE" heading).
     val firstGroup = entries.indexOfFirst { it.item.key is tv.own.owntv.core.live.LiveKey.Folder || it.item.key is tv.own.owntv.core.live.LiveKey.Custom }
+    val headed = entries.any { it.heading != null }
     val rightKey = Modifier.onPreviewKeyEvent { e ->
         if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionRight) { onNavigateRight(); true } else false
     }
@@ -539,7 +545,7 @@ internal fun LiveCategories(
                         val target = if (pos in rowFocusers.indices) rowFocusers[pos] else searchFocus
                         if (!runCatching { target.requestFocus() }.getOrDefault(false)) {
                             scope.launch {
-                                runCatching { listState.scrollToItem(if (pos >= 0) pos + 1 else 0) }
+                                runCatching { listState.scrollToItem(if (pos >= 0) lazyIndex(pos) else 0) }
                                 withFrameNanos { }
                                 runCatching { target.requestFocus() }
                             }
@@ -569,7 +575,16 @@ internal fun LiveCategories(
             }
             visible.forEachIndexed { pos, index ->
                 val entry = entries[index]
-                if (index == firstGroup && query.isBlank() && showGroupsHeading) {
+                if (entry.heading != null && query.isBlank()) {
+                    item(key = "__heading_${index}__") {
+                        if (sheet) StageGroupLabel(entry.heading, sheet = true)
+                        else Text(
+                            entry.heading, style = stageText(12.5f, 800, 0.13.em), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(start = 14.mpx, top = if (pos == 0) 8.mpx else 22.mpx, bottom = 8.mpx),
+                        )
+                    }
+                }
+                if (index == firstGroup && query.isBlank() && showGroupsHeading && !headed) {
                     item(key = "__groups__") {
                         if (sheet) StageGroupLabel(groupsHeading, sheet = true)
                         else Text(

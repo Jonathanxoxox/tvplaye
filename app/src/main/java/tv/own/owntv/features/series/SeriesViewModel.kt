@@ -78,7 +78,6 @@ import tv.own.owntv.player.MediaMeta
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.player.PlaylistItem
 import tv.own.owntv.core.live.LiveKey
-import tv.own.owntv.core.live.parseLiveKey
 
 class SeriesViewModel(
     private val seriesDao: SeriesDao,
@@ -131,9 +130,38 @@ class SeriesViewModel(
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.Eagerly, VodCtx(-1L, emptyList(), emptyMap()))
 
+    /**
+     * The catalogs above the playlist's folders (Weiterschauen, Gerade angesagt, genres …). Taken
+     * from Koin here rather than the constructor, which is at the arity limit of `viewModelOf`.
+     */
+    private val catalogs: StateFlow<List<tv.own.owntv.features.vod.VodCatalog>> = tv.own.owntv.features.vod.vodCatalogs(
+        scope = viewModelScope,
+        context = org.koin.core.context.GlobalContext.get().get(),
+        type = MediaType.SERIES,
+        ctx = ctx,
+        continueIds = { c ->
+            progressDao.observeLatestEpisodeProgressPerSeries(c.profileId).map { rows ->
+                rows.sortedByDescending { it.updatedAt }.map { it.seriesId }
+            }
+        },
+        newestIds = { c -> newestIds(c) },
+        historyIds = { c -> seriesDao.recentlyWatchedSnapshot(c.profileId, c.sourceIds.ifEmpty { listOf(-1L) }, HISTORY_FOR_CATALOGS).map { it.id } },
+        source = org.koin.core.context.GlobalContext.get().get(),
+    )
+
+    /** "Neu in deiner Playlist": the newest titles by the provider's date added; none when it gives no dates. */
+    private suspend fun newestIds(c: VodCtx): List<Long> {
+        val source = seriesDao.pagingAllDateAdded(c.sourceIds.ifEmpty { listOf(-1L) })
+        val page = source.load(PagingSource.LoadParams.Refresh(null, NEWEST_COUNT, false)) as? PagingSource.LoadResult.Page<Int, SeriesEntity> ?: return emptyList()
+        return if (page.data.all { it.addedAt == null }) emptyList() else page.data.map { it.id }
+    }
+
+    private fun catalogIds(key: LiveKey): List<Long>? =
+        tv.own.owntv.features.vod.VodCatalogKeys.idOf(key)?.let { id -> catalogs.value.firstOrNull { it.id == id }?.ids.orEmpty() }
+
     private val categories = VodCategories(
         viewModelScope, MediaType.SERIES, ctx, settings.sortSeries, categoryDao, contentOrderDao, customize,
-        customCategoryDao, profileDao, userDataWriter, catalogPriority, { currentProfileId() },
+        customCategoryDao, profileDao, userDataWriter, catalogPriority, { currentProfileId() }, catalogs,
     )
     private val folderContextKeys = categories.folderContextKeys
     private val orderedContexts = categories.orderedContexts
@@ -397,6 +425,8 @@ class SeriesViewModel(
         // Rebuild the pager when a folder gains/loses manual order: the fast-path plain
         // PagingSource doesn't observe content_order, so the switch must recreate it.
         .combine(orderedContexts) { p, _ -> p }
+        // A catalog's list is fixed per build: the pager is rebuilt when the open catalog's titles change.
+        .combine(_selected.combine(catalogs) { key, _ -> catalogIds(key) }.distinctUntilChanged()) { p, _ -> p }
         .flatMapLatest { (args, cs) ->
             // Hidden items/categories are filtered on each fresh PagingData inside the pager chain —
             // a customization change re-creates the pager (same pattern as Live TV).
@@ -1162,6 +1192,16 @@ class SeriesViewModel(
         }
     }
 
+    /** A catalog's titles of the active playlists, in the catalog's order. */
+    private fun catalogSource(ids: List<Long>, c: VodCtx, query: String): PagingSource<Int, SeriesEntity> =
+        tv.own.owntv.features.vod.CatalogPagingSource(
+            ids = ids,
+            query = query,
+            fetch = { wanted -> seriesDao.getSeriesByIds(wanted).filter { it.sourceId in c.sourceIds } },
+            idOf = { it.id },
+            nameOf = { it.name },
+        )
+
     private fun pagingSource(key: LiveKey, c: VodCtx, query: String, sort: SettingsRepository.SortMode): PagingSource<Int, SeriesEntity> {
         val ids = c.sourceIds.ifEmpty { listOf(-1L) }
         val playlist = sort == SettingsRepository.SortMode.PLAYLIST
@@ -1178,7 +1218,8 @@ class SeriesViewModel(
             }
             LiveKey.Favorites -> seriesDao.pagingFavoritesManual(c.profileId, ContentOrderEntity.FAV_CONTEXT, ids)
             LiveKey.History -> seriesDao.pagingHistory(c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.pagingSeries(c.profileId, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { catalogSource(it, c, query) }
+                ?: customCategoryDao.pagingSeries(c.profileId, key.id, ids)
             is LiveKey.Folder -> {
                 val ctxKey = folderContextKeys.value[key.id] ?: ""
                 when {
@@ -1196,7 +1237,8 @@ class SeriesViewModel(
                 else seriesDao.searchAll(query, ids)
             LiveKey.Favorites -> seriesDao.searchFavorites(query, c.profileId, ids)
             LiveKey.History -> seriesDao.searchHistory(query, c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.searchSeries(query, c.profileId, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { catalogSource(it, c, query) }
+                ?: customCategoryDao.searchSeries(query, c.profileId, key.id, ids)
             is LiveKey.Folder ->
                 if (dateAdded) seriesDao.searchInCategoryDateAdded(query, key.id)
                 else seriesDao.searchInCategory(query, key.id)
@@ -1211,22 +1253,21 @@ class SeriesViewModel(
                 else seriesDao.countAllExcluding(ids, hiddenCats.toList())
             LiveKey.Favorites -> seriesDao.countFavorites(c.profileId, ids)
             LiveKey.History -> seriesDao.countHistory(c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.countMembers(c.profileId, MediaType.SERIES, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { flowOf(it.size) }
+                ?: customCategoryDao.countMembers(c.profileId, MediaType.SERIES, key.id, ids)
             is LiveKey.Folder -> seriesDao.countByCategory(key.id)
         }
     }
 
-    // Remember the last selected category (Settings → Browsing & lists → "Remember last category —
-    // Series", on by default).
+    // Mayo TV opens the section on its first catalog, "Weiterschauen" at the top of the column
+    // (Jonathan, 28 Oct 2026); the remembered category is no longer restored here.
     init {
-        categories.rememberLastCategory(
-            enabled = { settings.rememberCategorySeries.first() },
-            saved = { parseLiveKey(settings.lastSeriesCategory.first()) },
-            save = { settings.setLastSeriesCategory(it) },
-        )
+        categories.openOnFirstCatalog()
     }
 
     private companion object {
+        const val NEWEST_COUNT = 60
+        const val HISTORY_FOR_CATALOGS = 30
         const val TAG = "OwnTVHome"
 
         /**
