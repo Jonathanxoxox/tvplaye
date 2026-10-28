@@ -301,7 +301,7 @@ internal fun GuideRuler(
  * name, both at the one list size ([tv.own.owntv.ui.theme.StageListText]). The row the focus is in has its number and name in accent.
  */
 @Composable
-internal fun GuideChannelLabel(channel: ChannelEntity, number: Int, name: String, dot: Color?, selected: Boolean, numberWidth: Dp, modifier: Modifier = Modifier) {
+internal fun GuideChannelLabel(channel: ChannelEntity, number: Int, name: String, dot: Color?, selected: Boolean, numberWidth: Dp, modifier: Modifier = Modifier, logo: Boolean = true) {
     val a = stageAccent
     Row(
         modifier.padding(start = 8.mpx),
@@ -315,7 +315,8 @@ internal fun GuideChannelLabel(channel: ChannelEntity, number: Int, name: String
             // Always whole: the column fits the longest number in the list; only the name is cut.
             maxLines = 1, softWrap = false, overflow = TextOverflow.Ellipsis, modifier = Modifier.width(numberWidth),
         )
-        LivePlate(channel.displayLogoUrl, 58.mpx, 40.mpx, radius = 10.mpx)
+        // [logo] false: the plate stays (same size) but loads nothing, while the guide is only laid out behind the picture.
+        LivePlate(if (logo) channel.displayLogoUrl else null, 58.mpx, 40.mpx, radius = 10.mpx)
         Text(name, style = stageText(tv.own.owntv.ui.theme.StageListText, 600), color = if (selected) a.accent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
     }
 }

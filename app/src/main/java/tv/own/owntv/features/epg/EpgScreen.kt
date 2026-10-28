@@ -180,6 +180,8 @@ fun EpgScreen(
     previewEnabled: Boolean = true,
     /** Laid out unseen behind full screen: it follows the channel playing, so Back finds its row in place. */
     behindFullscreen: Boolean = false,
+    /** Waiting behind full screen, not yet gliding back: the rows load no channel logos (they start with the glide). */
+    logosPaused: Boolean = false,
     liveMode: Boolean = false,
     /** How ▶ from the rail enters the guide: at the grid row focus was on (the rail's entry hook, as Home's). */
     onEntryHook: (((() -> Boolean)?) -> Unit)? = null,
@@ -235,7 +237,12 @@ fun EpgScreen(
         val target = own ?: firstGroupKey ?: return@LaunchedEffect
         if (liveMode) liveVm.select(target) else vm.setCategoryFilter(target)
     }
-    LaunchedEffect(Unit) { vm.load() } // reload from DB each time the guide is opened
+    LaunchedEffect(Unit) {
+        // Behind the first full-screen picture of the process the guide would be built while the decoder starts:
+        // it waits for the picture (a gate that is open from then on, so later visits cost nothing).
+        if (behindFullscreen) tv.own.owntv.StartupGate.awaitFirstFrame()
+        vm.load() // reload from DB each time the guide is opened
+    }
 
     // The preview stays on its channel while the guide is browsed; OK on a row brings that row's channel
     // into it, and OK again on the channel already there watches it full screen. Following the focus made
@@ -683,6 +690,7 @@ fun EpgScreen(
                                     dot = playlistMarks[channel.sourceId]?.shownColor,
                                     labelWidth = labelW,
                                     numberWidth = numberWidth,
+                                    logos = !logosPaused,
                                     windowStart = state.windowStart,
                                     windowEnd = state.windowEnd,
                                     now = liveNow,
@@ -1022,6 +1030,8 @@ private fun GuideRow(
     dot: Color?,
     labelWidth: androidx.compose.ui.unit.Dp,
     numberWidth: androidx.compose.ui.unit.Dp,
+    /** False while the guide only waits behind the full-screen picture: no logo is loaded for it then. */
+    logos: Boolean,
     windowStart: Long,
     windowEnd: Long,
     now: Long,
@@ -1066,7 +1076,7 @@ private fun GuideRow(
     LaunchedEffect(focused, rowCursor, programmes) { if (focused) onShow(programmeAt(programmes, rowCursor)) }
     // Its own layer: while the list glides, the row is moved as it was drawn instead of drawn again each frame.
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight).graphicsLayer { }, verticalAlignment = Alignment.CenterVertically) {
-        GuideChannelLabel(channel, number, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth))
+        GuideChannelLabel(channel, number, name, dot, selected = selectedRow, numberWidth = numberWidth, modifier = Modifier.width(labelWidth), logo = logos)
         Box(
             Modifier
                 .weight(1f)

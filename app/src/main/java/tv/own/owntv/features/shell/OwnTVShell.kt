@@ -610,7 +610,10 @@ fun OwnTVShell(
             // glide lands on a grid that does not move any more. Bounded: a guide that cannot load must not
             // hold Back; the picture simply stays full screen meanwhile.
             var frames = 0
-            while (!tv.own.owntv.features.epg.GuidePreviewSpot.ready && frames++ < 45) withFrameNanos { }
+            // Back in the first seconds after the start is the one case where the guide is not standing yet: it
+            // was kept from loading until the picture came. Longer for that window only.
+            val maxFrames = if (tv.own.owntv.StartupGate.isSettled) 45 else 90
+            while (!tv.own.owntv.features.epg.GuidePreviewSpot.ready && frames++ < maxFrames) withFrameNanos { }
             // Closed some other way while it got ready (a shortcut, the Home key): nothing left to glide.
             if (playerMode != PlayerMode.FULLSCREEN) { exitPending = false; return@launch }
             // The guide's row takes focus before the player's controls leave: with the controls gone and nobody
@@ -1383,6 +1386,7 @@ fun OwnTVShell(
                             onAddEpg = { openEpgAdd = true; onSelectSection(MainSection.SETTINGS) },
                             previewEnabled = playerMode == PlayerMode.NONE,
                             behindFullscreen = guideBehind,
+                            logosPaused = guideBehind && !guideHandover,
                             liveMode = true,
                             onEntryHook = { guideEntry = it },
                             restoreFocus = restoreFocus,
