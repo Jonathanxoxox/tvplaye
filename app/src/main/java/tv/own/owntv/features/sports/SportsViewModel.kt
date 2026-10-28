@@ -52,7 +52,7 @@ import tv.own.owntv.core.sports.model.StandingsTable
 import tv.own.owntv.core.sports.model.Sport
 import java.util.Locale
 
-/** Where a match page's Find channels stands (channels are searched only when asked). */
+/** Where a match page's Find channels stands (channels are searched when asked, or at once for a live match). */
 sealed interface ChannelSearch {
     /** The match is being fetched afresh to judge Find channels' window. */
     data object Checking : ChannelSearch
@@ -291,7 +291,8 @@ class SportsViewModel(
 
     fun open(match: Match?) {
         pageFilter.value = null
-        findAsked.value = false
+        // A live match is what one opens to watch: its channels are searched at once, no Find channels first.
+        findAsked.value = match?.isLive == true
         openMatch.value = match
     }
 

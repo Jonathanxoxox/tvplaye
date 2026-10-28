@@ -87,7 +87,7 @@ internal val TierPick = Color(0xFFE7C56A)
 /**
  * A match. Left: the crumb, the score header, the tabs and their content, all
  * from the stored board. Right: *Watch live* — Find channels first (a search of this one match, only
- * when asked); then the preview (Live TV's own engine), the filter chips, every channel showing it with
+ * when asked; a live match is searched at once); then the preview (Live TV's own engine), the filter chips, every channel showing it with
  * the reason, and how many the filters hide. As in the guide, the preview stays black while ▲ ▼ walk the
  * list: OK brings a channel into it, OK again on that channel plays it full screen. Hold OK remembers it
  * for the competition, ◀ opens the filter panel.
