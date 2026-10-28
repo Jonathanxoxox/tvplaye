@@ -191,9 +191,11 @@ fun EpgScreen(
     // Live TV's view model: its preview player (no second decoder), its category list and playlist marks.
     val liveVm: LiveViewModel = koinViewModel()
     val state by vm.state.collectAsStateWithLifecycle()
+    // Ticks on the minute, not every 30 s from whenever the guide opened: the clock chip, the now-line and
+    // the programme lit as "on now" then change when the minute does, not up to half a minute after it.
     val liveNow by produceState(initialValue = System.currentTimeMillis()) {
         while (true) {
-            delay(30_000L)
+            delay(60_000L - System.currentTimeMillis() % 60_000L + 20L)
             value = System.currentTimeMillis()
         }
     }
@@ -234,6 +236,14 @@ fun EpgScreen(
         val own = previewChannel?.categoryId?.let { LiveKey.Folder(it) }?.takeIf { key -> railItems.any { it.key == key } }
         val target = own ?: firstGroupKey ?: return@LaunchedEffect
         if (liveMode) liveVm.select(target) else vm.setCategoryFilter(target)
+    }
+    // The provider's short guide covers a few hours only, and the rows keep what they read: a guide left open
+    // (or waiting behind full screen) for an hour drew programmes that had ended and blanks after them. Off
+    // the picture, rows read from the provider are read again every few minutes; behind it, nothing is.
+    LaunchedEffect(liveNow, behindFullscreen) {
+        if (behindFullscreen) return@LaunchedEffect
+        delay(1_500) // not while the picture is still gliding back into the corner
+        vm.refreshProviderRows()
     }
     LaunchedEffect(Unit) {
         // Behind the first full-screen picture of the process the guide would be built while the decoder starts:
@@ -417,6 +427,18 @@ fun EpgScreen(
         val pending = restoreTo == id && idx >= 0 && state.channels.getOrNull(idx)?.id == id
         if (pending) restoreTo = null
         if (gridHasFocus || pending) focusGrid(idx)
+    }
+
+    // A favourite taken out of Favoriten with the red key: its row goes, and the one that moves up into its place
+    // keeps the focus (and the lit number), instead of the focus falling out of the grid with the row.
+    var keepFocusOn by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(state.channels) {
+        val id = keepFocusOn ?: return@LaunchedEffect
+        val idx = state.channels.indexOfFirst { it.id == id }
+        if (idx < 0) return@LaunchedEffect
+        keepFocusOn = null
+        focusedRow = idx
+        focusGrid(idx)
     }
 
     // Behind full screen the guide gets ready for the way back: on the channel playing (its category loaded, its
@@ -659,7 +681,12 @@ fun EpgScreen(
                     // now-line's offset and each row's drawing: scrolling ◀ ▶ recomposes none of the guide.
                     Box(Modifier.fillMaxWidth().height(40.mpx)) {
                         GuideCornerText(
-                            text = { formatCorner(maxOf(liveNow, timeAt(scrollPx.toFloat()))) },
+                            text = {
+                                // Now while it is on screen; else the time at the left edge, earlier days (the archive)
+                                // included. maxOf(now, edge) showed today's date over yesterday's programmes.
+                                val left = timeAt(scrollPx.toFloat())
+                                formatCorner(if (liveNow in left..timeAt((scrollPx + timelinePx).toFloat())) liveNow else left)
+                            },
                             modifier = Modifier.padding(start = fx(48) + 8.mpx, top = 4.mpx).width(labelW - 16.mpx),
                         )
                         GuideRuler(
@@ -727,7 +754,14 @@ fun EpgScreen(
                                     onOk = { p -> if (previewNeeds(channel)) liveVm.onChannelFocused(channel) else onOk(channel, p) },
                                     onMenu = { p -> returnTo = null; if (p != null) menuFor = channel to p else channelMenuFor = channel },
                                     onChannelMenu = { returnTo = null; channelMenuFor = channel },
-                                    onFavorite = { vm.toggleFavoriteChannel(channel) },
+                                    onFavorite = {
+                                        if (categoryKey == LiveKey.Favorites) {
+                                            val next = if (index + 1 < state.channels.size) index + 1 else index - 1
+                                            state.channels.getOrNull(next)?.let { keepFocusOn = it.id; runCatching { rowFocus(next).requestFocus() } }
+                                                ?: enterGroups() // the last favourite: the list is empty now, the groups take the focus
+                                        }
+                                        vm.toggleFavoriteChannel(channel)
+                                    },
                                     onGroups = enterGroups,
                                     onSearch = onOpenSearch,
                                     onSettings = onOpenSettings,
@@ -1070,7 +1104,11 @@ private fun GuideRow(
     var focused by remember { mutableStateOf(false) }
     var okDown by remember { mutableStateOf(false) }
     var menuDown by remember { mutableStateOf(false) }
-    val rowCursor = if (focused) cursorTime() else 0L
+    // On the row stage the row stands on what is on now, as its lit cell does; only in the programmes does the
+    // cursor's time count. The cursor kept the time it was last given (the guide's opening minute, or the evening
+    // browsed in the programmes), so the block on top described an ended programme beside a row lit on another.
+    val rowCursor = if (!focused) 0L else if (cellMode) cursorTime() else now
+    fun cursorAt(): Long = if (cellMode) cursorTime() else System.currentTimeMillis()
     LaunchedEffect(focused, rowCursor, programmes) { if (focused) onShow(programmeAt(programmes, rowCursor)) }
     // Its own layer: while the list glides, the row is moved as it was drawn instead of drawn again each frame.
     Row(Modifier.fillMaxWidth().height(GuideGridDefaults.RowHeight).graphicsLayer { }, verticalAlignment = Alignment.CenterVertically) {
@@ -1089,9 +1127,9 @@ private fun GuideRow(
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) okDown = true
                             // Held: on the row the channel's menu (move, hide…), in the programmes the programme's.
-                            else if (down && okDown) { okDown = false; if (cellMode) onMenu(programmeAt(progs, cursorTime())) else onChannelMenu() }
+                            else if (down && okDown) { okDown = false; if (cellMode) onMenu(programmeAt(progs, cursorAt())) else onChannelMenu() }
                             // OK watches the channel, as in the classic IPTV guide; in the programmes it acts on the one under the cursor.
-                            else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, if (cellMode) cursorTime() else System.currentTimeMillis())) }
+                            else if (!down && okDown) { okDown = false; onOk(programmeAt(progs, cursorAt())) }
                             true
                         }
                         // ☰ opens the programme menu on release; held, it opens the search.
@@ -1099,14 +1137,14 @@ private fun GuideRow(
                             val repeat = e.nativeKeyEvent.repeatCount
                             if (down && repeat == 0) menuDown = true
                             else if (down && menuDown) { menuDown = false; onSearch() }
-                            else if (!down && menuDown) { menuDown = false; onMenu(programmeAt(progs, cursorTime())) }
+                            else if (!down && menuDown) { menuDown = false; onMenu(programmeAt(progs, cursorAt())) }
                             true
                         }
                         Key.Guide, Key.ProgramYellow -> { if (down) onGroups(); true }
                         Key.ProgramBlue -> { if (down) onSettings(); true }
                         // The classic remote's guide keys: Info and Play show the programme, Red and Stop
                         // toggle the favourite, Green the channel options, CH± and RW/FF scroll a page.
-                        Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorTime())); true }
+                        Key.Info, Key.MediaPlayPause, Key.MediaPlay -> { if (down) onMenu(programmeAt(progs, cursorAt())); true }
                         Key.ProgramRed, Key.MediaStop -> { if (down) onFavorite(); true }
                         Key.ProgramGreen -> { if (down) onChannelMenu(); true }
                         Key.ChannelUp, Key.PageUp, Key.MediaRewind -> { if (down) onStep(-GUIDE_PAGE_ROWS, false); true }
