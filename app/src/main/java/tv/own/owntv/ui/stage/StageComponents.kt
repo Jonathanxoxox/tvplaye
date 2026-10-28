@@ -336,7 +336,7 @@ fun StagePill(
         ) {
             val on = if (focused) a.onAccent else null
             if (icon != null) StageIcon(icon, on ?: a.accent, 20.mpx, iconFilled)
-            if (small != null) Text(small, style = stageText(15, 700), color = on ?: StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (small != null) Text(small, style = stageText(17, 700), color = on ?: StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 text,
                 style = stageText(18, 700),
@@ -481,12 +481,12 @@ fun StageSegmented(
 // Tags and playlist marks
 // ---------------------------------------------------------------------------------------------
 
-/** `.tag`: a provider or quality badge, 13/800 caps-spaced on white 8%. [onAccent] inside a focused item; [tint] for a coloured tag. */
+/** `.tag`: a provider or quality badge, 15/800 caps-spaced on white 8%. [onAccent] inside a focused item; [tint] for a coloured tag. */
 @Composable
 fun StageTag(text: String, onAccent: Color? = null, tint: Color? = null) {
     Text(
         text,
-        style = stageText(13, 800, 0.05.em),
+        style = stageText(15, 800, 0.05.em),
         color = onAccent ?: tint ?: StageColors.TagText,
         maxLines = 1, overflow = TextOverflow.Ellipsis,
         modifier = Modifier
@@ -517,7 +517,7 @@ fun StagePlaylistMark(mark: PlaylistMark) {
             .padding(horizontal = 6.mpx),
         contentAlignment = Alignment.Center,
     ) {
-        Text(mark.text, style = stageText(12, 800, 0.04.em), color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(mark.text, style = stageText(14, 800, 0.04.em), color = color, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -602,7 +602,7 @@ fun StageMenuHeader(title: String, subtitle: String?, leading: (@Composable () -
 fun StageGroupLabel(text: String, sheet: Boolean = false) {
     Text(
         text,
-        style = if (sheet) stageText(13, 800, 0.12.em) else stageText(12.5f, 800, 0.13.em),
+        style = stageText(15, 800, 0.12.em),
         color = StageColors.Dim,
         maxLines = 1, overflow = TextOverflow.Ellipsis,
         modifier = if (sheet) {
@@ -647,7 +647,7 @@ fun StageMenuItem(
             leading?.invoke()
             Text(text, style = stageText(19, 600), color = on ?: StageColors.MenuItemText, maxLines = 1,
                 overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            if (value != null) Text(value, style = stageText(15, 700), color = on ?: StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (value != null) Text(value, style = stageText(17, 700), color = on ?: StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (checked) StageIcon(OwnTVIcon.CHECK, on ?: a.accent, 22.mpx)
         }
     }

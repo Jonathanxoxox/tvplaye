@@ -580,7 +580,7 @@ internal fun LiveCategories(
                     item(key = "__heading_${index}__") {
                         if (sheet) StageGroupLabel(entry.heading, sheet = true)
                         else Text(
-                            entry.heading, style = stageText(12.5f, 800, 0.13.em), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            entry.heading, style = stageText(15, 800, 0.12.em), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(start = 14.mpx, top = if (pos == 0) 8.mpx else 22.mpx, bottom = 8.mpx),
                         )
                     }
@@ -589,7 +589,7 @@ internal fun LiveCategories(
                     item(key = "__groups__") {
                         if (sheet) StageGroupLabel(groupsHeading, sheet = true)
                         else Text(
-                            groupsHeading, style = stageText(12.5f, 800, 0.13.em), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                            groupsHeading, style = stageText(15, 800, 0.12.em), color = StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.padding(start = 14.mpx, top = 8.mpx, bottom = 8.mpx),
                         )
                     }
@@ -625,7 +625,7 @@ internal fun LiveCategories(
 
 /**
  * `.fcat` (the Separate column): 52 high, radius 15, 18.5/600, gap 12, 2 px between rows; the
- * selected one is accent text with the 4 px glowing bar at its left edge; one tag, the count 15/700
+ * selected one is accent text with the 4 px glowing bar at its left edge; one tag, the count 17/700
  * dim, and the playlist's 7 px dot. Focused = FILLED.
  */
 @Composable
@@ -659,7 +659,7 @@ private fun LiveColumnItem(
                 val tags = entry.name?.tags.orEmpty()
                 if (tags.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(6.mpx)) { tags.forEach { StageTag(it, onAccent = on) } }
             }
-            entry.count?.let { Text(tv.own.owntv.ui.components.formatCount(it), style = stageText(15, 700), color = on ?: StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+            entry.count?.let { Text(tv.own.owntv.ui.components.formatCount(it), style = stageText(17, 700), color = on ?: StageColors.Dim, maxLines = 1, overflow = TextOverflow.Ellipsis) }
             entry.mark?.let { m -> Box(Modifier.size(7.mpx).background(m.shownColor, RoundedCornerShape(50))) }
         }
     }

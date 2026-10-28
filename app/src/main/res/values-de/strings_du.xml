@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mayo TV duzt: the core texts that said "Sie", in the app's own "du" (OwnTV_Core 1.0.69 names). -->
+<!-- Mayo TV duzt and has one name for the guide: core texts that said "Sie", or "Programmübersicht" / "TV-Programm" for the TV-Guide (OwnTV_Core 1.0.69 names). -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="settings_customize_move_items_selected"> <item quantity="one"><xliff:g id="count">%1$d</xliff:g> Element ausgewählt. Drück weiter ⤒ ↑ ↓ ⤓, um es zu verschieben.</item> <item quantity="other"><xliff:g id="count">%1$d</xliff:g> Elemente ausgewählt. Drück weiter ⤒ ↑ ↓ ⤓, um sie gemeinsam zu verschieben.</item> </plurals>
+    <plurals name="settings_epg_sources_status_count_channels"> <item quantity="one">Der TV-Guide enthält <xliff:g id="channels">%1$d</xliff:g> Sender.</item> <item quantity="other">Der TV-Guide enthält <xliff:g id="channels">%1$d</xliff:g> Sender.</item> </plurals>
     <plurals name="sync_warning_catalog_shrink"> <item quantity="one"><xliff:g id="stored">%1$d</xliff:g> vorhandener Eintrag wurde beibehalten — beim Importieren kamen <xliff:g id="percent">%2$d</xliff:g>%% weniger Einträge zurück. Synchronisiere noch einmal oder verwende „Bereinigte Synchronisierung erzwingen“, wenn der Anbieter ihn wirklich entfernt hat.</item> <item quantity="other"><xliff:g id="stored">%1$d</xliff:g> vorhandene Einträge wurden beibehalten — beim Importieren kamen <xliff:g id="percent">%2$d</xliff:g>%% weniger Einträge zurück. Synchronisiere noch einmal oder verwende „Bereinigte Synchronisierung erzwingen“, wenn der Anbieter sie wirklich entfernt hat.</item> </plurals>
+    <string name="common_nav_guide">TV-Guide</string>
     <string name="common_resume_position">Du hast bei <xliff:g id="position">%1$s</xliff:g> aufgehört.</string>
     <string name="companion_add_description">Füll die Angaben für eine Quelle aus und drück „Senden“. Sie wird auf dem Fernseher angezeigt — nimm die Fernbedienung und drück dort „Importieren starten“, wenn du bereit bist.</string>
     <string name="companion_saved_source_body"><xliff:g id="name">%1$s</xliff:g> ist jetzt auf dem Bildschirm „Quelle hinzufügen“ deines Fernsehers. Prüf dort die Angaben und drück auf der Fernbedienung „Importieren starten“.</string>
@@ -11,9 +13,15 @@
     <string name="content_downloads_reason_paused_watching">Pausiert, während du schaust</string>
     <string name="content_downloads_reason_too_large">Zu groß für dieses Laufwerk: Es kann keine Dateien über 4 GB speichern. Wähle einen anderen Downloadordner oder formatiere das Laufwerk als exFAT</string>
     <string name="content_downloads_reason_waiting_watching">Wartet: startet, sobald du nicht mehr schaust</string>
-    <string name="content_epg_match_prompt">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den Sender der Programmübersicht aus.</string>
-    <string name="content_epg_match_prompt_current">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den Sender der Programmübersicht aus. Aktuell: <xliff:g id="match">%2$s</xliff:g></string>
+    <string name="content_epg_add_description">Füge eine EPG-Quelle (XMLTV) hinzu, um den TV-Guide mit Sendungen zu füllen.</string>
+    <string name="content_epg_add_playlist">Füge eine Wiedergabeliste hinzu, um den TV-Guide anzuzeigen.</string>
+    <string name="content_epg_create_profile">Erstelle ein Profil, um den TV-Guide anzuzeigen.</string>
+    <string name="content_epg_match_prompt">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den passenden Sender im TV-Guide aus.</string>
+    <string name="content_epg_match_prompt_current">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den passenden Sender im TV-Guide aus. Aktuell: <xliff:g id="match">%2$s</xliff:g></string>
+    <string name="content_epg_no_channels_query">Keine Sender im TV-Guide für „<xliff:g id="query">%1$s</xliff:g>“ gefunden.</string>
     <string name="content_epg_no_programme">Keine Programminfo</string>
+    <string name="content_epg_title">TV-Guide</string>
+    <string name="content_no_guide_channels">Kein Sender im TV-Guide passt zu „<xliff:g id="query">%1$s</xliff:g>“.</string>
     <string name="content_restore_incomplete_message">Die App wurde geschlossen, während <xliff:g id="description">%1$s</xliff:g> wiederhergestellt wurde, daher fehlt möglicherweise ein Teil davon. Nichts wurde gelöscht — führ dieselbe Wiederherstellung über Einstellungen → Sicherung &amp; Wiederherstellen noch einmal aus, um den Rest zu ergänzen.</string>
     <string name="recovery_data_safe_full">Deine Profile, Wiedergabelisten, Favoriten und dein Wiedergabeverlauf wurden NICHT gelöscht — das Upgrade der Datenbank ist fehlgeschlagen, und die Daten befinden sich weiterhin auf diesem Gerät.\n\nBitte melde das, damit der Fehler behoben werden kann, und füg die Meldung unten bei.</string>
     <string name="settings_accent_yours">Deine</string>
@@ -31,7 +39,14 @@
     <string name="settings_dns_server_missing">Benutzerdefiniertes DNS ist aktiviert, aber es wurde kein Server eingerichtet. Gib eine Serveradresse ein und wähle „Speichern“ oder schalte diese Option aus.</string>
     <string name="settings_dns_test_failed">DNS-Test fehlgeschlagen – prüf die Serveradresse.</string>
     <string name="settings_download_remote_description">Scanne auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffne die URL), gib diese PIN ein und lade deine Sicherungsdatei herunter, um sie aufzubewahren.</string>
+    <string name="settings_epg_sources_name_hint">z. B. TV-Guide UK</string>
+    <string name="settings_epg_sources_nav_description">XMLTV-Programmdaten für den TV-Guide hinzufügen</string>
+    <string name="settings_epg_sources_use_logos">Senderlogos aus diesem TV-Guide verwenden</string>
     <string name="settings_group_summary_quick">Die Schalter, die du am häufigsten brauchst</string>
+    <string name="settings_guide_sync_failed">Synchronisierung des TV-Guides fehlgeschlagen</string>
+    <string name="settings_guide_synced">TV-Guide synchronisiert</string>
+    <string name="settings_guide_width">Spaltenbreiten im TV-Guide</string>
+    <string name="settings_guide_width_description">Passe die Breite der Senderliste und der Zeitleiste im TV-Guide an.</string>
     <string name="settings_hardware_decoding_description">Den Hardwaredecoder des Fernsehers verwenden. Schalte das aus, wenn einige Streams ruckeln oder Bildfehler zeigen.</string>
     <string name="settings_help_accent">Färbt Schaltflächen, das Fokusleuchten, Fortschrittsbalken und Hervorhebungen überall. Wähle eine Vorgabe oder drück OK für die Palette und einen beliebigen Hex-Code.</string>
     <string name="settings_help_add_from_phone">Öffne die Adresse oder scanne den Code im Browser eines beliebigen Geräts im selben WLAN – Smartphone, Computer oder ein anderer Fernseher –, füll dort deine Playlist aus und schick sie hierher. Viel schneller, als eine URL mit der Fernbedienung zu tippen.</string>
@@ -85,9 +100,15 @@
     <string name="settings_record_watching_description">Fügt dem Player eine Aufnahmetaste hinzu, die den laufenden Sender speichert. Sie ruft den Sender selbst ab, belegt währenddessen also eine der Verbindungen deines Anbieters, und nimmt weiter auf, wenn du umschaltest oder den Player verlässt.</string>
     <string name="settings_record_watching_warning_description">Die Aufnahme ruft den Sender ein zweites Mal ab und belegt damit eine weitere Verbindung deines Anbieters. Bei einem Konto mit nur einer Verbindung wird die Aufnahme während des Zusehens abgelehnt. Einmal gestartet läuft sie allein weiter — schalt um oder verlass den Player, sie läuft bis zum Ende der Sendung oder bis du sie unter „Aufnahmen“ stoppst.</string>
     <string name="settings_remote_details_note">Die Angaben erscheinen hier; den Import startest du mit der Fernbedienung.</string>
+    <string name="settings_search_guide_logos">Senderlogos aus dem TV-Guide</string>
+    <string name="settings_search_keywords_epg">xmltv TV-Guide Programmübersicht Programmdaten Sendung</string>
+    <string name="settings_search_keywords_logos">Sender Logo Symbol xmltv TV-Guide Programmübersicht picon Wiedergabeliste</string>
     <string name="settings_subtitle_color_hex_hint">Gib 6 Hexadezimalziffern ein, z. B. FFEB3B</string>
     <string name="settings_subtitle_customize_description">Schalte diese Option ein und ändere dann nur das Gewünschte – alles, was auf „Standard“ bleibt, behält die Originaldarstellung einschließlich der Farben und Positionierung, die Sender in Live-TV-Untertiteln vorgeben.</string>
     <string name="settings_subtitle_delete_help">Löschen gibt den Speicher frei; im Player kannst du die Datei erneut herunterladen.</string>
+    <string name="settings_sync_guide_description">Den TV-Guide (EPG) für „<xliff:g id="source">%1$s</xliff:g>“ herunterladen. Du kannst das auch später unter Einstellungen → Quellen und Programm → EPG-Quellen tun.</string>
+    <string name="settings_sync_guide_question">TV-Guide jetzt synchronisieren?</string>
+    <string name="settings_syncing_guide">TV-Guide wird synchronisiert…</string>
     <string name="settings_tier_key">Dein TMDB-Schlüssel</string>
     <string name="setup_phone_background_description">Scanne auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffne die URL), gib diese PIN ein und schick ein Foto. Es wird sofort zum Hintergrund.</string>
     <string name="setup_profile_sub">Ein Profil hat eigene Favoriten, einen eigenen Verlauf und eine eigene Startseite. Weitere fügst du später unter Einstellungen › Profil hinzu.</string>
@@ -96,11 +117,11 @@
     <string name="setup_welcome_sub">Dein eigener IPTV-Player. Wähle zum Start eine Sprache – du kannst sie später in den Einstellungen ändern.</string>
     <string name="sync_error_auth">Der Server hat deine Anmeldedaten abgelehnt. Prüf deinen Benutzernamen und dein Passwort.</string>
     <string name="sync_error_generic">Etwas ist schiefgelaufen. Bitte versuch es noch einmal.</string>
-    <string name="sync_error_guide_empty">Diese Programmübersicht ist derzeit leer. Der Anbieter hat sie möglicherweise noch nicht veröffentlicht — bitte versuch es später noch einmal.</string>
+    <string name="sync_error_guide_empty">Dieser TV-Guide ist derzeit leer. Der Anbieter hat ihn möglicherweise noch nicht veröffentlicht — bitte versuch es später noch einmal.</string>
     <string name="sync_error_interrupted">Der Server hat den Download unterbrochen. Bitte versuch es noch einmal.</string>
     <string name="sync_error_invalid_mac">Ungültige MAC-Adresse — verwende das Format AA:BB:CC:DD:EE:FF</string>
     <string name="sync_error_mac">Das Portal hat diese MAC-Adresse abgelehnt. Prüf die MAC-Adresse (sowie Datum und Uhrzeit des Fernsehers) — oder das Abonnement ist möglicherweise abgelaufen.</string>
-    <string name="sync_error_malformed_guide">Die Daten der Programmübersicht vom Server waren fehlerhaft. Ein Teil davon wurde möglicherweise trotzdem geladen — bitte versuch es noch einmal oder prüf die EPG-URL.</string>
+    <string name="sync_error_malformed_guide">Die Daten des TV-Guides vom Server waren fehlerhaft. Ein Teil davon wurde möglicherweise trotzdem geladen — bitte versuch es noch einmal oder prüf die EPG-URL.</string>
     <string name="sync_error_not_found">Auf dem Server nicht gefunden. Prüf die URL.</string>
     <string name="sync_error_offline">Du scheinst offline zu sein. Prüf deine Verbindung und versuch es noch einmal.</string>
     <string name="sync_error_portal">Das Portal war nicht erreichbar. Prüf die Portal-URL — sie endet normalerweise auf /c/.</string>
@@ -109,4 +130,6 @@
     <string name="sync_error_timeout">Der Server hat zu lange für die Antwort gebraucht. Bitte versuch es noch einmal.</string>
     <string name="sync_error_unreachable">Der Server war nicht erreichbar. Prüf die Adresse und deine Verbindung.</string>
     <string name="sync_remainder_note">Der Rest des Katalogs wird noch im Hintergrund synchronisiert — du kannst jetzt schon Inhalte ansehen. Der Fortschritt steht in der kleinen Anzeige am unteren Bildschirmrand.</string>
+    <string name="sync_status_epg">TV-Guide wird aktualisiert · <xliff:g id="source">%1$s</xliff:g></string>
+    <string name="sync_status_epg_with_counts">TV-Guide wird aktualisiert · <xliff:g id="source">%1$s</xliff:g> · <xliff:g id="counts">%2$s</xliff:g></string>
 </resources>

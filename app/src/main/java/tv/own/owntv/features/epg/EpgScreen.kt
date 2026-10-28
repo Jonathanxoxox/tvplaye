@@ -641,6 +641,7 @@ fun EpgScreen(
             previewEngine = liveVm.previewEngine,
             showVideo = effectivePreview && previewArmed,
             now = { liveNow },
+            endClear = groupsTarget,
             modifier = Modifier.padding(start = fx(64), end = fx(64), top = 40.mpx).fillMaxWidth().height(240.mpx),
         )
 
@@ -1212,6 +1213,11 @@ private fun GuideTopArea(
     previewEngine: tv.own.owntv.player.LivePreviewEngine,
     showVideo: Boolean,
     now: () -> Long,
+    /**
+     * How far the open groups push the guide past the right edge of the screen. The programme text keeps clear
+     * of it, so a long title ends in "…" on screen instead of being cut off by the edge.
+     */
+    endClear: androidx.compose.ui.unit.Dp = 0.mpx,
     modifier: Modifier = Modifier,
 ) {
     val shownTop = top()
@@ -1242,7 +1248,7 @@ private fun GuideTopArea(
                     title = shown?.title ?: chName,
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
-                    modifier = Modifier.padding(start = 46.mpx, top = 8.mpx).widthIn(max = 1080.mpx),
+                    modifier = Modifier.padding(start = 46.mpx, top = 8.mpx, end = endClear).widthIn(max = 1080.mpx),
                 )
             }
         }
