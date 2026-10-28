@@ -3,18 +3,10 @@ package tv.own.owntv.ui.components
 import tv.own.owntv.core.ui.stage.StageGlyph
 
 /**
- * The Stage line icons, as SVG path data on the same 24×24 grid [OwnTVIcon] draws on. The
- * paths live in core ([StageGlyph], shared with the phone); its names are the [OwnTVIcon] entries. The
- * phone-only marks (PLUS, MOON) have no entry here, so the TV keeps drawing ADD and BEDTIME its own way.
- */
-internal val StageGlyphPaths: Map<OwnTVIcon, String> = StageGlyph.entries.mapNotNull { glyph ->
-    OwnTVIcon.entries.firstOrNull { it.name == glyph.name }?.let { it to (MayoGlyphPaths[it] ?: glyph.path) }
-}.toMap()
-
-/**
  * Mayo TV's own drawing of a core glyph, used in its place. Sport is football here, so a ball
  * replaces the trophy; Serien is a picture with a second episode behind it, so it no longer reads
  * as a stack of lids next to Live-TV's set.
+ * Declared before [StageGlyphPaths], which reads it while initialising.
  */
 private val MayoGlyphPaths: Map<OwnTVIcon, String> = mapOf(
     OwnTVIcon.SPORTS to "M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0Z" +
@@ -24,3 +16,12 @@ private val MayoGlyphPaths: Map<OwnTVIcon, String> = mapOf(
         "M6.5 4.5H19a2 2 0 0 1 2 2V16" +
         "M8 12v5l4.2-2.5Z",
 )
+
+/**
+ * The Stage line icons, as SVG path data on the same 24×24 grid [OwnTVIcon] draws on. The
+ * paths live in core ([StageGlyph], shared with the phone); its names are the [OwnTVIcon] entries. The
+ * phone-only marks (PLUS, MOON) have no entry here, so the TV keeps drawing ADD and BEDTIME its own way.
+ */
+internal val StageGlyphPaths: Map<OwnTVIcon, String> = StageGlyph.entries.mapNotNull { glyph ->
+    OwnTVIcon.entries.firstOrNull { it.name == glyph.name }?.let { it to (MayoGlyphPaths[it] ?: glyph.path) }
+}.toMap()
