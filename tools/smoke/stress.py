@@ -260,7 +260,7 @@ def bad_links():
     """Kaputte owntv://-Links, wie sie jede App oder ein Launcher schicken kann."""
     for link in ["owntv:play", "owntv://play?channel=abc&source=-1", "owntv://play?channel=999999&source=999999",
                  "owntv://open?match=", "owntv://open?match=gibt-es-nicht", "owntv://"]:
-        T.sh(f"am start -a android.intent.action.VIEW -d '{link}' {PKG}")
+        T.sh(f"am start -a android.intent.action.VIEW -d '{link}' -p {PKG}")
         time.sleep(4)
     T.shot("kaputte-links")
 
