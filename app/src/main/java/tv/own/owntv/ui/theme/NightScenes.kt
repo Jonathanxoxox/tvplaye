@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.annotation.StringRes
@@ -221,7 +221,7 @@ fun OwnTVColors.forScene(scene: NightScene): OwnTVColors {
 /** A fixed dark petrol tone (the rail's panels) moved into the chosen theme's hue, like [OwnTVColors.forScene]. */
 @Composable
 fun inScene(petrol: Color): Color {
-    val scene by rememberNightSceneSettings().scene.collectAsState()
+    val scene by rememberNightSceneSettings().scene.collectAsStateWithLifecycle()
     if (LocalStagePalette.current.isLight) return petrol
     val page = scenePage(scene) ?: return petrol
     return moveHue(petrol, page)

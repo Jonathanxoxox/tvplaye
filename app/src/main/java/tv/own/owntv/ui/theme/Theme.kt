@@ -3,7 +3,7 @@ package tv.own.owntv.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
@@ -108,7 +108,7 @@ fun OwnTVTheme(
     }
 
     // Mayo TV's worlds tint the dark panels to their scene (Glass & background › Szene).
-    val scene by rememberNightSceneSettings().scene.collectAsState()
+    val scene by rememberNightSceneSettings().scene.collectAsStateWithLifecycle()
 
     val colors = ownTvColors(
         isDark = useDark,

@@ -767,33 +767,28 @@ private fun TrendingHero(
 ) {
     var heroHasFocus by remember { mutableStateOf(false) }
     var resetClock by remember { mutableIntStateOf(0) }
-    // Written every frame, read only where the pager draws: the hero itself never recomposes for it.
-    val progressState = remember { mutableFloatStateOf(0f) }
-    var progress by progressState
+    // Animated, read only where the pager draws: the hero itself never recomposes for it.
+    val progress = remember { androidx.compose.animation.core.Animatable(0f) }
+    var restart by remember { mutableStateOf(false) }
     val intervalMs = 10_000L
 
     fun navigate(index: Int) {
         onNavigate(index)
-        progress = 0f
+        restart = true
         resetClock++
     }
 
     // The automatic advance, every 10 s. It waits while the hero holds focus, so the title never changes
     // under the user's finger — and, folded, nothing of it is on screen to advance.
     LaunchedEffect(activeIndex, heroHasFocus, folded, resetClock, items.size) {
+        if (restart) { progress.snapTo(0f); restart = false }
         if (heroHasFocus || folded || items.size < 2) return@LaunchedEffect
-        val startProgress = progress.coerceIn(0f, 1f)
-        val duration = (intervalMs * (1f - startProgress)).toLong().coerceAtLeast(1L)
-        // 70 px over 10 s is under a pixel per step, so 80 ms steps look continuous; each one only
-        // redraws the pager (see TrendingPager), it does not recompose the hero.
-        val startedAt = System.nanoTime()
-        while (true) {
-            val elapsedMs = (System.nanoTime() - startedAt) / 1_000_000L
-            progress = (startProgress + (1f - startProgress) * elapsedMs.toFloat() / duration).coerceIn(0f, 1f)
-            if (elapsedMs >= duration) break
-            kotlinx.coroutines.delay(80L)
+        val duration = (intervalMs * (1f - progress.value)).toInt().coerceAtLeast(1)
+        // A linear run drawn by the frame clock; the system's animator scale must not speed the 10 s up.
+        kotlinx.coroutines.withContext(object : androidx.compose.ui.MotionDurationScale { override val scaleFactor = 1f }) {
+            progress.animateTo(1f, androidx.compose.animation.core.tween(duration, easing = androidx.compose.animation.core.LinearEasing))
         }
-        progress = 0f
+        progress.snapTo(0f)
         onNavigate((activeIndex + 1) % items.size)
     }
 
@@ -940,7 +935,7 @@ private fun TrendingHero(
             TrendingPager(
                 count = items.size,
                 activeIndex = activeIndex,
-                progress = { progressState.floatValue },
+                progress = { progress.value },
                 onNavigate = ::navigate,
                 modifier = Modifier.tracked(track = track),
             )
