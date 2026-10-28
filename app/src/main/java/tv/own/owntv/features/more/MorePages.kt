@@ -70,6 +70,7 @@ import tv.own.owntv.features.shell.components.ClearHistoryDialog
 import tv.own.owntv.features.shell.components.GITHUB_REPO
 import tv.own.owntv.features.shell.components.playbackDisplayName
 import tv.own.owntv.features.update.UpdateDialog
+import tv.own.owntv.perf.DexMetadataHook
 import tv.own.owntv.perf.StartLog
 import tv.own.owntv.player.PlaybackErrorLog
 import tv.own.owntv.player.displayText
@@ -721,6 +722,12 @@ private fun StartLogPanel(modifier: Modifier = Modifier) {
         )
         Text(
             stringResource(R.string.tvplayer_startlog_device, android.os.Build.MODEL, android.os.Build.VERSION.RELEASE, android.os.Build.VERSION.SDK_INT),
+            style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 4.mpx),
+        )
+        val dexState by DexMetadataHook.state.collectAsStateWithLifecycle()
+        Text(
+            stringResource(R.string.tvplayer_startlog_dexmeta, dexState.name),
             style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 4.mpx),
         )

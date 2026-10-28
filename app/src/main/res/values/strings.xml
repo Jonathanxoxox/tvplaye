@@ -7,6 +7,7 @@
     <string name="tvplayer_startlog_title" translatable="false">Start-Protokoll</string>
     <string name="tvplayer_startlog_profile" translatable="false">Profil: %1$s (Code %2$d)</string>
     <string name="tvplayer_startlog_device" translatable="false">Gerät: %1$s, Android %2$s (API %3$d)</string>
+    <string name="tvplayer_startlog_dexmeta" translatable="false">Vorübersetzung beim Update: %1$s</string>
     <string name="tvplayer_startlog_profile_pending" translatable="false">Profil: wird abgefragt …</string>
     <string name="tvplayer_startlog_profile_compiled" translatable="false">kompiliert</string>
     <string name="tvplayer_startlog_profile_waiting" translatable="false">wartet auf Kompilierung</string>

@@ -1290,6 +1290,25 @@
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	LauncherRows
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row not decorated
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row watcher not registered
+1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	$SESSION_ENTRY.dm
+2	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	.apk
+1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	.dm
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	009
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	010
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	015
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	OwnTV
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	User-Agent
+1	preference-key	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta
+1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-add-failed
+1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-added
+1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-install-failed
+1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-ready
+1	log	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	dexmeta-skipped
+1	preference-key	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	disabled
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	owntv-update
+1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	primary.prof
+1	protocol	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	pro
+1	file-path	app/src/main/java/tv/own/owntv/perf/DexMetadataHook.kt	update.dm
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	jank frames=${result.frames} janky=${result.janky} worstMs=${result.worstMs}
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	profile=${status.state.name.lowercase()}(${status.code})
 1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	start-jank
