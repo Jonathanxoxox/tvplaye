@@ -67,18 +67,30 @@ class SearchViewModel(
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query.asStateFlow()
-    val results: StateFlow<SearchResults> = _query
-        .map { it.trim() }
-        .debounce(300)
-        .distinctUntilChanged()
-        .flatMapLatest { q ->
+    // With the playlists as a second input: a query typed before they were read (a fresh start, the
+    // mic) used to stay at "nothing found" until the text changed.
+    val results: StateFlow<SearchResults> = combine(_query.map { it.trim() }.debounce(300).distinctUntilChanged(), ctx) { q, c -> q to c }
+        .flatMapLatest { (q, c) ->
             if (q.length < 2) {
                 flowOf(SearchResults())
             } else {
-                flowOf(search(q))
+                flowOf(search(q, c))
             }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchResults())
+
+    /**
+     * Actor and director finds ("Tom Cruise"): the playlist's films and series of a person of that name,
+     * from TMDB credits. Waits like [mood]; a title or channel name finds no person and shows nothing.
+     */
+    val people: StateFlow<Pair<String, MoodResults>?> = combine(_query.map { it.trim() }.debounce(800).distinctUntilChanged(), ctx) { q, c -> q to c }
+        .transformLatest { (q, c) ->
+            emit(null)
+            if (q.length < MoodSearch.MIN_LENGTH || c.profileId < 0) return@transformLatest
+            val found = moodSearch.people(q, c)
+            if (found != null && !found.isEmpty) emit(q to found)
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /**
      * Search by description ("Stonermovie"): Jev decides whether the text describes what to watch and
@@ -135,9 +147,9 @@ class SearchViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchResults())
 
-    private suspend fun search(q: String): SearchResults {
+    private suspend fun search(q: String, c: ActiveProfileSources): SearchResults {
         val pid = currentProfileId() ?: return SearchResults()
-        return searchReader.search(pid, ctx.value, q)
+        return searchReader.search(pid, c, q)
     }
 
     // --- Stage page ---
@@ -158,11 +170,13 @@ class SearchViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     /** Category names for the movie and series rows ("2005 · ★ 6.2 · Disney+ Movies"). */
-    val categoryNames: StateFlow<Map<Long, String>> = combine(results, curatedResults, mood) { a, b, m ->
+    val categoryNames: StateFlow<Map<Long, String>> = combine(results, curatedResults, mood, people) { a, b, m, p ->
         val found = (m as? MoodState.Found)?.results ?: MoodResults()
+        val person = p?.second ?: MoodResults()
         (a.movies.mapNotNull { it.categoryId } + a.series.mapNotNull { it.categoryId } +
             b.movies.mapNotNull { it.categoryId } + b.series.mapNotNull { it.categoryId } +
-            found.movies.mapNotNull { it.categoryId } + found.series.mapNotNull { it.categoryId }).toSet()
+            found.movies.mapNotNull { it.categoryId } + found.series.mapNotNull { it.categoryId } +
+            person.movies.mapNotNull { it.categoryId } + person.series.mapNotNull { it.categoryId }).toSet()
     }
         .distinctUntilChanged()
         .mapLatest { ids -> ids.mapNotNull { id -> categoryDao.getById(id)?.let { id to it.name } }.toMap() }

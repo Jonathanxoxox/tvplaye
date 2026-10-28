@@ -181,6 +181,7 @@ fun SearchScreen(
     val focusedMeta by vm.focusedMeta.collectAsStateWithLifecycle()
     val metadataMode by vm.metadataMode.collectAsStateWithLifecycle()
     val mood by vm.mood.collectAsStateWithLifecycle()
+    val people by vm.people.collectAsStateWithLifecycle()
     val nowPlaying by liveVm.nowPlaying.collectAsStateWithLifecycle()
     val nowNext by liveVm.nowNext.collectAsStateWithLifecycle()
     val livePreviewSetting by liveVm.livePreviewEnabled.collectAsStateWithLifecycle()
@@ -206,8 +207,12 @@ fun SearchScreen(
         ?.let { MoodResults(if (wantsMovies) it.movies else emptyList(), if (wantsSeries) it.series else emptyList()) }
         ?: MoodResults()
     val moodSearching = searching && (wantsMovies || wantsSeries) && (mood as? MoodState.Searching)?.query == query.trim()
+    // An actor or director ("Tom Cruise"): their films and series in the playlist, under the description finds.
+    val peopleFound = people?.takeIf { searching && it.first == query.trim() }?.second
+        ?.let { MoodResults(if (wantsMovies) it.movies else emptyList(), if (wantsSeries) it.series else emptyList()) }
+        ?: MoodResults()
     val moodNote = stringResource(R.string.search_mood_searching)
-    val entries = moodEntries(moodFound, query.trim()) +
+    val entries = moodEntries(moodFound, query.trim()) + peopleEntries(peopleFound, query.trim()) +
         searchEntries(shown, grouped = !singleKind, capChannels = searching && !singleKind) +
         (if (moodSearching) listOf(Entry.Note(moodNote, "mood-note")) else emptyList())
     // ▼ from the field and ▲ out of the results land on the first button that is on, else the first.
@@ -300,7 +305,7 @@ fun SearchScreen(
         val titleModifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(826))
         if (showingResults) {
             val total = shown.channels.size + shown.movies.size + shown.series.size + shown.programmes.size +
-                moodFound.movies.size + moodFound.series.size
+                moodFound.movies.size + moodFound.series.size + peopleFound.movies.size + peopleFound.series.size
             VodHeader(
                 section = stringResource(R.string.search_title),
                 category = if (searching) stringResource(R.string.search_query_quoted, query.trim()) else intent?.displayLabel().orEmpty(),
@@ -334,7 +339,7 @@ fun SearchScreen(
                 modifier = Modifier.padding(start = listX, top = 192.mpx).width(listW),
             )
             LauncherCard(Modifier.padding(start = panelX, top = 200.mpx).width(panelW))
-        } else if (shown.isEmpty && moodFound.isEmpty && !moodSearching) {
+        } else if (shown.isEmpty && moodFound.isEmpty && peopleFound.isEmpty && !moodSearching) {
             NothingFound(
                 title = if (searching) stringResource(R.string.search_nothing_found, query.trim())
                 else stringResource(R.string.search_nothing_in_list, intent?.displayLabel().orEmpty()),
@@ -350,8 +355,10 @@ fun SearchScreen(
                         label = k.label(),
                         count = localizedInteger(
                             results.count(k) + when (k) {
-                                SearchKind.MOVIES -> (mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.movies?.size ?: 0
-                                SearchKind.SERIES -> (mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.series?.size ?: 0
+                                SearchKind.MOVIES -> ((mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.movies?.size ?: 0) +
+                                    (people?.takeIf { it.first == query.trim() }?.second?.movies?.size ?: 0)
+                                SearchKind.SERIES -> ((mood as? MoodState.Found)?.takeIf { it.query == query.trim() }?.results?.series?.size ?: 0) +
+                                    (people?.takeIf { it.first == query.trim() }?.second?.series?.size ?: 0)
                                 else -> 0
                             },
                         ),
@@ -586,6 +593,21 @@ private fun moodEntries(found: MoodResults, query: String): List<Entry> {
             add(Entry.Heading(label.uppercase(java.util.Locale.getDefault()) + sep + n.toString(), "h-mood"))
             found.movies.forEach { add(Entry.Movie(it, tag = "jm")) }
             found.series.forEach { add(Entry.Series(it, tag = "js")) }
+        }
+    }
+}
+
+/** "With “Tom Cruise” · 4": a person's films and series, found by their TMDB credits. */
+@Composable
+private fun peopleEntries(found: MoodResults, query: String): List<Entry> {
+    val label = stringResource(R.string.search_people_heading, query)
+    val sep = dotSeparator()
+    return remember(found, label, sep) {
+        if (found.isEmpty) emptyList()
+        else buildList {
+            add(Entry.Heading(label.uppercase(java.util.Locale.getDefault()) + sep + (found.movies.size + found.series.size).toString(), "h-people"))
+            found.movies.forEach { add(Entry.Movie(it, tag = "pm")) }
+            found.series.forEach { add(Entry.Series(it, tag = "ps")) }
         }
     }
 }

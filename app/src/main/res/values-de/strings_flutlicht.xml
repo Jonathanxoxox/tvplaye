@@ -72,6 +72,7 @@
     <string name="details_streaming_on">Im Abo bei</string>
     <string name="details_streaming_source">Streaming-Daten: JustWatch</string>
     <string name="search_mood_heading">Passt zu „%1$s“</string>
+    <string name="search_people_heading">Mit „%1$s“</string>
     <string name="search_mood_searching">Jev sucht passende Filme und Serien…</string>
     <string name="vod_search_movies_hint">Filme suchen: Titel, Schauspieler, Genre…</string>
     <string name="vod_search_series_hint">Serien suchen: Titel, Schauspieler, Genre…</string>

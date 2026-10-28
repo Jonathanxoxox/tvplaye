@@ -73,6 +73,7 @@
     <string name="details_streaming_on">Streaming on</string>
     <string name="details_streaming_source">Streaming data: JustWatch</string>
     <string name="search_mood_heading">Fits “%1$s”</string>
+    <string name="search_people_heading">With “%1$s”</string>
     <string name="search_mood_searching">Jev is looking for titles that fit…</string>
     <string name="vod_search_movies_hint">Search movies: title, actor, genre…</string>
     <string name="vod_search_series_hint">Search series: title, actor, genre…</string>
