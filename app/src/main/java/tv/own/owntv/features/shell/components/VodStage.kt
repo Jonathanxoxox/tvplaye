@@ -73,6 +73,8 @@ import tv.own.owntv.core.model.ContentMenu
 import tv.own.owntv.core.settings.SettingsRepository.SortMode
 import tv.own.owntv.features.epg.GuideMenuHost
 import tv.own.owntv.features.live.LiveCategoryEntry
+import tv.own.owntv.features.vod.VodCatalog
+import tv.own.owntv.features.vod.VodCatalogKeys
 import tv.own.owntv.features.live.LiveRailItem
 import tv.own.owntv.core.live.ProviderTags
 import tv.own.owntv.features.live.displayLabel
@@ -225,10 +227,11 @@ internal fun VodCinematicBackdrop(url: String?, series: Boolean, modifier: Modif
  * leaves the poster row.
  */
 @Composable
-internal fun VodHero(info: VodTitleInfo, modifier: Modifier = Modifier) {
+internal fun VodHero(info: VodTitleInfo, modifier: Modifier = Modifier, compact: Boolean = false) {
     Column(modifier.clipToBounds()) {
         var logoFailed by remember(info.logoUrl) { mutableStateOf(false) }
-        Box(Modifier.fillMaxWidth().height(170.mpx), contentAlignment = Alignment.BottomStart) {
+        // Compact: the slim info strip above the Movies / Series poster grid, title art 110 high and no cast.
+        Box(Modifier.fillMaxWidth().height(if (compact) 110.mpx else 170.mpx), contentAlignment = Alignment.BottomStart) {
             if (!info.logoUrl.isNullOrBlank() && !logoFailed) {
                 StageTitleArt(
                     url = info.logoUrl,
@@ -251,7 +254,7 @@ internal fun VodHero(info: VodTitleInfo, modifier: Modifier = Modifier) {
                 maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = 860.mpx),
             )
         }
-        if (info.cast.isNotEmpty()) VodCast(info.cast, 6, Modifier.padding(top = 20.mpx))
+        if (info.cast.isNotEmpty() && !compact) VodCast(info.cast, 6, Modifier.padding(top = 20.mpx))
     }
 }
 
@@ -578,10 +581,31 @@ internal fun vodCategoryEntries(
     series: Boolean,
 ): Pair<List<LiveCategoryEntry>, String> {
     val allLabel = if (series) R.string.content_category_all_series else R.string.content_category_all_movies
+    val locale = androidx.compose.ui.text.intl.Locale.current.platformLocale
+    val groupHeadings = mapOf(
+        VodCatalog.Group.DISCOVER to stringResource(R.string.vod_catalogs_discover),
+        VodCatalog.Group.GENRES to stringResource(R.string.vod_catalogs_genres),
+        VodCatalog.Group.COLLECTIONS to stringResource(R.string.vod_catalogs_collections),
+        VodCatalog.Group.SERVICES to stringResource(R.string.vod_catalogs_services),
+    )
+    val playlistHeading = stringResource(R.string.vod_catalogs_playlist)
+    val hasCatalogs = railItems.any { VodCatalogKeys.isCatalog(it.key) }
+    var lastGroup: VodCatalog.Group? = null
+    var playlistStarted = false
     val entries = railItems.map { item ->
         val label = item.displayLabel(allLabel)
+        val group = VodCatalogKeys.groupOf(item.key)
+        // Catalogs under ENTDECKEN, GENRES, SAMMLUNGEN and AUCH IM ABO BEI; the playlist's own entries under DEINE PLAYLIST.
+        val heading = when {
+            !hasCatalogs -> null
+            group != null -> groupHeadings.getValue(group).takeIf { group != lastGroup }.also { lastGroup = group }
+            !playlistStarted -> playlistHeading.also { playlistStarted = true }
+            else -> null
+        }?.uppercase(locale)
+        if (group != null) return@map LiveCategoryEntry(item = item, label = label, name = null, icon = null, count = counts[item.key], mark = null, heading = heading)
         val parsed = if (item.key is LiveKey.Folder || item.key is LiveKey.Custom) ProviderTags.parse(label) else null
         LiveCategoryEntry(
+            heading = heading,
             item = item,
             // No country heading here, so a group keeps its "UK|".
             label = parsed?.let { ProviderTags.groupLabel(it, headingCountry = null) } ?: label,

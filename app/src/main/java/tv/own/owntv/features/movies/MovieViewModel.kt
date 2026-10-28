@@ -72,7 +72,6 @@ import tv.own.owntv.core.settings.SettingsRepository
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.core.live.LiveKey
 import tv.own.owntv.features.search.positionOf
-import tv.own.owntv.core.live.parseLiveKey
 import tv.own.owntv.core.settings.SourceOverrides
 
 class MovieViewModel(
@@ -124,9 +123,38 @@ class MovieViewModel(
         .distinctUntilChanged()
         .stateIn(viewModelScope, SharingStarted.Eagerly, VodCtx(-1L, emptyList(), emptyMap()))
 
+    /**
+     * The catalogs above the playlist's folders (Weiterschauen, Gerade angesagt, genres …). Taken
+     * from Koin here rather than the constructor, which is at the arity limit of `viewModelOf`.
+     */
+    private val catalogs: StateFlow<List<tv.own.owntv.features.vod.VodCatalog>> = tv.own.owntv.features.vod.vodCatalogs(
+        scope = viewModelScope,
+        context = org.koin.core.context.GlobalContext.get().get(),
+        type = MediaType.MOVIE,
+        ctx = ctx,
+        continueIds = { c ->
+            progressDao.observeMovieProgress(c.profileId).map { rows ->
+                rows.filter { it.positionMs > 0 && !isMovieCompleted(it) }.sortedByDescending { it.updatedAt }.map { it.itemId }
+            }
+        },
+        newestIds = { c -> newestIds(c) },
+        historyIds = { c -> movieDao.recentlyWatchedSnapshot(c.profileId, c.sourceIds.ifEmpty { listOf(-1L) }, HISTORY_FOR_CATALOGS).map { it.id } },
+        source = org.koin.core.context.GlobalContext.get().get(),
+    )
+
+    /** "Neu in deiner Playlist": the newest titles by the provider's date added; none when it gives no dates. */
+    private suspend fun newestIds(c: VodCtx): List<Long> {
+        val source = movieDao.pagingAllDateAdded(c.sourceIds.ifEmpty { listOf(-1L) })
+        val page = source.load(PagingSource.LoadParams.Refresh(null, NEWEST_COUNT, false)) as? PagingSource.LoadResult.Page<Int, MovieEntity> ?: return emptyList()
+        return if (page.data.all { it.addedAt == null }) emptyList() else page.data.map { it.id }
+    }
+
+    private fun catalogIds(key: LiveKey): List<Long>? =
+        tv.own.owntv.features.vod.VodCatalogKeys.idOf(key)?.let { id -> catalogs.value.firstOrNull { it.id == id }?.ids.orEmpty() }
+
     private val categories = VodCategories(
         viewModelScope, MediaType.MOVIE, ctx, settings.sortMovies, categoryDao, contentOrderDao, customize,
-        customCategoryDao, profileDao, userDataWriter, catalogPriority, { currentProfileId() },
+        customCategoryDao, profileDao, userDataWriter, catalogPriority, { currentProfileId() }, catalogs,
     )
     private val folderContextKeys = categories.folderContextKeys
     private val orderedContexts = categories.orderedContexts
@@ -299,6 +327,8 @@ class MovieViewModel(
         // Rebuild the pager when a folder gains/loses manual order: the fast-path plain
         // PagingSource doesn't observe content_order, so the switch must recreate it.
         .combine(orderedContexts) { p, _ -> p }
+        // A catalog's list is fixed per build: the pager is rebuilt when the open catalog's titles change.
+        .combine(_selected.combine(catalogs) { key, _ -> catalogIds(key) }.distinctUntilChanged()) { p, _ -> p }
         .flatMapLatest { (args, cs) ->
             // Hidden items/categories are filtered on each fresh PagingData inside the pager chain —
             // a customization change re-creates the pager (same pattern as Live TV).
@@ -847,6 +877,16 @@ class MovieViewModel(
         }
     }
 
+    /** A catalog's titles of the active playlists, in the catalog's order. */
+    private fun catalogSource(ids: List<Long>, c: VodCtx, query: String): PagingSource<Int, MovieEntity> =
+        tv.own.owntv.features.vod.CatalogPagingSource(
+            ids = ids,
+            query = query,
+            fetch = { wanted -> movieDao.getByIds(wanted).filter { it.sourceId in c.sourceIds } },
+            idOf = { it.id },
+            nameOf = { it.name },
+        )
+
     private fun pagingSource(key: LiveKey, c: VodCtx, query: String, sort: SettingsRepository.SortMode): PagingSource<Int, MovieEntity> {
         val ids = c.sourceIds.ifEmpty { listOf(-1L) }
         val playlist = sort == SettingsRepository.SortMode.PLAYLIST
@@ -863,7 +903,8 @@ class MovieViewModel(
             }
             LiveKey.Favorites -> movieDao.pagingFavoritesManual(c.profileId, ContentOrderEntity.FAV_CONTEXT, ids)
             LiveKey.History -> movieDao.pagingHistory(c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.pagingMovies(c.profileId, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { catalogSource(it, c, query) }
+                ?: customCategoryDao.pagingMovies(c.profileId, key.id, ids)
             is LiveKey.Folder -> {
                 val ctxKey = folderContextKeys.value[key.id] ?: ""
                 when {
@@ -881,7 +922,8 @@ class MovieViewModel(
                 else movieDao.searchAll(query, ids)
             LiveKey.Favorites -> movieDao.searchFavorites(query, c.profileId, ids)
             LiveKey.History -> movieDao.searchHistory(query, c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.searchMovies(query, c.profileId, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { catalogSource(it, c, query) }
+                ?: customCategoryDao.searchMovies(query, c.profileId, key.id, ids)
             is LiveKey.Folder ->
                 if (dateAdded) movieDao.searchInCategoryDateAdded(query, key.id)
                 else movieDao.searchInCategory(query, key.id)
@@ -896,22 +938,21 @@ class MovieViewModel(
                 else movieDao.countAllExcluding(ids, hiddenCats.toList())
             LiveKey.Favorites -> movieDao.countFavorites(c.profileId, ids)
             LiveKey.History -> movieDao.countHistory(c.profileId, ids)
-            is LiveKey.Custom -> customCategoryDao.countMembers(c.profileId, MediaType.MOVIE, key.id, ids)
+            is LiveKey.Custom -> catalogIds(key)?.let { flowOf(it.size) }
+                ?: customCategoryDao.countMembers(c.profileId, MediaType.MOVIE, key.id, ids)
             is LiveKey.Folder -> movieDao.countByCategory(key.id)
         }
     }
 
-    // Remember the last selected category (Settings → Browsing & lists → "Remember last category —
-    // Movies", on by default).
+    // Mayo TV opens the section on its first catalog, "Weiterschauen" at the top of the column
+    // (Jonathan, 28 Oct 2026); the remembered category is no longer restored here.
     init {
-        categories.rememberLastCategory(
-            enabled = { settings.rememberCategoryMovies.first() },
-            saved = { parseLiveKey(settings.lastMoviesCategory.first()) },
-            save = { settings.setLastMoviesCategory(it) },
-        )
+        categories.openOnFirstCatalog()
     }
 
     private companion object {
+        const val NEWEST_COUNT = 60
+        const val HISTORY_FOR_CATALOGS = 30
         const val TAG = "OwnTVHome"
     }
 }

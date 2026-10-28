@@ -78,4 +78,14 @@
     <string name="voice_search_no_microphone">Mikrofon nicht erlaubt</string>
     <string name="voice_search_unavailable">Keine Spracherkennung auf diesem Gerät</string>
     <string name="content_move_in_group_only">nur in einer Gruppe</string>
+    <string name="vod_catalog_continue">Weiterschauen</string>
+    <string name="vod_catalog_trending">Gerade angesagt</string>
+    <string name="vod_catalog_newest">Neu in deiner Playlist</string>
+    <string name="vod_catalog_for_you">Für dich</string>
+    <string name="vod_catalog_top_rated">Bestbewertet</string>
+    <string name="vod_catalogs_discover">Entdecken</string>
+    <string name="vod_catalogs_genres">Genres</string>
+    <string name="vod_catalogs_collections">Sammlungen</string>
+    <string name="vod_catalogs_services">Auch im Abo bei</string>
+    <string name="vod_catalogs_playlist">Deine Playlist</string>
 </resources>

@@ -14,6 +14,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import tv.own.owntv.features.live.LiveCategories
+import tv.own.owntv.features.vod.VodCatalogKeys
 import tv.own.owntv.core.live.ProviderTags
 import tv.own.owntv.features.live.edgeScrollSpec
 import tv.own.owntv.features.shell.components.VodCinematicBackdrop
@@ -493,7 +494,7 @@ private fun SeriesGrid(
     val selectedMeta = selectedSeriesMeta?.takeIf { it.seriesId == selectedSeries?.id }?.cache
     val titleInfo = selectedSeries?.let { seriesTitleInfo(it, selectedMeta, metadataMode.tmdbWins) }
     val (categoryEntries, groupsHeading) = vodCategoryEntries(railItems, railCounts, playlistMarks, series = true)
-    val headerLabel = if (selectedItem?.key is LiveKey.Folder || selectedItem?.key is LiveKey.Custom) ProviderTags.parse(selectedLabel).name else selectedLabel
+    val headerLabel = if ((selectedItem?.key is LiveKey.Folder || selectedItem?.key is LiveKey.Custom) && !VodCatalogKeys.isCatalog(selectedItem?.key)) ProviderTags.parse(selectedLabel).name else selectedLabel
 
     // The hero shows a title while the categories have focus too, as the classic IPTV player does: the
     // first one of a category just picked there, or of the list when nothing was chosen yet.
@@ -535,7 +536,8 @@ private fun SeriesGrid(
     }
     val onCategoryLongSelect: (Int) -> Unit = { idx ->
         railItems.getOrNull(idx)?.let { item ->
-            if (item.key is LiveKey.Folder || item.key is LiveKey.Custom) {
+            // Catalogs (Weiterschauen, genres …) are not the playlist's: nothing to hide or move.
+            if ((item.key is LiveKey.Folder || item.key is LiveKey.Custom) && !VodCatalogKeys.isCatalog(item.key)) {
                 contextCategory = item
                 contextCategoryKey = item.key
             }
@@ -651,7 +653,7 @@ private fun SeriesGrid(
         val screenW = maxWidth
         fun fx(px: Int) = screenW * (px / 1920f)
         if (cinematic) {
-            val heroH = if (panelShares != null) maxHeight * (cinematicDetailsPct / 100f) else 464.mpx
+            val heroH = if (panelShares != null) maxHeight * (cinematicDetailsPct / 100f) else 250.mpx
             // An empty list has no title for the hero: the toolbar moves up under the header instead of
             // floating mid-screen over an empty hero.
             val toolTop = 122.mpx + if (titleInfo == null && series.itemCount == 0) 0.mpx else heroH
@@ -665,7 +667,7 @@ private fun SeriesGrid(
                     section = stringResource(R.string.common_nav_series), category = headerLabel, count = vodCount(true, count),
                     showChevron = true, modifier = Modifier.padding(start = fx(84), top = 52.mpx).width(fx(900)),
                 )
-                titleInfo?.let { VodHero(it, Modifier.padding(start = listX, top = 122.mpx).width(fx(1000)).height(heroH)) }
+                titleInfo?.let { VodHero(it, Modifier.padding(start = listX, top = 122.mpx).width(fx(1000)).height(heroH), compact = true) }
                 Column(Modifier.padding(top = toolTop).fillMaxSize().then(paneModifier)) {
                     Row(
                         Modifier.padding(start = listX - fx(16), end = fx(64)).fillMaxWidth()
@@ -689,11 +691,11 @@ private fun SeriesGrid(
                     if (series.itemCount == 0) {
                         Text(emptyText, style = stageText(20, 500), color = StageColors.Muted, modifier = Modifier.padding(start = listX, top = 60.mpx))
                     } else {
-                        // The 196 × 294 posters, 26 apart, as many across as fit; the grid grows downwards
-                        // (a grid, not a single row). Glow room on every side.
+                        // The 172 × 258 posters, 24 apart, seven across beside the categories; the grid grows
+                        // downwards (a grid, not a single row). Glow room on every side.
                         val glowRoom = 24.mpx
                         val rowW = screenW - listX - fx(64)
-                        val columns = ((rowW + 26.mpx) / 222.mpx).toInt().coerceAtLeast(1)
+                        val columns = ((rowW + 24.mpx) / 196.mpx).toInt().coerceAtLeast(1)
                         // A fixed gap under the toolbar that scrolling posters never enter; the grid's own
                         // top padding is only the room the focused poster's lift and ring need.
                         Spacer(Modifier.height(14.mpx))
@@ -701,8 +703,8 @@ private fun SeriesGrid(
                             LazyVerticalGrid(
                                 state = effectiveGridState,
                                 columns = GridCells.Fixed(columns),
-                                horizontalArrangement = Arrangement.spacedBy(26.mpx),
-                                verticalArrangement = Arrangement.spacedBy(30.mpx),
+                                horizontalArrangement = Arrangement.spacedBy(24.mpx),
+                                verticalArrangement = Arrangement.spacedBy(28.mpx),
                                 contentPadding = PaddingValues(start = listX, end = fx(64), top = 14.mpx, bottom = glowRoom),
                                 modifier = Modifier.fillMaxWidth().weight(1f),
                             ) {
@@ -711,7 +713,7 @@ private fun SeriesGrid(
                                     StagePoster(
                                         title = show.name,
                                         rating = show.rating?.takeIf { it > 0 }?.let(::vodRating),
-                                        width = 196.mpx, height = 294.mpx,
+                                        width = 172.mpx, height = 258.mpx,
                                         progress = seriesProgress[show.id],
                                         onClick = { onOpenAt(index); vm.openSeries(show) },
                                         onLongClick = { openMenu(show, index) },
@@ -928,7 +930,7 @@ private fun SeriesGrid(
         val cacheForS = selectedSeriesMeta?.takeIf { it.seriesId == s.id }?.cache
         val trailerKey = if (metadataMode.enrich) cacheForS?.trailerKey else null
         val inHistory by androidx.compose.runtime.produceState(selectedKey == LiveKey.History, s.id) { value = vm.isInHistory(s) }
-        val canMove = selectedKey is LiveKey.Folder || selectedKey is LiveKey.Custom || selectedKey == LiveKey.Favorites
+        val canMove = (selectedKey is LiveKey.Folder || selectedKey is LiveKey.Custom || selectedKey == LiveKey.Favorites) && !VodCatalogKeys.isCatalog(selectedKey)
         val actions = buildList {
             add(MenuAction("play_trailer", stringResource(R.string.content_play_trailer), OwnTVIcon.PLAY_CIRCLE, group = VodGroupWatch) {
                 trailerKey?.let { contextSeries = null; trailerTitle = s.name; trailerVideoKey = it }
