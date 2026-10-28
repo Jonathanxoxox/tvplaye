@@ -898,7 +898,7 @@
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	none
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	onNow
 1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	pen
-4	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	results
+2	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	results
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	soon$day
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	–
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	– : –

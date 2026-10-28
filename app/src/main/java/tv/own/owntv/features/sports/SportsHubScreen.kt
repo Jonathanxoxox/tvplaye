@@ -181,13 +181,14 @@ fun SportsHubScreen(
     val finished = today.filter { it.state == MatchState.POST && it.passes() }
         .sortedWith(compareBy<Match>({ !it.isMine() }, { -it.startMs })).take(12)
     // The rows under Live and the channels: later today, today's results, tomorrow, then the rest.
-    val scheduleRows = buildList {
-        for ((day, matches) in soonByDay.toSortedMap()) {
-            if (day >= 1 && finished.isNotEmpty() && none { it.first == "results" }) add(Triple("results", R.string.sports_tab_results, finished))
-            add(Triple("soon$day", if (day == 0) R.string.tvplayer_sports_later_today else if (day == 1) R.string.content_epg_tomorrow else R.string.tvplayer_sports_coming_up, matches))
-        }
-        if (finished.isNotEmpty() && none { it.first == "results" }) add(Triple("results", R.string.sports_tab_results, finished))
+    val scheduleRows = ArrayList<Triple<String, Int, List<Match>>>()
+    var resultsPlaced = finished.isEmpty()
+    for ((day, matches) in soonByDay.toSortedMap()) {
+        if (day >= 1 && !resultsPlaced) { scheduleRows += Triple("results", R.string.sports_tab_results, finished); resultsPlaced = true }
+        val title = if (day == 0) R.string.tvplayer_sports_later_today else if (day == 1) R.string.content_epg_tomorrow else R.string.tvplayer_sports_coming_up
+        scheduleRows += Triple("soon$day", title, matches)
     }
+    if (!resultsPlaced) scheduleRows += Triple("results", R.string.sports_tab_results, finished)
     // "Now" means running: what starts later on those channels is in the guide.
     val onNow = state.onNow.values.flatten().filter { it.startMs <= now && now < it.stopMs }.take(6)
     val followedSports = remember(config) { vm.followedSports(config) }
