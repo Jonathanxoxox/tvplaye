@@ -461,7 +461,8 @@ def vod_details():
     # ▶ erreicht die Kategorien-Spalte, zweimal ▶ das zweite Poster (wie in vod_section).
     key("DPAD_RIGHT", wait=1.0)
     key("DPAD_RIGHT", n=2, wait=0.8)
-    key("DPAD_CENTER", wait=1.5, long=True)
+    # Ein langes OK über adb spielt den Film ab; die Menü-Taste öffnet die Optionen wie OK halten.
+    key("MENU", wait=1.5)
     shot("vod-filme-optionen")
     if goto(r"details", tries=12):
         time.sleep(4)
@@ -469,6 +470,8 @@ def vod_details():
         key("DPAD_DOWN", n=2, wait=0.8)
         shot("vod-filme-details-unten")
         key("BACK", wait=1.5)
+    if in_fullscreen():
+        key("BACK", n=2, wait=1.5)
 
 
 def search_tour():
