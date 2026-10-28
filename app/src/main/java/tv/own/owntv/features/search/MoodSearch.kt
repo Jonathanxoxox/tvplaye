@@ -70,17 +70,32 @@ class MoodSearch(
     fun cached(query: String): MoodResults? = synchronized(cache) { cache[cacheKey(query)] }
 
     /** Null when a call failed (try again later); empty when the query is no description or nothing fits. */
-    suspend fun search(query: String, sources: ActiveProfileSources): MoodResults? {
+    suspend fun search(query: String, sources: ActiveProfileSources): MoodResults? =
+        search(query, sources.movieSourceIds, sources.seriesSourceIds, followKind = true)
+
+    /**
+     * The same search for one section (Filme or Serien: the other side's ids empty). [followKind]
+     * false keeps the section's titles even when the wish says "Serie" in Filme.
+     */
+    private suspend fun search(query: String, movieSourceIds: List<Long>, seriesSourceIds: List<Long>, followKind: Boolean): MoodResults? {
         val wish = query.trim()
         if (!available || wish.length < MIN_LENGTH) return MoodResults()
-        cached(wish)?.let { return it }
+        // The global search (both sides) and a section's search keep separate answers.
+        val key = cacheKey(wish) + if (followKind) "" else "#" + movieSourceIds.isNotEmpty() + seriesSourceIds.isNotEmpty()
+        synchronized(cache) { cache[key] }?.let { return it }
         val tmdb = tmdbAccess() ?: return null
-        val found = withTimeoutOrNull(TOTAL_TIMEOUT_MS) { runSearch(wish, sources, tmdb) } ?: return null
-        synchronized(cache) { cache[cacheKey(wish)] = found }
+        val found = withTimeoutOrNull(TOTAL_TIMEOUT_MS) { runSearch(wish, movieSourceIds, seriesSourceIds, followKind, tmdb) } ?: return null
+        synchronized(cache) { cache[key] = found }
         return found
     }
 
-    private suspend fun runSearch(wish: String, sources: ActiveProfileSources, tmdb: Tmdb): MoodResults? = coroutineScope {
+    private suspend fun runSearch(
+        wish: String,
+        movieSourceIds: List<Long>,
+        seriesSourceIds: List<Long>,
+        followKind: Boolean,
+        tmdb: Tmdb,
+    ): MoodResults? = coroutineScope {
         // 1. Keyword candidates for Jev to choose from.
         val keywords = keywordTerms(wish)
             .map { term -> async { tmdb.keywords(term) } }.awaitAll()
@@ -107,18 +122,18 @@ class MoodSearch(
         if (pickedKeywords.isEmpty() && pickedGenres.isEmpty()) return@coroutineScope MoodResults()
         Log.i(TAG, "keywords=${keywords.filter { it.first in pickedKeywords }.map { it.second }} genres=${pickedGenres.map { it.name }}")
 
-        val kind = first.choice(Q_KIND)
-        val wantMovies = kind != KIND_SERIES && sources.movieSourceIds.isNotEmpty()
-        val wantSeries = kind != KIND_MOVIE && sources.seriesSourceIds.isNotEmpty()
+        val kind = if (followKind) first.choice(Q_KIND) else null
+        val wantMovies = kind != KIND_SERIES && movieSourceIds.isNotEmpty()
+        val wantSeries = kind != KIND_MOVIE && seriesSourceIds.isNotEmpty()
 
         // 3 + 4 per type, both at once.
         val movies = async {
             if (!wantMovies) emptyList()
-            else findInPlaylist(wish, MetadataType.MOVIE, pickedKeywords, pickedGenres.mapNotNull { it.movie }, tmdb, sources.movieSourceIds)
+            else findInPlaylist(wish, MetadataType.MOVIE, pickedKeywords, pickedGenres.mapNotNull { it.movie }, tmdb, movieSourceIds)
         }
         val series = async {
             if (!wantSeries) emptyList()
-            else findInPlaylist(wish, MetadataType.TV, pickedKeywords, pickedGenres.mapNotNull { it.tv }, tmdb, sources.seriesSourceIds)
+            else findInPlaylist(wish, MetadataType.TV, pickedKeywords, pickedGenres.mapNotNull { it.tv }, tmdb, seriesSourceIds)
         }
         val movieIds = movies.await()
         val seriesIds = series.await()
@@ -149,20 +164,7 @@ class MoodSearch(
         val ranked = unique.mapIndexed { i, d -> d.copy(candidate = d.candidate.copy(trendingRank = i + 1)) }
         val byTmdb = ranked.associateBy { it.candidate.tmdbId }
 
-        val mediaType = if (type == MetadataType.MOVIE) MediaType.MOVIE else MediaType.SERIES
-        val language = settings.metadataConfig().resolvedLanguage
-        val matched = LinkedHashMap<Int, Long>() // tmdbId → playlist item
-        for (sid in sourceIds) {
-            val result = TrendingMatcher.matchMedia(
-                candidates = ranked.map { it.candidate },
-                mediaType = mediaType,
-                preferredLanguage = language,
-                limit = MAX_MATCHES,
-                exactLookup = { sigs -> if (type == MetadataType.MOVIE) movieDao.trendingExact(sid, sigs) else seriesDao.trendingExact(sid, sigs) },
-                ftsLookup = { q, n -> if (type == MetadataType.MOVIE) movieDao.trendingFts(sid, q, n) else seriesDao.trendingFts(sid, q, n) },
-            )
-            result.selections.forEach { s -> matched.putIfAbsent(s.candidate.tmdbId, s.variant.item.id) }
-        }
+        val matched = matchInPlaylist(ranked.map { it.candidate }, type, sourceIds, MAX_MATCHES)
         if (matched.isEmpty()) return@coroutineScope emptyList()
         val inPlaylist = matched.keys.sortedBy { byTmdb.getValue(it).candidate.trendingRank }.take(MAX_MATCHES)
 
@@ -178,6 +180,72 @@ class MoodSearch(
             .sortedWith(compareByDescending<Int> { scores[it] ?: 0.0 }.thenBy { byTmdb.getValue(it).candidate.trendingRank })
             .take(MAX_RESULTS)
             .map { matched.getValue(it) }
+    }
+
+    /** tmdbId → playlist item for [candidates] in rank order: the same title matching the Trending row uses. */
+    private suspend fun matchInPlaylist(candidates: List<TrendingCandidate>, type: MetadataType, sourceIds: List<Long>, limit: Int): LinkedHashMap<Int, Long> {
+        val mediaType = if (type == MetadataType.MOVIE) MediaType.MOVIE else MediaType.SERIES
+        val language = settings.metadataConfig().resolvedLanguage
+        val matched = LinkedHashMap<Int, Long>()
+        for (sid in sourceIds) {
+            val result = TrendingMatcher.matchMedia(
+                candidates = candidates,
+                mediaType = mediaType,
+                preferredLanguage = language,
+                limit = limit,
+                exactLookup = { sigs -> if (type == MetadataType.MOVIE) movieDao.trendingExact(sid, sigs) else seriesDao.trendingExact(sid, sigs) },
+                ftsLookup = { q, n -> if (type == MetadataType.MOVIE) movieDao.trendingFts(sid, q, n) else seriesDao.trendingFts(sid, q, n) },
+            )
+            result.selections.forEach { s -> matched.putIfAbsent(s.candidate.tmdbId, s.variant.item.id) }
+        }
+        return matched
+    }
+
+    // --- Filme / Serien: one search for titles, people and descriptions ---
+
+    /** Last section extras per query and section, so retyping costs nothing. */
+    private val sectionCache = object : LinkedHashMap<String, List<Long>>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<Long>>?) = size > CACHE_SIZE
+    }
+
+    /**
+     * What the Filme or Serien search shows after the title matches: the section's titles with a
+     * person of that name (actor or director, "Tom Hanks", "Nolan"), then what the search by
+     * description finds ("Horror", "Komödie mit Zombies"). Playlist ids of [type], best first;
+     * empty without a TMDB key, offline, or when the query is neither.
+     */
+    suspend fun sectionExtras(query: String, type: MediaType, sourceIds: List<Long>): List<Long> {
+        val wish = query.trim()
+        if (wish.length < MIN_SECTION_LENGTH || sourceIds.isEmpty()) return emptyList()
+        val key = "${cacheKey(wish)}#${type.name}#${sourceIds.sorted().joinToString(",")}"
+        synchronized(sectionCache) { sectionCache[key] }?.let { return it }
+        val tmdb = tmdbAccess() ?: return emptyList()
+        val movie = type == MediaType.MOVIE
+        val found = coroutineScope {
+            val people = async { withTimeoutOrNull(PERSON_TIMEOUT_MS) { personTitles(wish, if (movie) MetadataType.MOVIE else MetadataType.TV, tmdb, sourceIds) } }
+            val described = async {
+                if (!available) emptyList()
+                else search(wish, if (movie) sourceIds else emptyList(), if (movie) emptyList() else sourceIds, followKind = false)
+                    ?.let { r -> if (movie) r.movies.map { it.id } else r.series.map { it.id } }
+            }
+            val p = people.await()
+            val d = described.await()
+            // A failed call is not cached, so the next keystroke tries again.
+            if (p == null || d == null) return@coroutineScope (p.orEmpty() + d.orEmpty()).distinct()
+            (p + d).distinct().also { ids -> synchronized(sectionCache) { sectionCache[key] = ids } }
+        }
+        return found
+    }
+
+    /** Playlist ids of the best-known person called [wish]: their films or series, most popular first. Null = a call failed. */
+    private suspend fun personTitles(wish: String, type: MetadataType, tmdb: Tmdb, sourceIds: List<Long>): List<Long>? {
+        val personId = tmdb.person(wish) ?: return emptyList()
+        val credits = tmdb.credits(personId, type) ?: return null
+        if (credits.isEmpty()) return emptyList()
+        val ranked = credits.mapIndexed { i, c -> c.copy(trendingRank = i + 1) }
+        val rank = ranked.associate { it.tmdbId to it.trendingRank }
+        val matched = matchInPlaylist(ranked, type, sourceIds, MAX_PERSON_MATCHES)
+        return matched.keys.sortedBy { rank[it] ?: Int.MAX_VALUE }.map { matched.getValue(it) }
     }
 
     /** tmdbId → probability that the title fits the wish; null when the request failed. */
@@ -228,28 +296,66 @@ class MoodSearch(
             val results = runCatching { JSONObject(body).optJSONArray("results") }.getOrNull() ?: return emptyList()
             return (0 until results.length()).mapNotNull { i ->
                 val o = results.optJSONObject(i) ?: return@mapNotNull null
-                val id = o.optInt("id", 0).takeIf { it > 0 } ?: return@mapNotNull null
+                val candidate = candidate(o, type, (page - 1) * 20 + i + 1) ?: return@mapNotNull null
                 val tv = type == MetadataType.TV
-                val title = o.optString(if (tv) "name" else "title").value() ?: o.optString(if (tv) "original_name" else "original_title").value() ?: return@mapNotNull null
-                val date = o.optString(if (tv) "first_air_date" else "release_date")
                 val genreIds = o.optJSONArray("genre_ids")?.let { a -> (0 until a.length()).map { a.optInt(it) } }.orEmpty()
                 Discovered(
-                    TrendingCandidate(
-                        tmdbId = id,
-                        type = type,
-                        localizedTitle = title,
-                        originalTitle = o.optString(if (tv) "original_name" else "original_title").value(),
-                        year = date.take(4).toIntOrNull(),
-                        overview = o.optString("overview").value(),
-                        posterPath = o.optString("poster_path").value(),
-                        backdropPath = o.optString("backdrop_path").value(),
-                        rating = o.optDouble("vote_average", 0.0).takeIf { it > 0.0 },
-                        popularity = o.optDouble("popularity", 0.0),
-                        trendingRank = (page - 1) * 20 + i + 1,
-                    ),
+                    candidate,
                     genres = genreIds.mapNotNull { g -> GENRES.firstOrNull { if (tv) it.tv == g else it.movie == g }?.name }.distinct(),
                 )
             }
+        }
+
+        /** The best-known person whose name is [name] or contains its words ("hanks" → Tom Hanks); null = none. */
+        suspend fun person(name: String): Int? {
+            val body = get("$TMDB_BASE/3/search/person?api_key=${enc(key)}&query=${enc(name)}&include_adult=false") ?: return null
+            val results = runCatching { JSONObject(body).optJSONArray("results") }.getOrNull() ?: return null
+            val words = name.lowercase().split(' ').filter { it.isNotBlank() }
+            return (0 until minOf(results.length(), PERSON_RESULTS)).firstNotNullOfOrNull { i ->
+                val o = results.optJSONObject(i) ?: return@firstNotNullOfOrNull null
+                val nameWords = o.optString("name").lowercase().split(' ')
+                val matches = words.all { w -> nameWords.any { it.startsWith(w) } }
+                val known = o.optString("known_for_department") in PERSON_DEPARTMENTS
+                o.optInt("id", 0).takeIf { it > 0 && matches && known && o.optDouble("popularity", 0.0) >= MIN_PERSON_POPULARITY }
+            }
+        }
+
+        /** [personId]'s films or series (cast, and what they directed), most popular first; null = the call failed. */
+        suspend fun credits(personId: Int, type: MetadataType): List<TrendingCandidate>? {
+            val path = if (type == MetadataType.MOVIE) "movie_credits" else "tv_credits"
+            val body = get("$TMDB_BASE/3/person/$personId/$path?api_key=${enc(key)}" + langParam()) ?: return null
+            val json = runCatching { JSONObject(body) }.getOrNull() ?: return null
+            val entries = buildList {
+                json.optJSONArray("cast")?.let { a -> for (i in 0 until a.length()) a.optJSONObject(i)?.let { add(it) } }
+                json.optJSONArray("crew")?.let { a -> for (i in 0 until a.length()) a.optJSONObject(i)?.takeIf { it.optString("job") in CREW_JOBS }?.let { add(it) } }
+            }
+            return entries
+                // Talk shows, news and reality TV a person only visited are not "their" series.
+                .filter { o -> o.optJSONArray("genre_ids")?.let { a -> (0 until a.length()).none { a.optInt(it) in GUEST_GENRES } } ?: true }
+                .mapNotNull { candidate(it, type, 0) }
+                .distinctBy { it.tmdbId }
+                .sortedByDescending { it.popularity }
+                .take(MAX_PERSON_CANDIDATES)
+        }
+
+        private fun candidate(o: JSONObject, type: MetadataType, rank: Int): TrendingCandidate? {
+            val id = o.optInt("id", 0).takeIf { it > 0 } ?: return null
+            val tv = type == MetadataType.TV
+            val title = o.optString(if (tv) "name" else "title").value() ?: o.optString(if (tv) "original_name" else "original_title").value() ?: return null
+            val date = o.optString(if (tv) "first_air_date" else "release_date")
+            return TrendingCandidate(
+                tmdbId = id,
+                type = type,
+                localizedTitle = title,
+                originalTitle = o.optString(if (tv) "original_name" else "original_title").value(),
+                year = date.take(4).toIntOrNull(),
+                overview = o.optString("overview").value(),
+                posterPath = o.optString("poster_path").value(),
+                backdropPath = o.optString("backdrop_path").value(),
+                rating = o.optDouble("vote_average", 0.0).takeIf { it > 0.0 },
+                popularity = o.optDouble("popularity", 0.0),
+                trendingRank = rank,
+            )
         }
 
         private suspend fun get(url: String): String? = withContext(Dispatchers.IO) {
@@ -301,6 +407,25 @@ class MoodSearch(
         private const val RERANK_CHUNK = 12
         private const val OVERVIEW_CHARS = 420
         private const val MAX_RESULTS = 24
+        /** A Filme/Serien query shorter than this gets title matches only. */
+        private const val MIN_SECTION_LENGTH = 3
+        private const val PERSON_TIMEOUT_MS = 12_000L
+        private const val PERSON_RESULTS = 5
+        private const val MIN_PERSON_POPULARITY = 1.0
+        private const val MAX_PERSON_CANDIDATES = 150
+        private const val MAX_PERSON_MATCHES = 60
+        private val PERSON_DEPARTMENTS = setOf("Acting", "Directing", "Writing", "Creator")
+        private val CREW_JOBS = setOf("Director", "Creator")
+        /** TMDB TV genres News, Reality, Talk. */
+        private val GUEST_GENRES = setOf(10763, 10764, 10767)
+
+        private const val MAX_TERMS = 6
+
+        /** The frame of a spoken wish ("ich möchte einen … schauen"): no keyword lookup of their own. */
+        private val SENTENCE_WORDS = ("ich möchte moechte will würde gerne gern einen eine einem einer den dem der die das des " +
+            "mit und oder ohne schauen sehen gucken anschauen ansehen zeig zeige mir bitte irgendwas etwas was wie " +
+            "gibt geben auf für von aus bei nach über heute abend wir uns want watch something with the and about some see " +
+            "like").split(' ').toSet()
 
         /** Words that only say "a film" or "a show": "Stonermovie" → "stoner", "Zombieserie" → "zombie". */
         private val FILLER = listOf("movies", "movie", "filme", "films", "film", "serien", "series", "serie", "shows", "show", "streifen")
@@ -334,7 +459,7 @@ class MoodSearch(
 
         /** The query's words, and each without a filler ending, as TMDB keyword searches (at most four). */
         internal fun keywordTerms(query: String): List<String> {
-            val words = query.lowercase().split(Regex("[^\\p{L}\\p{N}]+")).filter { it.length >= 3 }
+            val words = query.lowercase().split(Regex("[^\\p{L}\\p{N}]+")).filter { it.length >= 3 && it !in SENTENCE_WORDS }
             val terms = LinkedHashSet<String>()
             for (w in words) {
                 val stem = FILLER.firstOrNull { w.endsWith(it) && w.length - it.length >= 3 }?.let { w.removeSuffix(it).trimEnd('-') }
@@ -342,7 +467,7 @@ class MoodSearch(
                 if (w !in FILLER) terms += w
             }
             if (words.size in 2..3) terms += words.filter { it !in FILLER }.joinToString(" ")
-            return terms.filter { it.length >= 3 }.take(4)
+            return terms.filter { it.length >= 3 }.take(MAX_TERMS)
         }
     }
 }

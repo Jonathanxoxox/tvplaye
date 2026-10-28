@@ -544,11 +544,10 @@ private fun SeriesGrid(
         }
     }
     // The category column: a sheet over Cinematic, a column beside the titles otherwise.
-    val categoryQuery by vm.categoryQuery.collectAsStateWithLifecycle()
     val categoryColumn: @Composable (Boolean, () -> Unit, Modifier) -> Unit = { sheet, onRight, columnModifier ->
         LiveCategories(
-            searchQuery = categoryQuery,
-            onSearchQueryChange = vm::setCategoryQuery,
+            // One search per section: the field above the titles (titles, people, genres) — none here.
+            showSearch = false,
             entries = categoryEntries,
             selectedIndex = selectedIndex,
             groupsHeading = groupsHeading,
@@ -679,7 +678,7 @@ private fun SeriesGrid(
                     ) {
                         StageSearchField(
                             query = searchQuery, onQueryChange = vm::setSearchQuery,
-                            placeholder = stringResource(R.string.content_search_in, headerLabel),
+                            placeholder = stringResource(R.string.vod_search_series_hint),
                             modifier = Modifier.width(440.mpx).focusRequester(listSearchFocus).then(searchLeft),
                             onEditingChange = { searchEditing = it },
                         )
@@ -783,7 +782,7 @@ private fun SeriesGrid(
                 ) {
                     StageSearchField(
                         query = searchQuery, onQueryChange = vm::setSearchQuery,
-                        placeholder = stringResource(R.string.content_search_in, headerLabel),
+                        placeholder = stringResource(R.string.vod_search_series_hint),
                         modifier = Modifier.weight(1f).focusRequester(listSearchFocus).then(searchLeft),
                         onEditingChange = { searchEditing = it },
                     )

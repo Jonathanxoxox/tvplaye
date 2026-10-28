@@ -1,0 +1,12 @@
+{
+  "_comment": "Names ElevenLabs Scribe should expect in a spoken search (keyterms: under 50 characters, at most 5 words each). Football first: Jonathan's teams and leagues.",
+  "keyterms": [
+    "HSV", "Hamburger SV", "BVB", "Borussia Dortmund", "FC Bayern", "Bayern München", "Liverpool", "FC Barcelona", "Barça",
+    "Schalke", "Werder Bremen", "St. Pauli", "RB Leipzig", "Bayer Leverkusen", "Eintracht Frankfurt", "VfB Stuttgart",
+    "Bundesliga", "2. Bundesliga", "Champions League", "Europa League", "Conference League", "DFB-Pokal", "Premier League", "La Liga",
+    "Nationalmannschaft", "Dänemark", "Nations League",
+    "Sky Sport", "Sky Sport Bundesliga", "Sky Cinema", "DAZN", "WOW", "ZDF", "ARD", "Das Erste", "RTL", "ProSieben", "Sat.1",
+    "kabel eins", "VOX", "Sport1", "Eurosport", "ServusTV", "Magenta Sport", "Netflix", "Disney+", "Prime Video", "Apple TV+",
+    "Paramount+", "Sportschau", "Tagesschau", "Tatort"
+  ]
+}

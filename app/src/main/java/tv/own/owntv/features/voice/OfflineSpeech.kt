@@ -23,10 +23,13 @@ import org.vosk.LibVosk
 import org.vosk.LogLevel
 import org.vosk.Model
 import org.vosk.Recognizer
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import java.util.Locale
 import java.util.zip.ZipInputStream
 
@@ -150,13 +153,16 @@ object OfflineSpeech {
         if (!unpacking.renameTo(target)) throw IOException("could not move the voice model into place")
     }
 
+    /** One spoken search: the model's guesses (best first, empty = nothing understood) and the sound. */
+    class Heard(val guesses: List<String>, val pcm: ByteArray)
+
     /**
      * Listens until the speaker stops (or [stopRequested] turns true), showing what it hears so far
-     * through [partial]. Returns what was said, best guess first, empty when nothing was understood.
-     * Throws [IllegalStateException] when the microphone cannot be opened.
+     * through [partial]. The recording comes back too (16 kHz mono 16-bit little-endian), for
+     * [ScribeClient]. Throws [IllegalStateException] when the microphone cannot be opened.
      */
     @SuppressLint("MissingPermission") // The caller asks for RECORD_AUDIO first.
-    suspend fun listen(model: Model, stopRequested: () -> Boolean, partial: (String) -> Unit): List<String> = withContext(Dispatchers.IO) {
+    suspend fun listen(model: Model, stopRequested: () -> Boolean, partial: (String) -> Unit): Heard = withContext(Dispatchers.IO) {
         val minBuffer = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val record = AudioRecord(
             MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE,
@@ -173,16 +179,23 @@ object OfflineSpeech {
                 record.startRecording()
                 if (record.recordingState != AudioRecord.RECORDSTATE_RECORDING) throw IllegalStateException("microphone is busy")
                 val chunk = ShortArray(SAMPLE_RATE / 10) // 100 ms
+                val sound = ByteArrayOutputStream(SAMPLE_RATE * 2 * 4)
+                val bytes = ByteBuffer.allocate(chunk.size * 2).order(ByteOrder.LITTLE_ENDIAN)
                 val started = SystemClock.elapsedRealtime()
                 var heardSomething = false
                 while (true) {
                     ensureActive()
                     val n = record.read(chunk, 0, chunk.size)
                     if (n < 0) throw IllegalStateException("microphone read failed: $n")
+                    if (n > 0) {
+                        bytes.clear()
+                        bytes.asShortBuffer().put(chunk, 0, n)
+                        sound.write(bytes.array(), 0, n * 2)
+                    }
                     if (n > 0 && recognizer.acceptWaveForm(chunk, n)) {
                         // A pause: the sentence is over, unless it was silence before speaking.
                         val said = alternatives(recognizer.result)
-                        if (said.isNotEmpty()) return@withContext said
+                        if (said.isNotEmpty()) return@withContext Heard(said, sound.toByteArray())
                     } else if (n > 0) {
                         val now = runCatching { JSONObject(recognizer.partialResult).optString("partial") }.getOrDefault("")
                         if (now.isNotBlank()) { heardSomething = true; partial(now) }
@@ -190,7 +203,7 @@ object OfflineSpeech {
                     val elapsed = SystemClock.elapsedRealtime() - started
                     if (stopRequested() || elapsed > MAX_LISTEN_MS || (!heardSomething && elapsed > SILENCE_TIMEOUT_MS)) break
                 }
-                alternatives(recognizer.finalResult)
+                Heard(alternatives(recognizer.finalResult), sound.toByteArray())
             }
         } finally {
             runCatching { record.stop() }

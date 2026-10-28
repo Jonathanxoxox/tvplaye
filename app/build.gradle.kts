@@ -114,6 +114,13 @@ android {
             ?: ""
         buildConfigField("String", "TYPESAFE_API_KEY", "\"${typesafeKey.filter { it.isLetterOrDigit() || it in "_-." }}\"")
 
+        // Mayo TV: ElevenLabs key for the mic search's speech to text (Scribe) — GitHub secret
+        // ELEVENLABS_API_KEY → env MAYO_ELEVENLABS_KEY. Blank = the on-box recogniser only.
+        val elevenLabsKey = System.getenv("MAYO_ELEVENLABS_KEY")
+            ?: providers.gradleProperty("mayo.elevenLabsKey").orNull
+            ?: ""
+        buildConfigField("String", "ELEVENLABS_API_KEY", "\"${elevenLabsKey.filter { it.isLetterOrDigit() || it in "_-." }}\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

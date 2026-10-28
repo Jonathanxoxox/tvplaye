@@ -110,6 +110,37 @@ internal class CatalogPagingSource<T : Any>(
 }
 
 /**
+ * A Filme/Serien search with extra finds: the title matches ([titles], up to [MAX_TITLES]) and then
+ * the titles of [extraIds] that are not among them (an actor's films, a described search's picks),
+ * as a single page. Without extras the title source is used as it is, paged.
+ */
+internal class SearchPagingSource<T : Any>(
+    private val titles: PagingSource<Int, T>,
+    private val extraIds: List<Long>,
+    private val fetch: suspend (List<Long>) -> List<T>,
+    private val idOf: (T) -> Long,
+) : PagingSource<Int, T>() {
+    override fun getRefreshKey(state: PagingState<Int, T>): Int? = null
+
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, T> {
+        if (params.key != null) return LoadResult.Page(emptyList(), null, null)
+        val byTitle = when (val r = titles.load(LoadParams.Refresh(null, MAX_TITLES, false))) {
+            is LoadResult.Page -> r.data
+            is LoadResult.Error -> return LoadResult.Error(r.throwable)
+            is LoadResult.Invalid -> emptyList()
+        }
+        val seen = byTitle.mapTo(HashSet()) { idOf(it) }
+        val wanted = extraIds.distinct().filter { it !in seen }
+        val rows = runCatching { fetch(wanted) }.getOrElse { return LoadResult.Error(it) }.associateBy(idOf)
+        return LoadResult.Page(byTitle + wanted.mapNotNull { rows[it] }, prevKey = null, nextKey = null)
+    }
+
+    private companion object {
+        const val MAX_TITLES = 300
+    }
+}
+
+/**
  * The catalogs a section shows, newest data first: "Weiterschauen" from the profile's progress,
  * "Gerade angesagt", "Neu in deiner Playlist", "Für dich", "Bestbewertet", then genres, collections
  * and streaming services. Empty catalogs drop out; a TMDB catalog needs [MIN_TMDB] titles to stay.

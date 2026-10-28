@@ -47,6 +47,9 @@ class VoiceQuery(private val context: Context, okHttp: OkHttpClient) {
     /** [heard]: the recogniser's guesses, best first (never empty). [search]: the app's own search. */
     suspend fun resolve(heard: List<String>, search: suspend (String) -> SearchResults): String {
         val best = heard.first()
+        // A whole sentence is a description ("ein gruseliger Film mit Hütte im Wald"): it stays as said,
+        // for the search by description, instead of being swapped for a name that shares a word.
+        if (best.split(' ').count { it.isNotBlank() } >= SENTENCE_WORDS) return best
         val options = LinkedHashMap<String, Option>()
         fun add(text: String, kind: Kind) {
             val clean = text.trim()
@@ -103,6 +106,7 @@ class VoiceQuery(private val context: Context, okHttp: OkHttpClient) {
         const val MAX_WORD_LOOKUPS = 6
         const val PER_KIND = 3
         const val MIN_WORD = 3
+        const val SENTENCE_WORDS = 5
         const val KEY_KINDS = "kinds"
         const val KEY_FILLER = "filler"
         const val KEY_CRITERIA = "criteria"

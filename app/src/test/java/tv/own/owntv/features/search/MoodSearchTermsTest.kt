@@ -16,4 +16,10 @@ class MoodSearchTermsTest {
 
     @Test
     fun shortWordsAreIgnored() = assertEquals(listOf("lustige", "kiffer", "kifferfilme", "lustige kifferfilme"), MoodSearch.keywordTerms("lustige Kifferfilme am"))
+
+    @Test
+    fun spokenSentenceKeepsTheWish() = assertEquals(
+        listOf("gruseligen", "hütte", "wald"),
+        MoodSearch.keywordTerms("Ich möchte einen gruseligen Film mit Hütte im Wald schauen"),
+    )
 }
