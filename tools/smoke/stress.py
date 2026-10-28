@@ -256,6 +256,15 @@ def lifecycle():
     T.shot("kaltstarts")
 
 
+def bad_links():
+    """Kaputte owntv://-Links, wie sie jede App oder ein Launcher schicken kann."""
+    for link in ["owntv:play", "owntv://play?channel=abc&source=-1", "owntv://play?channel=999999&source=999999",
+                 "owntv://open?match=", "owntv://open?match=gibt-es-nicht", "owntv://"]:
+        T.sh(f"am start -a android.intent.action.VIEW -d '{link}' {PKG}")
+        time.sleep(4)
+    T.shot("kaputte-links")
+
+
 def key_storm():
     """Schneller als die App zeichnet: Zappen im Vollbild, Fokus quer durch den Guide."""
     play_first_channel()
@@ -311,7 +320,7 @@ def main():
         parts = [p for p in os.environ.get("STRESS_PARTS", "all").replace(" ", "").split(",") if p]
         for part, fn in [
             ("stream", stream_loss), ("offline", offline), ("playlist", broken_sources),
-            ("lifecycle", lifecycle), ("keys", key_storm),
+            ("lifecycle", lifecycle), ("links", bad_links), ("keys", key_storm),
             ("monkey", lambda: (monkey(7), monkey(42))), ("persist", still_set_up),
         ]:
             if "all" in parts or part in parts:

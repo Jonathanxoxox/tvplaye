@@ -125,7 +125,9 @@ open class MainActivity : ComponentActivity() {
      * "Für dich" match tile is no core link: it is handed to Sports ([SportsPlayback.launcherMatch]) and
      * must not reach core, which reads its owntv://open as "open Live TV".
      */
-    private fun deepLinkOf(uri: android.net.Uri?): LauncherDeepLink? {
+    private fun deepLinkOf(link: android.net.Uri?): LauncherDeepLink? {
+        // An opaque link ("owntv:play", from any app or adb) has no query: reading one throws, at start.
+        val uri = link?.takeIf { it.isHierarchical }
         tv.own.owntv.launcher.LauncherRows.matchFrom(uri)?.let { key ->
             sportsPlayback.launcherMatch.value = key
             return null
