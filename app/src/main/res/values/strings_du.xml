@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The English of the texts values-de/strings_du.xml says with "du": core's own, so the German override has a default (lint). -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="settings_customize_move_items_selected"> <item quantity="one"><xliff:g id="count">%1$d</xliff:g> item selected. Keep pressing ⤒ ↑ ↓ ⤓ to move it.</item> <item quantity="other"><xliff:g id="count">%1$d</xliff:g> items selected. Keep pressing ⤒ ↑ ↓ ⤓ to move them together.</item> </plurals>
+    <plurals name="sync_warning_catalog_shrink"> <item quantity="one">Kept <xliff:g id="stored">%1$d</xliff:g> existing item \u2014 this import returned <xliff:g id="percent">%2$d</xliff:g>%% fewer. Sync again, or use Force clean sync if the provider really removed it.</item> <item quantity="other">Kept <xliff:g id="stored">%1$d</xliff:g> existing items \u2014 this import returned <xliff:g id="percent">%2$d</xliff:g>%% fewer. Sync again, or use Force clean sync if the provider really removed them.</item> </plurals>
+    <string name="common_resume_position">You stopped at <xliff:g id="position">%1$s</xliff:g>.</string>
+    <string name="companion_add_description">Fill in one source and press Send. It appears on the TV \u2014 pick up the remote and press Start Import there when you are ready.</string>
+    <string name="companion_saved_source_body"><xliff:g id="name">%1$s</xliff:g> is now on the TV\'s Add source screen. Check the details there and press Start Import on the remote.</string>
+    <string name="content_download_watch_body">A download from <xliff:g id="playlist">%1$s</xliff:g> was using it, so it is paused for now. Watch, or close the player and keep downloading?</string>
+    <string name="content_download_watch_setting_description">For playlists that allow only one stream: what happens to a download when you start playing.</string>
+    <string name="content_downloads_reason_paused_watching">Paused while you watch</string>
+    <string name="content_downloads_reason_too_large">Too large for this drive: it cannot store files over 4 GB. Choose another download folder, or format the drive as exFAT</string>
+    <string name="content_downloads_reason_waiting_watching">Waiting: starts when you stop watching</string>
+    <string name="content_epg_match_prompt">Pick the guide channel for \u201c<xliff:g id="channel">%1$s</xliff:g>\u201d.</string>
+    <string name="content_epg_match_prompt_current">Pick the guide channel for \u201c<xliff:g id="channel">%1$s</xliff:g>\u201d. Current: <xliff:g id="match">%2$s</xliff:g></string>
+    <string name="content_epg_no_programme">No program at this time.</string>
+    <string name="content_restore_incomplete_message">The app closed while restoring <xliff:g id="description">%1$s</xliff:g>, so some of it may be missing. Nothing was deleted \u2014 run the same restore again from Settings \u2192 Backup &amp; Restore to fill in the rest.</string>
+    <string name="recovery_data_safe_full">Your profiles, playlists, favorites and history have NOT been deleted \u2014 this is a database upgrade failure, and the data is still on this device.\n\nPlease report this so it can be fixed, and include the message below.</string>
+    <string name="settings_accent_yours">Yours</string>
+    <string name="settings_auto_frame_rate_description">Match the TV\'s refresh rate to the video (24/25/50/60 fps) in full screen, for Live TV and VOD, and restore it on exit. Turn off if your TV or receiver re-handshakes HDMI noisily on every channel change.</string>
+    <string name="settings_browsing_description_full">What Live TV, Movies and Series return to when you come back.</string>
+    <string name="settings_bulk_rename_too_many_description">This category has too many items for one bulk rename — rename it in smaller spans.</string>
+    <string name="settings_catchup_timezone_description">How catch-up timestamps are sent. Automatic uses the time zone your provider\'s server reports, or your device\'s if it reports none. You can also choose Device, or set the offset yourself.</string>
+    <string name="settings_choose_history">Choose what to remove for this profile. Playlists, favorites and downloads are not affected.</string>
+    <string name="settings_custom_location_description">Override the city used for weather. Leave blank to auto-detect, or enter a city (e.g. London) or \"lat,lon\" (e.g. 51.5,-0.12). Useful on a VPN, where auto-detect resolves to the server\'s city.</string>
+    <string name="settings_customize_new_category_description">A combined category for this profile — move channels, movies or series into it.</string>
+    <string name="settings_dns_connection_refused">Connection refused — check the server address and port.</string>
+    <string name="settings_dns_enter_server">Enter a DNS server host or a DoH URL.</string>
+    <string name="settings_dns_explanation">Custom DNS can help bypass ISP-level domain blocking or enable geo-unblocking via SmartDNS services. DNS-over-HTTPS (DoH) is recommended — it encrypts your lookups.</string>
+    <string name="settings_dns_network_unreachable">Network is unreachable — check the server address.</string>
+    <string name="settings_dns_server_missing">Custom DNS is enabled but no server is configured. Enter a server address and select Save, or turn this off.</string>
+    <string name="settings_dns_test_failed">DNS test failed — check the server address.</string>
+    <string name="settings_download_remote_description">On any device with a browser on the same Wi-Fi — a phone, a computer or another TV — scan the QR (or open the URL), enter this PIN, and download your backup file to keep it safe.</string>
+    <string name="settings_group_summary_quick">The toggles you reach for most</string>
+    <string name="settings_hardware_decoding_description">Use the TV\'s hardware decoder. Turn off if some streams stutter or show artifacts.</string>
+    <string name="settings_help_accent">Tints buttons, the focus glow, progress bars and highlights everywhere. Pick a preset, or press OK for the palette and any hex code.</string>
+    <string name="settings_help_add_from_phone">Open the address or scan the code in a browser on any device on the same Wi-Fi — a phone, a computer or another TV — fill in your playlist there and send it here. Much faster than typing a URL with the remote.</string>
+    <string name="settings_help_add_type_here">Type an Xtream login, an M3U address or a Stalker portal with the remote, then start the import from the panel.</string>
+    <string name="settings_help_catchup_timezone">Catch-up plays programs from your provider’s archive. Automatic uses the time zone your provider reports, or your TV’s own clock if it reports none; choose a fixed UTC offset if catch-up still starts at the wrong time. This is also where you choose which player catch-up uses.</string>
+    <string name="settings_help_channel_numbers">Shows your provider’s channel number beside the name in the Live TV list, the channel-list overlay and the player, and lets you type a number on the remote in full screen to jump to that channel.</string>
+    <string name="settings_help_customize">Hide categories and items you never watch, give categories your own names and put them in your order. Hidden things come back here, never lost.</string>
+    <string name="settings_help_dns">Looks up your provider’s addresses with a DNS server of your choice instead of your network’s own — useful when your network blocks or redirects them.</string>
+    <string name="settings_help_epg_sources">Add an XMLTV guide feed by its link, refresh it, or remove it. Feeds fill the TV Guide and the program lines in Live TV.</string>
+    <string name="settings_help_focus">The ring drawn around whatever has focus. Pick its color and thickness so it stays easy to follow from the sofa.</string>
+    <string name="settings_help_home">Pick which rows Home shows and in what order, and how the Now trending row looks.</string>
+    <string name="settings_help_hw">Uses the TV’s hardware decoder: smooth 4K and less heat. Turn it off only if some streams stutter or show blocks; the software decoder then does the work.</string>
+    <string name="settings_help_live_preview">The focused channel plays in the preview beside the Live TV list, so you see what is on before you open it. Needs a layout with room for the preview.</string>
+    <string name="settings_help_mini">The small player that keeps a channel going in a corner while you browse. Choose its size and the corner it sits in.</string>
+    <string name="settings_help_playlist_url">The address of your .m3u or .m3u8 list.</string>
+    <string name="settings_help_playlists">Add a playlist from a link, an Xtream login, a Stalker portal or a file, re-sync one, or remove it.</string>
+    <string name="settings_help_resume">Ask to resume offers Resume or Start over when a film or episode has a saved position. Always resume carries on where you stopped; Never resume starts from the beginning.</string>
+    <string name="settings_help_sub_lang">Subtitles in this language are switched on by themselves when a stream has them. Otherwise subtitles stay off until you pick a track in the player.</string>
+    <string name="settings_help_volume">The volume every channel, film and episode starts at. Above 100%% quiet streams are amplified. A volume you change in the player is kept for that title until you reset it.</string>
+    <string name="settings_help_weather">Shows the temperature and your town next to the clock. Set a location by hand when the automatic one is wrong — behind a VPN, for example — and choose Celsius or Fahrenheit.</string>
+    <string name="settings_hex_error">Enter 6 hex digits, e.g. 52DBC8</string>
+    <string name="settings_hidden_sections">Hidden sections stay listed so you can turn them back on.</string>
+    <string name="settings_language_contribution_copy_failed">The link could not be copied. Read or type the URL shown above.</string>
+    <string name="settings_language_contribution_open_failed">The link could not be opened. Copy it instead.</string>
+    <string name="settings_language_contribution_qr_failed">The QR code could not be generated. Use the link shown below instead.</string>
+    <string name="settings_line_fill_from_playlist">Use the guide address your playlist gives</string>
+    <string name="settings_line_remote_shortcuts_on">Off keeps your assignments</string>
+    <string name="settings_line_saved_choices">Films and episodes you switched by hand</string>
+    <string name="settings_line_saved_live_choices">Channels you switched by hand</string>
+    <string name="settings_line_timeshift_window">How far back you can go</string>
+    <string name="settings_live_preview_note">Changes show here as you move, before you leave the row.</string>
+    <string name="settings_live_preview_panel_hidden_description">The Live TV Preview panel is hidden. Give it a width above 0%% in Panel Width Adjustment before turning Preview video on.</string>
+    <string name="settings_location_hint">Leave blank to auto-detect from your public IP. Enter a city (e.g. London) or \"lat,lon\" (e.g. 51.5,-0.12).</string>
+    <string name="settings_metadata_allowance">Your shared allowance</string>
+    <string name="settings_metadata_empty_title">Enter a title to look up.</string>
+    <string name="settings_metadata_key_from_phone_desc">Open the address in a browser on any device — a phone, a computer or another TV — sign in to TMDB there, and send the key across. Nothing to type with the remote.</string>
+    <string name="settings_metadata_limit_reached">Daily metadata share used up — add your own TMDB key in Settings → Metadata to remove this limit.</string>
+    <string name="settings_metadata_provider_description">Use only what your playlist provides. No TMDB lookups.</string>
+    <string name="settings_metadata_provider_tmdb_description">Your playlist\'s info wins; TMDB fills the gaps and adds cast, genres &amp; backdrops.</string>
+    <string name="settings_metadata_server_description">Leave both blank to use the built-in shared server (no setup). Enter your own TMDB API key to call TMDB directly, or a self-hosted server URL to use your own proxy/mirror. A URL takes priority over a key.</string>
+    <string name="settings_metadata_source_description">Choose where Movies &amp; Series details come from.</string>
+    <string name="settings_metadata_tmdb_only_description">Prefer TMDB for every field; fall back to your playlist only when TMDB has nothing.</string>
+    <string name="settings_mini_player_description">The small floating player you get when you dock (PiP) a channel while browsing. Change these here, or on the fly with the resize / move buttons on the mini-player itself.</string>
+    <string name="settings_move_category_description">The item leaves “<xliff:g id="name">%1$s</xliff:g>” unless you keep it there.</string>
+    <string name="settings_multiview_description">Watch several live channels at once. You choose how many each time, up to this limit — every tile uses one of your provider\'s connections.</string>
+    <string name="settings_open_subtitles_setup_remote_description">Fill in your details in a browser on another device on the same Wi-Fi — a phone, a computer or another TV.</string>
+    <string name="settings_panel_width_disable_preview_description">Live Preview video is currently on. Hiding the Preview panel will turn the video off, and it cannot be turned on again until you give the Preview panel a width in Panel Width Adjustment.</string>
+    <string name="settings_playback_error_description_full">The last crash and the most recent playback failures (newest first). Include these details when reporting a problem.</string>
+    <string name="settings_proxy_invalid_address">Enter a valid host and port (1–65535).</string>
+    <string name="settings_proxy_privacy">Your proxy provider can see which servers you connect to, and the contents of any non-HTTPS traffic.</string>
+    <string name="settings_record_watching_description">Adds a record button to the player that saves the channel you are watching. It fetches the channel itself, so it uses one of your provider’s connections while it runs, and it keeps recording after you change channel or leave the player.</string>
+    <string name="settings_record_watching_warning_description">Recording fetches the channel a second time, so it uses another of your provider’s connections. On an account that allows only one, the recording is refused while you are watching. Once started it keeps going on its own — change channel, leave the player, and it carries on until the programme ends or you stop it from Recordings.</string>
+    <string name="settings_remote_details_note">The details appear here; you press Start import with the remote.</string>
+    <string name="settings_subtitle_color_hex_hint">Enter 6 hex digits, e.g. FFEB3B</string>
+    <string name="settings_subtitle_customize_description">Turn this on, then change only what you want — anything left on Default keeps the stock look, including the colors and placement broadcasters embed in Live TV subtitles.</string>
+    <string name="settings_subtitle_delete_help">Deleting frees the space; you can download it again from the player.</string>
+    <string name="settings_tier_key">Your TMDB key</string>
+    <string name="setup_phone_background_description">On any device with a browser on the same Wi-Fi — a phone, a computer or another TV — scan the QR (or open the URL), enter this PIN and send a photo. It becomes the background instantly.</string>
+    <string name="setup_profile_sub">A profile keeps its own favorites, history and Home. Add more later in Settings › Profile.</string>
+    <string name="setup_restore_choice_description">Send the backup by Remote from any device with a browser on the same Wi-Fi, or pick a backup file already on this device.</string>
+    <string name="setup_setup_choice_description">Start fresh, or bring back your profiles, playlists and favorites from a backup file or another device.</string>
+    <string name="setup_welcome_sub">Your own IPTV player. Choose a language to begin — you can change it later in Settings.</string>
+    <string name="sync_error_auth">The server rejected your login. Check your username and password.</string>
+    <string name="sync_error_generic">Something went wrong. Please try again.</string>
+    <string name="sync_error_guide_empty">This guide is empty right now. The provider may not have published it yet \u2014 please try again later.</string>
+    <string name="sync_error_interrupted">The server interrupted the download. Please try again.</string>
+    <string name="sync_error_invalid_mac">Invalid MAC address \u2014 use AA:BB:CC:DD:EE:FF</string>
+    <string name="sync_error_mac">The portal refused this MAC address. Check the MAC (and the TV\'s date &amp; time) \u2014 or the subscription may have expired.</string>
+    <string name="sync_error_malformed_guide">The guide data from the server was malformed. Some of it may still have loaded \u2014 please try again, or check the EPG URL.</string>
+    <string name="sync_error_not_found">Not found on the server. Check the URL.</string>
+    <string name="sync_error_offline">You appear to be offline. Check your connection and try again.</string>
+    <string name="sync_error_portal">Couldn\'t reach the portal. Check the portal URL \u2014 it usually ends in /c/.</string>
+    <string name="sync_error_server">The server had a problem. Please try again later.</string>
+    <string name="sync_error_session">The portal session expired. Please try again.</string>
+    <string name="sync_error_timeout">The server took too long to respond. Please try again.</string>
+    <string name="sync_error_unreachable">Couldn\'t reach the server. Check the address and your connection.</string>
+    <string name="sync_remainder_note">The rest of the catalog is still syncing in the background \u2014 you can start watching now. Progress shows in the small pill at the bottom of the screen.</string>
+</resources>

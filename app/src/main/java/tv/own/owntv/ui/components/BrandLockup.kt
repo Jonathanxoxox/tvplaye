@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -48,6 +49,12 @@ fun BrandMark(size: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) 
     }
 }
 
+/**
+ * How far in the letters of the wordmark start: the picture keeps room for the glow on both sides (335 of
+ * 1806 px). Next to other things, shift it left by this × its width so "M" lines up with what is beside or below it.
+ */
+const val WordmarkInset = 335f / 1806f
+
 /** The wordmark at [width]: the cream "Mayo TV" with a warm glow, one picture of 903 × 180. [subtle] as for [BrandMark]. */
 @Composable
 fun Wordmark(width: Dp, modifier: Modifier = Modifier, subtle: Boolean = false) {
@@ -74,9 +81,11 @@ fun BrandLockup(
     stacked: Boolean = false,
     subtle: Boolean = true,
 ) {
+    val wordWidth = (markSize * 2.75f).dp
     val parts = @Composable {
         BrandMark(markSize.dp, subtle = subtle)
-        Wordmark((markSize * 2.75f).dp, subtle = subtle)
+        // Side by side the glow margin would double the gap; stacked, the letters are centred in the picture anyway.
+        Wordmark(wordWidth, if (stacked) Modifier else Modifier.offset(x = -wordWidth * WordmarkInset), subtle = subtle)
     }
     if (stacked) {
         Column(
