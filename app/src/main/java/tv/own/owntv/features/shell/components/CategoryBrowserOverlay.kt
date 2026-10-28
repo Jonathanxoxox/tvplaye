@@ -36,6 +36,7 @@ import tv.own.owntv.features.live.liveCategoryEntries
 import tv.own.owntv.features.settings.SettingsViewModel
 import tv.own.owntv.ui.components.chNavPaging
 import tv.own.owntv.ui.theme.gradientWash
+import tv.own.owntv.ui.theme.stageEnter
 import tv.own.owntv.ui.theme.mpx
 
 /**
@@ -87,6 +88,8 @@ fun CategoryBrowserOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
+            // In from the left like the channel list it opens from; the sheet is 460 of 1920.
+            .stageEnter(x = -0.25f)
             .gradientWash(false, 0f to shade.copy(alpha = 0.72f), 0.38f to shade.copy(alpha = 0.45f), 0.62f to Color.Transparent),
     ) {
         LiveCategories(
