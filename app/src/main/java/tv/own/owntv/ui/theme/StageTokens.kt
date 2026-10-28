@@ -87,8 +87,10 @@ data class StagePalette(
         val Dark = StagePalette(
             isLight = false,
             text = Color(0xFFF4FAFA),
-            muted = Color(0xFFB3D4D6),
-            dim = Color(0xFF86B6B9),
+            // Lifted for the room (28 Oct 2026): dim was 2.9 : 1 on the glass panels, counts and headings faded
+            // out from the sofa. Now muted 4.6 : 1 and dim 3.6 : 1 on glass (5 : 1 on the page), still a step apart.
+            muted = Color(0xFFC6DFE0),
+            dim = Color(0xFFA4C8CA),
             itemText = Color(0xFFEAF4F5),
             menuItemText = Color(0xFFEAF4F5),
             tagText = Color(0xFFCBE3E4),

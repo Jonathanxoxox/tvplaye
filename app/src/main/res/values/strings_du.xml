@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The English of the texts values-de/strings_du.xml says with "du": core's own, so the German override has a default (lint). -->
+<!-- The English of the texts values-de/strings_du.xml rewrites (du, TV-Guide): core's own, so the German override has a default (lint). -->
 <resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <plurals name="settings_customize_move_items_selected"> <item quantity="one"><xliff:g id="count">%1$d</xliff:g> item selected. Keep pressing ⤒ ↑ ↓ ⤓ to move it.</item> <item quantity="other"><xliff:g id="count">%1$d</xliff:g> items selected. Keep pressing ⤒ ↑ ↓ ⤓ to move them together.</item> </plurals>
+    <plurals name="settings_epg_sources_status_count_channels"> <item quantity="one">The guide contains <xliff:g id="channels">%1$d</xliff:g> channel.</item> <item quantity="other">The guide contains <xliff:g id="channels">%1$d</xliff:g> channels.</item> </plurals>
     <plurals name="sync_warning_catalog_shrink"> <item quantity="one">Kept <xliff:g id="stored">%1$d</xliff:g> existing item \u2014 this import returned <xliff:g id="percent">%2$d</xliff:g>%% fewer. Sync again, or use Force clean sync if the provider really removed it.</item> <item quantity="other">Kept <xliff:g id="stored">%1$d</xliff:g> existing items \u2014 this import returned <xliff:g id="percent">%2$d</xliff:g>%% fewer. Sync again, or use Force clean sync if the provider really removed them.</item> </plurals>
+    <string name="common_nav_guide">TV Guide</string>
     <string name="common_resume_position">You stopped at <xliff:g id="position">%1$s</xliff:g>.</string>
     <string name="companion_add_description">Fill in one source and press Send. It appears on the TV \u2014 pick up the remote and press Start Import there when you are ready.</string>
     <string name="companion_saved_source_body"><xliff:g id="name">%1$s</xliff:g> is now on the TV\'s Add source screen. Check the details there and press Start Import on the remote.</string>
@@ -11,9 +13,15 @@
     <string name="content_downloads_reason_paused_watching">Paused while you watch</string>
     <string name="content_downloads_reason_too_large">Too large for this drive: it cannot store files over 4 GB. Choose another download folder, or format the drive as exFAT</string>
     <string name="content_downloads_reason_waiting_watching">Waiting: starts when you stop watching</string>
+    <string name="content_epg_add_description">Add an EPG (XMLTV) source to fill the guide with programs.</string>
+    <string name="content_epg_add_playlist">Add a playlist to see the guide.</string>
+    <string name="content_epg_create_profile">Create a profile to see the guide.</string>
     <string name="content_epg_match_prompt">Pick the guide channel for \u201c<xliff:g id="channel">%1$s</xliff:g>\u201d.</string>
     <string name="content_epg_match_prompt_current">Pick the guide channel for \u201c<xliff:g id="channel">%1$s</xliff:g>\u201d. Current: <xliff:g id="match">%2$s</xliff:g></string>
+    <string name="content_epg_no_channels_query">No guide channels found for \u201c<xliff:g id="query">%1$s</xliff:g>\u201d.</string>
     <string name="content_epg_no_programme">No program at this time.</string>
+    <string name="content_epg_title">TV Guide</string>
+    <string name="content_no_guide_channels">No guide channels match \u201c<xliff:g id="query">%1$s</xliff:g>\u201d.</string>
     <string name="content_restore_incomplete_message">The app closed while restoring <xliff:g id="description">%1$s</xliff:g>, so some of it may be missing. Nothing was deleted \u2014 run the same restore again from Settings \u2192 Backup &amp; Restore to fill in the rest.</string>
     <string name="recovery_data_safe_full">Your profiles, playlists, favorites and history have NOT been deleted \u2014 this is a database upgrade failure, and the data is still on this device.\n\nPlease report this so it can be fixed, and include the message below.</string>
     <string name="settings_accent_yours">Yours</string>
@@ -31,7 +39,14 @@
     <string name="settings_dns_server_missing">Custom DNS is enabled but no server is configured. Enter a server address and select Save, or turn this off.</string>
     <string name="settings_dns_test_failed">DNS test failed — check the server address.</string>
     <string name="settings_download_remote_description">On any device with a browser on the same Wi-Fi — a phone, a computer or another TV — scan the QR (or open the URL), enter this PIN, and download your backup file to keep it safe.</string>
+    <string name="settings_epg_sources_name_hint">e.g. UK Guide</string>
+    <string name="settings_epg_sources_nav_description">Add XMLTV guide feeds for the TV Guide</string>
+    <string name="settings_epg_sources_use_logos">Use this guide\'s channel logos</string>
     <string name="settings_group_summary_quick">The toggles you reach for most</string>
+    <string name="settings_guide_sync_failed">TV guide sync failed</string>
+    <string name="settings_guide_synced">TV guide synced</string>
+    <string name="settings_guide_width">Guide column widths</string>
+    <string name="settings_guide_width_description">Resize the channel list and EPG timeline in the TV Guide.</string>
     <string name="settings_hardware_decoding_description">Use the TV\'s hardware decoder. Turn off if some streams stutter or show artifacts.</string>
     <string name="settings_help_accent">Tints buttons, the focus glow, progress bars and highlights everywhere. Pick a preset, or press OK for the palette and any hex code.</string>
     <string name="settings_help_add_from_phone">Open the address or scan the code in a browser on any device on the same Wi-Fi — a phone, a computer or another TV — fill in your playlist there and send it here. Much faster than typing a URL with the remote.</string>
@@ -85,9 +100,15 @@
     <string name="settings_record_watching_description">Adds a record button to the player that saves the channel you are watching. It fetches the channel itself, so it uses one of your provider’s connections while it runs, and it keeps recording after you change channel or leave the player.</string>
     <string name="settings_record_watching_warning_description">Recording fetches the channel a second time, so it uses another of your provider’s connections. On an account that allows only one, the recording is refused while you are watching. Once started it keeps going on its own — change channel, leave the player, and it carries on until the programme ends or you stop it from Recordings.</string>
     <string name="settings_remote_details_note">The details appear here; you press Start import with the remote.</string>
+    <string name="settings_search_guide_logos">Guide channel logos</string>
+    <string name="settings_search_keywords_epg">xmltv guide feed program</string>
+    <string name="settings_search_keywords_logos">channel logo icon xmltv guide picon playlist</string>
     <string name="settings_subtitle_color_hex_hint">Enter 6 hex digits, e.g. FFEB3B</string>
     <string name="settings_subtitle_customize_description">Turn this on, then change only what you want — anything left on Default keeps the stock look, including the colors and placement broadcasters embed in Live TV subtitles.</string>
     <string name="settings_subtitle_delete_help">Deleting frees the space; you can download it again from the player.</string>
+    <string name="settings_sync_guide_description">Download the program guide (EPG) for “<xliff:g id="source">%1$s</xliff:g>”. You can also do this later in Settings → Sources &amp; guide → EPG Sources.</string>
+    <string name="settings_sync_guide_question">Sync the TV guide now?</string>
+    <string name="settings_syncing_guide">Syncing TV guide…</string>
     <string name="settings_tier_key">Your TMDB key</string>
     <string name="setup_phone_background_description">On any device with a browser on the same Wi-Fi — a phone, a computer or another TV — scan the QR (or open the URL), enter this PIN and send a photo. It becomes the background instantly.</string>
     <string name="setup_profile_sub">A profile keeps its own favorites, history and Home. Add more later in Settings › Profile.</string>
@@ -109,4 +130,6 @@
     <string name="sync_error_timeout">The server took too long to respond. Please try again.</string>
     <string name="sync_error_unreachable">Couldn\'t reach the server. Check the address and your connection.</string>
     <string name="sync_remainder_note">The rest of the catalog is still syncing in the background \u2014 you can start watching now. Progress shows in the small pill at the bottom of the screen.</string>
+    <string name="sync_status_epg">Updating guide \u00b7 <xliff:g id="source">%1$s</xliff:g></string>
+    <string name="sync_status_epg_with_counts">Updating guide \u00b7 <xliff:g id="source">%1$s</xliff:g> \u00b7 <xliff:g id="counts">%2$s</xliff:g></string>
 </resources>

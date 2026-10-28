@@ -268,12 +268,12 @@ fun StageLiveBadge(text: String) {
     }
 }
 
-/** `.spec span`: one stream fact on a video ("FHD", "50 FPS"), 13/800 on black 50%. */
+/** `.spec span`: one stream fact on a video ("FHD", "50 FPS"), 15/800 on black 50%. */
 @Composable
 fun StageSpecChip(text: String) {
     Text(
         text,
-        style = stageText(13, 800, 0.05.em),
+        style = stageText(15, 800, 0.05.em),
         color = Color(0xFFE7EFEC),
         maxLines = 1, overflow = TextOverflow.Ellipsis,
         modifier = Modifier.background(Color.Black.copy(alpha = 0.5f), RoundedCornerShape(8.mpx)).padding(horizontal = 9.mpx, vertical = 5.mpx),
