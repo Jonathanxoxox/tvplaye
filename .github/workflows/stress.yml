@@ -5,8 +5,6 @@ name: Mayo TV Härtetest
 # monkey. Ergebnis (summary.txt, Fotos, Absturz-Puffer) im Zweig screens/<Arbeitszweig>-haertetest.
 # Läuft nur per Start (workflow_dispatch), nicht bei jedem Push.
 on:
-  push:
-    branches: [ "claude/project-thread-m2q3w7" ]  # TEMP: nur bis die Datei auf main liegt
   workflow_dispatch:
     inputs:
       parts:
