@@ -731,6 +731,14 @@ private fun StartLogPanel(modifier: Modifier = Modifier) {
             style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
             modifier = Modifier.padding(top = 4.mpx),
         )
+        val dexLast = DexMetadataHook.lastResult(androidx.compose.ui.platform.LocalContext.current)
+        if (dexLast != null) {
+            Text(
+                stringResource(R.string.tvplayer_startlog_dexmeta_last, dexLast),
+                style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.padding(top = 4.mpx),
+            )
+        }
         val half = (entries.size + 1) / 2
         Row(Modifier.padding(top = 12.mpx), horizontalArrangement = Arrangement.spacedBy(40.mpx)) {
             for (column in listOf(entries.take(half), entries.drop(half))) {
