@@ -132,6 +132,7 @@ fun OwnTVShell(
     weatherFahrenheit: Boolean = false,
     activeProfileId: Long?,
     pendingDeepLink: LauncherDeepLink?,
+    startedByLink: Boolean = false,
     onDeepLinkConsumed: () -> Unit,
     isOffline: Boolean = false,
     onExitApp: () -> Unit,
@@ -447,12 +448,13 @@ fun OwnTVShell(
     LaunchedEffect(Unit) {
         // Settled whichever way this ends: the parts of the start that depend on the start mode wait for it.
         coroutineContext[kotlinx.coroutines.Job]?.invokeOnCompletion { startModeDone.complete(Unit) }
-        if (playerMode != PlayerMode.NONE) return@LaunchedEffect
+        // A launcher tile chose what to show; the start mode would only overwrite it (last channel over a match page).
+        if (startedByLink || playerMode != PlayerMode.NONE) return@LaunchedEffect
         val pid = resumeSettings.activeProfileId.first()
         when (resumeSettings.startupMode(pid).first()) {
             tv.own.owntv.core.settings.StartupMode.LAST_CHANNEL -> {
                 val ch = liveVm.lastWatchedLiveChannel()
-                if (ch != null && playerMode == PlayerMode.NONE) {
+                if (ch != null && playerMode == PlayerMode.NONE && sportsMatchRequests.pendingMatch.value == null) {
                     zapSource = MainSection.LIVE_TV
                     // There is no caller-owned browse rail here. Let LiveViewModel build the channel's
                     // provider context instead of permanently arming a one-item list that disables CH+/CH-.
@@ -933,12 +935,12 @@ fun OwnTVShell(
     LaunchedEffect(profileReady) {
         if (!profileReady) return@LaunchedEffect
         sportsMatchRequests.launcherMatch.filterNotNull().collect { key ->
-            sportsMatchRequests.launcherMatch.value = null
             val match = sportsMatchRequests.matchByKey(key)
             if (playerMode != PlayerMode.NONE) closeForMatch()
             sportsMatchRequests.returnToMatch = null
             if (match != null) sportsMatchRequests.pendingMatch.value = match to null
             selectForMatch(MainSection.SPORTS)
+            sportsMatchRequests.launcherMatch.compareAndSet(key, null)
         }
     }
 

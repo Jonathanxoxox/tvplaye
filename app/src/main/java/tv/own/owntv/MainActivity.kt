@@ -97,6 +97,9 @@ open class MainActivity : ComponentActivity() {
     private val localeStore: tv.own.owntv.core.i18n.LocaleStore by inject()
     private var pendingDeepLink by mutableStateOf<LauncherDeepLink?>(null)
 
+    /** The process was started by a launcher tile (channel, movie, match…): the start mode must not also pick a picture. */
+    private var startedByLink = false
+
     /**
      * Wrap the Activity base with the selected locale so its own `Resources` resolve correctly —
      * Application wrapping alone leaves the Activity wrong, because
@@ -179,6 +182,7 @@ open class MainActivity : ComponentActivity() {
         val splashDeadline = SystemClock.uptimeMillis() + SPLASH_TIMEOUT_MS
         splash.setKeepOnScreenCondition { !contentReady && SystemClock.uptimeMillis() < splashDeadline }
         pendingDeepLink = deepLinkOf(intent.data)
+        startedByLink = pendingDeepLink != null || sportsPlayback.launcherMatch.value != null
         Log.d(TAG, "onCreate deepLinkHost=${intent.data?.host} deepLinkType=${pendingDeepLink?.javaClass?.simpleName ?: "none"}")
         val dbError = probeDatabase()
         if (dbError != null) {
@@ -462,6 +466,7 @@ open class MainActivity : ComponentActivity() {
                                 weatherFahrenheit = weatherFahrenheit,
                                 activeProfileId = activeProfileId,
                                 pendingDeepLink = pendingDeepLink,
+                                startedByLink = startedByLink,
                                 onDeepLinkConsumed = { pendingDeepLink = null },
                                 isOffline = !isOnline,
                                 onExitApp = { finish() },
