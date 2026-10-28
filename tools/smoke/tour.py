@@ -453,10 +453,55 @@ def vod_section(name, layout):
         key("BACK", wait=1.5)
 
 
+def vod_details():
+    """Filme: OK halten auf einem Poster öffnet die Optionen, darin die TMDB-Detailseite."""
+    if not open_section("Filme"):
+        return
+    time.sleep(3)
+    # ▶ erreicht die Kategorien-Spalte, zweimal ▶ das zweite Poster (wie in vod_section).
+    key("DPAD_RIGHT", wait=1.0)
+    key("DPAD_RIGHT", n=2, wait=0.8)
+    # Ein langes OK über adb spielt den Film ab; die Menü-Taste öffnet die Optionen wie OK halten.
+    key("MENU", wait=1.5)
+    shot("vod-filme-optionen")
+    if goto(r"details", tries=12):
+        time.sleep(4)
+        shot("vod-filme-details")
+        key("DPAD_DOWN", n=2, wait=0.8)
+        shot("vod-filme-details-unten")
+        key("BACK", wait=1.5)
+    if in_fullscreen():
+        key("BACK", n=2, wait=1.5)
+
+
+def search_tour():
+    """Suche: ein Titel, ein Schauspieler (TMDB) und eine Beschreibung (Jev), jeweils Liste und erste Zeile."""
+    if not open_section("Suche"):
+        return
+    # Die Suche setzt den Fokus selbst ins Feld; ▶ wäre schon das Mikrofon.
+    time.sleep(1.0)
+    if RAIL.match(focused_text(dump()) or ""):
+        key("DPAD_RIGHT", wait=1.0)
+    shot("suche-leer")
+    for q, tag in [("top gun", "titel"), ("Tom Cruise", "schauspieler"), ("gruseliger Vampirfilm", "beschreibung")]:
+        key("DPAD_CENTER", wait=1.5)
+        type_text(q.replace(" ", "%s"))
+        key("ENTER", wait=1.0)
+        time.sleep(12)  # TMDB und Jev antworten nicht sofort
+        shot(f"suche-{tag}")
+        key("DPAD_DOWN", n=2, wait=0.8)
+        time.sleep(3)
+        shot(f"suche-{tag}-zeile")
+        # Zurück leert die Suche und setzt den Fokus wieder ins Feld.
+        key("BACK", wait=1.5)
+
+
 def vod_tour():
     # Filme und Serien haben nur noch das filmische Layout.
     vod_section("Filme", "filmisch")
     vod_section("Serien", "filmisch")
+    vod_details()
+    search_tour()
 
 
 def settings_tour():

@@ -209,13 +209,15 @@ internal fun VodCinematicBackdrop(url: String?, series: Boolean, modifier: Modif
         Box(
             Modifier.fillMaxSize().backdropLeftWash(0f to 0.85f, 0.34f to 0.35f, 0.64f to 0f, 1f to 0f),
         )
+        // The slim info strip puts the toolbar at about 0.6 of this height and the posters under it:
+        // the wash is nearly solid by then, so the tools stay readable over a bright backdrop (Bluey).
         Box(
             Modifier.fillMaxSize().gradientWash(
                 true,
                 0f to wash.copy(alpha = 0f),
-                0.58f to wash.copy(alpha = 0f),
-                0.97f to wash.copy(alpha = 0.9f),
-                1f to wash.copy(alpha = 0.9f),
+                0.38f to wash.copy(alpha = 0f),
+                0.6f to wash.copy(alpha = 0.86f),
+                1f to wash.copy(alpha = 0.94f),
             ),
         )
     }
