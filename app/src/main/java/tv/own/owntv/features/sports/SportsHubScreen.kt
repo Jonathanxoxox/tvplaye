@@ -176,6 +176,18 @@ fun SportsHubScreen(
         .groupBy { daysFromToday(it.startMs).coerceAtMost(2) }
         .mapValues { it.value.take(12) }
     val soon = soonByDay.values.flatten()
+    // Today's finished matches with their final score: in the evening the hub showed "8 matches" but only
+    // the one still live. Own teams first, then the latest.
+    val finished = today.filter { it.state == MatchState.POST && it.passes() }
+        .sortedWith(compareBy<Match>({ !it.isMine() }, { -it.startMs })).take(12)
+    // The rows under Live and the channels: later today, today's results, tomorrow, then the rest.
+    val scheduleRows = buildList {
+        for ((day, matches) in soonByDay.toSortedMap()) {
+            if (day >= 1 && finished.isNotEmpty() && none { it.first == "results" }) add(Triple("results", R.string.sports_tab_results, finished))
+            add(Triple("soon$day", if (day == 0) R.string.tvplayer_sports_later_today else if (day == 1) R.string.content_epg_tomorrow else R.string.tvplayer_sports_coming_up, matches))
+        }
+        if (finished.isNotEmpty() && none { it.first == "results" }) add(Triple("results", R.string.sports_tab_results, finished))
+    }
     // "Now" means running: what starts later on those channels is in the guide.
     val onNow = state.onNow.values.flatten().filter { it.startMs <= now && now < it.stopMs }.take(6)
     val followedSports = remember(config) { vm.followedSports(config) }
@@ -246,7 +258,7 @@ fun SportsHubScreen(
                 }
             }
 
-            val nothing = live.isEmpty() && soon.isEmpty() && onNow.isEmpty()
+            val nothing = live.isEmpty() && soon.isEmpty() && onNow.isEmpty() && finished.isEmpty()
             if (config.followedLeagues().isEmpty()) {
                 item(key = "none") { NothingFollowedNote(Modifier.padding(start = contentStart, top = 80.mpx, end = 360.mpx)) }
             } else if (nothing) {
@@ -310,15 +322,10 @@ fun SportsHubScreen(
                 }
             }
 
-            for ((day, matches) in soonByDay.toSortedMap()) {
-                item(key = "soon$day") {
+            for ((rowKey, title, matches) in scheduleRows) {
+                item(key = rowKey) {
                     val context = LocalContext.current
                     Column {
-                        val title = when (day) {
-                            0 -> R.string.tvplayer_sports_later_today
-                            1 -> R.string.content_epg_tomorrow
-                            else -> R.string.tvplayer_sports_coming_up
-                        }
                         RowHeader(contentStart, stringResource(title), null)
                         // A new filter starts the row at its first card, not where the old list was scrolled.
                         val soonState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -485,7 +492,14 @@ internal fun MatchCard(
                 Text(league, style = stageText(16.5f, 600), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 val right = when {
                     m.off -> m.statusText
-                    m.state == MatchState.POST -> m.statusText
+                    // ESPN's "FT", "AET", "FT-Pens" in the user's words.
+                    m.state == MatchState.POST -> stringResource(
+                        when {
+                            m.statusText.contains("pen", ignoreCase = true) -> R.string.tvplayer_sports_after_pens
+                            m.statusText.contains("aet", ignoreCase = true) -> R.string.tvplayer_sports_after_extra_time
+                            else -> R.string.sports_event_full_time
+                        },
+                    )
                     else -> timeText(m.startMs)
                 }
                 // Live: the red dot and LIVE, so a live card stands out among ones still to come.
