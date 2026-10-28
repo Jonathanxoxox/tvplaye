@@ -42,8 +42,8 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         /** Lower bound: below this the cache thrashes and stops saving any downloads. */
         private const val MIN_IMAGE_CACHE_BYTES = 32L * 1024 * 1024
 
-        /** Sports' Auto rebuild waits this long after launch, so it never competes with the first screen. */
-        private const val SPORTS_START_DELAY_MS = 15_000L
+        /** Sports' Auto rebuild waits this long after the start window (StartupGate), so it never competes with the first screen. */
+        private const val SPORTS_START_DELAY_MS = 5_000L
     }
 
     /** Application-lifetime scope for small fire-and-forget IO that must not touch the launch path. */
@@ -231,6 +231,7 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
         // Sports: core decides from Auto rebuild whether the stored board is due ("on every app start",
         // or older than the chosen hours). It reads one small file and touches no database.
         appScope.launch {
+            StartupGate.awaitSettled()
             kotlinx.coroutines.delay(SPORTS_START_DELAY_MS)
             runCatching { GlobalContext.get().get<tv.own.owntv.core.sports.SportsRepository>().appStarted() }
             // Football for "Für dich", the football group and kick-off reminders: Jonathan's leagues and
@@ -331,7 +332,7 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
             .flatMapLatest { pid -> favorites.observeFavoriteIds(pid, tv.own.owntv.core.model.MediaType.LIVE) }
             .distinctUntilChanged()
             .drop(1)
-            .collect { tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
+            .collect { StartupGate.awaitSettled(); tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
     }
 
     /** Teams and leagues picked in Settings → Sports reach "Für dich" and the football group at once. */
@@ -340,6 +341,6 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
             .map { it.teams to it.leagues }
             .distinctUntilChanged()
             .drop(1)
-            .collect { tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
+            .collect { StartupGate.awaitSettled(); tv.own.owntv.launcher.LauncherRowsWorker.refreshSoon(this) }
     }
 }

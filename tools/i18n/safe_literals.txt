@@ -50,6 +50,8 @@
 2	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	tmdb_key_v1_applied
 2	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	tmdb_lang_v1_applied
 1	preference-key	app/src/main/java/tv/own/owntv/OwnTVApp.kt	tvplayer
+1	log	app/src/main/java/tv/own/owntv/StartupGate.kt	startup-first-frame
+1	log	app/src/main/java/tv/own/owntv/StartupGate.kt	startup-settled
 3	empty	app/src/main/java/tv/own/owntv/core/i18n/LocalizedContent.kt	\0
 1	empty	app/src/main/java/tv/own/owntv/features/customize/CustomizeItemsScreen.kt	\0
 1	assertion	app/src/main/java/tv/own/owntv/features/customize/CustomizeItemsViewModel.kt	EPISODE not applicable

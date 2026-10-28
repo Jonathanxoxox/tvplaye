@@ -35,6 +35,8 @@ object RecentRowWatcher {
             .onFailure { Log.w(TAG, "recent row watcher not registered", it); return }
         scope.launch(Dispatchers.IO) {
             for (change in changes) {
+                // Logos and tiles for the launcher are not worth the first seconds of a start.
+                tv.own.owntv.StartupGate.awaitSettled()
                 // Let core finish the whole row first.
                 delay(SETTLE_MS)
                 changes.tryReceive()

@@ -313,6 +313,7 @@ open class MainActivity : ComponentActivity() {
                 if (destinationReady && !contentReady) {
                     contentReady = true
                     StartLog.stamp("destination-ready") // splash hand-off — the number startup work moves
+                    StartupGate.onDestinationReady()
                 }
             }
             // The start log's frame count ends 10 s after the destination was ready.
@@ -330,7 +331,11 @@ open class MainActivity : ComponentActivity() {
 
             // "Refresh on startup" — re-sync sources once the active profile is known.
             LaunchedEffect(activeProfileId) {
-                if ((activeProfileId ?: -1L) >= 0L) viewModel.checkAutoRefresh(includeStartup = true)
+                if ((activeProfileId ?: -1L) >= 0L) {
+                    // Counts every playlist and may queue a sync: not while the first picture comes up.
+                    StartupGate.awaitSettled()
+                    viewModel.checkAutoRefresh(includeStartup = true)
+                }
             }
 
             OwnTVTheme(

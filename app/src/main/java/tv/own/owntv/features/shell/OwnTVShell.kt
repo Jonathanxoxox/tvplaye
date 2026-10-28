@@ -203,8 +203,15 @@ fun OwnTVShell(
     val navSize by settingsRepo.navSize.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
     val navLength by settingsRepo.navLength.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavLength.FIT)
     val railVm = org.koin.androidx.compose.koinViewModel<RailCountsViewModel>()
-    val railCounts by railVm.counts.collectAsStateWithLifecycle()
-    val railDetails by railVm.details.collectAsStateWithLifecycle()
+    // The counts (a COUNT over every channel, film and series) and the last-watched names are shown only with
+    // the rail open: read nothing until it has opened once, then keep them current as before.
+    var railOpenedOnce by remember { mutableStateOf(false) }
+    val railCounts by produceState(emptyMap<MainSection, Int>(), railOpenedOnce) {
+        if (railOpenedOnce) railVm.counts.collect { value = it }
+    }
+    val railDetails by produceState(RailDetails(), railOpenedOnce) {
+        if (railOpenedOnce) railVm.details.collect { value = it }
+    }
     // Where ▶ out of the Stage rail returns to: the content, exactly as it was left.
     val contentAreaFocus = remember { FocusRequester() }
     var homeEntry by remember { mutableStateOf<(() -> Boolean)?>(null) }
@@ -425,7 +432,11 @@ fun OwnTVShell(
     val historyNowPlaying = overlayNowPlaying // one shared map; the history rail adds to it below
     LaunchedEffect(historyChannels) { liveVm.ensureNowPlaying(historyChannels) }
     // The single most-recent resumable item, surfaced as a shared top-bar "Continue" chip.
-    val continueTarget by homeVm.continueTarget.collectAsStateWithLifecycle()
+    // Verlauf plus Film- und Serien-Nachschlagen: not while the first picture comes up.
+    val continueTarget by produceState<tv.own.owntv.features.home.ContinueTarget?>(null) {
+        tv.own.owntv.StartupGate.awaitSettled()
+        homeVm.continueTarget.collect { value = it }
+    }
 
     // Per-profile startup action runs once when the authenticated shell first appears. With one unlocked
     // profile that is immediately; profile/PIN gates keep the shell out of composition until authorized.
@@ -506,7 +517,7 @@ fun OwnTVShell(
     // and is skipped if the user is already on EPG.)
     val sectionNow by rememberUpdatedState(selectedSection)
     LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(1_200)
+        tv.own.owntv.StartupGate.awaitFirstFrame()
         // Live TV is the guide now: it loads itself, and a second load() would cancel that one and start over.
         val guide = epgVm.state.value
         if (sectionNow != MainSection.EPG && sectionNow != MainSection.LIVE_TV && guide.channels.isEmpty() && !guide.loading) {
@@ -714,6 +725,7 @@ fun OwnTVShell(
     // page (#7.1). So a visit opens it only when it was meant: within [RAIL_KEY_WINDOW_MS] of ◀ / ▶ or
     // of [focusRail], or once a key is pressed while the rail holds focus.
     var railFocused by remember { mutableStateOf(false) }
+    LaunchedEffect(railFocused) { if (railFocused) railOpenedOnce = true }
     // Keyed on [railKeyAt] too: at start-up focus already counts as on the rail before [focusRail] runs.
     LaunchedEffect(railHasFocus, railKeyAt) {
         railFocused = railHasFocus && android.os.SystemClock.uptimeMillis() - railKeyAt <= RAIL_KEY_WINDOW_MS
@@ -846,6 +858,12 @@ fun OwnTVShell(
             player.isPlaying,
         ).first { it }
         tv.own.owntv.perf.StartLog.stampOnce("player-first-frame")
+        tv.own.owntv.StartupGate.markFirstFrame()
+    }
+    // No player a second after the shell stood (start page): nothing to wait for.
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(1_000)
+        if (playerMode == PlayerMode.NONE) tv.own.owntv.StartupGate.markFirstFrame()
     }
 
     LaunchedEffect(sidebarFocus) {
@@ -2098,7 +2116,9 @@ fun OwnTVShell(
         LaunchedEffect(updateCheckOnStart) {
             // Once per launch: a rebuilt shell must not bring the "latest version" card back.
             if (updateCheckOnStart && !showStartupToast && !shellVm.startupUpdateCheckDone) {
-                kotlinx.coroutines.delay(5_000)
+                // After the start window, with a pause so the card does not land while the guide comes up.
+                tv.own.owntv.StartupGate.awaitSettled()
+                kotlinx.coroutines.delay(2_000)
                 shellVm.startupUpdateCheckDone = true
                 updateManager.check()
                 // The card shows up only when there is something to update to: no "Checking…" and no "latest
