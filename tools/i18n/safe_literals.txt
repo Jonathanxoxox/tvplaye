@@ -1009,6 +1009,7 @@
 1	url	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	&with_genres=$id&sort_by=popularity.desc&vote_count.gte=$MIN_VOTES
 1	url	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	&with_watch_providers=$id&watch_region=$region&with_watch_monetization_types=flatrate&sort_by=popularity.desc
 1	protocol	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	-
+1	file-path	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	.tmp
 1	technical	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	Channel
 1	protocol	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	DE
 1	technical	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	Store

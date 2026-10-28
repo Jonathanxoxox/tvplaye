@@ -1465,7 +1465,11 @@ private fun EpisodeView(
                     StageButton(
                         text = stringResource(if (targetProgress != null) R.string.content_resume_episode else R.string.content_play_episode, code),
                         trailing = secondsLeft(target)?.let { "· " + stringResource(R.string.home_time_left, vodRuntime(it)) },
-                        onClick = { startEpisode(target) },
+                        // The button already says "Resume S1 E3": it carries on without asking again.
+                        onClick = {
+                            val pos = targetProgress?.positionMs ?: 0L
+                            if (pos > 0 && resumeMode != SettingsRepository.ResumeMode.NEVER) { vm.playEpisode(target, pos); goFullscreen() } else startEpisode(target)
+                        },
                         icon = OwnTVIcon.PLAY, iconFilled = true, tinted = true, height = 60.mpx, textSize = 20,
                     )
                 }
