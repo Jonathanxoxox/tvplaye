@@ -8,6 +8,7 @@ Nach jedem Teil wird geprüft, ob die App noch läuft, ob es einen Absturz (Java
 ANR gab. Ergebnis: <out>/summary.txt, dazu Fotos und Texte wie bei der Tour.
 """
 import os
+import random
 import re
 import shutil
 import subprocess
@@ -62,12 +63,13 @@ def check(name, fn):
 
 # ---------------------------------------------------------------- Teile
 def play_first_channel():
+    """Live-TV: ▶ in die Senderzeilen, OK spielt in der Vorschau, das zweite OK geht ins Vollbild."""
     T.open_section("Live-TV")
     T.key("DPAD_RIGHT", wait=1.0)
-    if T.goto(r"^Sky Sport Bundesliga 1"):
-        time.sleep(4)
-        if not T.in_fullscreen():
-            T.key("DPAD_CENTER", wait=5)
+    T.key("DPAD_RIGHT", wait=1.0)
+    T.key("DPAD_CENTER", wait=5)
+    if not T.in_fullscreen():
+        T.key("DPAD_CENTER", wait=5)
 
 
 def http_server(on):
@@ -108,9 +110,9 @@ def stream_loss():
 
 
 def airplane(on):
-    v = "enable" if on else "disable"
-    T.sh(f"cmd connectivity airplane-mode {v}")
-    T.sh(f"svc wifi {v}; svc data {v}")
+    T.sh(f"cmd connectivity airplane-mode {'enable' if on else 'disable'}")
+    radio = "disable" if on else "enable"
+    T.sh(f"svc wifi {radio}; svc data {radio}")
     time.sleep(4)
 
 
@@ -193,6 +195,10 @@ def resync():
         time.sleep(1.5)
         T.shot("playlist-optionen")
         T.goto(r"ynchronisier|Aktualisier|Neu laden|Sync")
+        time.sleep(1.5)
+        # Die Rückfrage „… erneut synchronisieren“: ihr Knopf hat schon den Fokus.
+        if T.goto(r"^Jetzt erneut synchronisieren$"):
+            time.sleep(1.5)
     time.sleep(12)
     T.shot("nach-sync")
     for _ in range(4):
@@ -264,18 +270,27 @@ def key_storm():
     T.shot("fokus-sturm")
 
 
-def monkey(seed, events=2500):
-    """Zufällige Fernbedienungstasten (keine Berührung, kein App-Wechsel)."""
-    out = T.sh(
-        f"monkey -p {PKG} -s {seed} --throttle 120 --pct-touch 0 --pct-motion 0 --pct-trackball 0 "
-        f"--pct-pinchzoom 0 --pct-rotation 0 --pct-flip 0 --pct-appswitch 0 --pct-anyevent 0 "
-        f"--pct-nav 65 --pct-majornav 25 --pct-syskeys 10 -v {events}",
-        timeout=900,
-    )
-    with open(os.path.join(OUT, f"monkey-{seed}.txt"), "w", encoding="utf-8") as f:
-        f.write(out)
-    if "// CRASH" in out or "NOT RESPONDING" in out:
-        print(f"[stress] monkey {seed}: {out[out.find('// CRASH') if '// CRASH' in out else out.find('NOT RESPONDING'):][:1500]}")
+RANDOM_KEYS = (
+    ["DPAD_UP", "DPAD_DOWN"] * 5 + ["DPAD_LEFT", "DPAD_RIGHT"] * 4 + ["DPAD_CENTER", "BACK"] * 2
+    + ["MENU", "CHANNEL_UP", "CHANNEL_DOWN", "PROG_RED", "PROG_GREEN", "PROG_YELLOW", "INFO", "MEDIA_PLAY_PAUSE"]
+)
+
+
+def monkey(seed, keys=1500, batch=15):
+    """Zufällige Fernbedienungstasten wie monkey, aber in der App: wer sie verlässt, wird zurückgeholt,
+    und auf Löschen/Zurücksetzen fällt kein OK (dann Zurück)."""
+    rnd = random.Random(seed)
+    walk = open(os.path.join(OUT, f"monkey-{seed}.txt"), "w", encoding="utf-8")
+    for _ in range(keys // batch):
+        if T.DANGER.search(T.focused_text(T.dump()) or ""):
+            T.key("BACK", wait=0.5)
+        seq = [rnd.choice(RANDOM_KEYS) for _ in range(batch)]
+        walk.write(" ".join(seq) + "\n")
+        T.sh("input keyevent " + " ".join(f"KEYCODE_{k}" for k in seq))
+        if PKG not in T.sh("dumpsys activity activities | grep -m1 mResumedActivity"):
+            walk.write("-- App verlassen, neu gestartet\n")
+            launch()
+    walk.close()
 
 
 def still_set_up():
