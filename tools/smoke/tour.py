@@ -150,6 +150,24 @@ def goto(pattern, press=True, tries=24, xmin=0, xmax=99999):
     return False
 
 
+def goto_row(pattern, tries=30):
+    """Im Guide die Zeile des Senders ansteuern: der Fokus steht dort auf der Sendung, nicht auf dem
+    Namen, deshalb nur ▲▼ nach der Höhe des Namens (◀ würde den Guide in die Gruppen verlassen)."""
+    for _ in range(tries):
+        root = dump()
+        target = find(root, pattern)
+        f = focused(root)
+        if target is None or f is None:
+            print(f"[goto_row] {pattern!r} nicht gefunden", flush=True)
+            return False
+        ty = (bounds(target)[1] + bounds(target)[3]) // 2
+        fb = bounds(f)
+        if fb[1] <= ty <= fb[3]:
+            return True
+        key("DPAD_DOWN" if ty > fb[3] else "DPAD_UP", wait=0.5)
+    return False
+
+
 def type_text(value):
     sh("input text " + "'" + value.replace("'", "") + "'")
     time.sleep(0.8)
@@ -372,8 +390,9 @@ def player_tour():
     key("DPAD_RIGHT", wait=1.0)
     key("DPAD_RIGHT", wait=1.0)
     shot("live-guide")
-    if not goto(r"^Sky Sport Bundesliga 1"):
+    if not goto_row(r"^Sky Sport Bundesliga 1"):
         return
+    key("DPAD_CENTER", wait=1.0)
     time.sleep(5)
     shot("live-vorschau")
     # Erstes OK spielt in der Vorschau, das zweite geht ins Vollbild
@@ -453,7 +472,8 @@ def player_tour():
         goto(r"^Dokumentationen", press=False, xmax=RAIL_XMAX + 400)
         time.sleep(1.5)
         key("DPAD_RIGHT", wait=1.0)
-        if goto(r"^Kein Signal"):
+        if goto_row(r"^Kein Signal"):
+            key("DPAD_CENTER", wait=1.0)
             time.sleep(1)
             if not in_fullscreen():
                 key("DPAD_CENTER", wait=1)
