@@ -477,6 +477,8 @@ def search_tour():
         return
     # Die Suche setzt den Fokus selbst ins Feld; ▶ wäre schon das Mikrofon.
     time.sleep(1.0)
+    if RAIL.match(focused_text(dump()) or ""):
+        key("DPAD_RIGHT", wait=1.0)
     shot("suche-leer")
     for q, tag in [("top gun", "titel"), ("Tom Cruise", "schauspieler"), ("gruseliger Vampirfilm", "beschreibung")]:
         key("DPAD_CENTER", wait=1.5)
