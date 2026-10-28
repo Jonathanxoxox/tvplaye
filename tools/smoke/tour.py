@@ -689,6 +689,64 @@ def nav_tour():
         dismiss_exit(dump())
 
 
+def to_match_card(downs=8):
+    """Fokus auf die erste Spielkarte (hohe Karte, keine Chip- oder Senderzeile) im Sport-Bereich."""
+    for _ in range(downs):
+        root = dump()
+        f = focused(root)
+        if f is not None:
+            b = bounds(f)
+            if b[3] - b[1] >= 150 and b[0] > RAIL_XMAX:
+                return True
+        key("DPAD_DOWN", wait=0.8)
+    return False
+
+
+def sports_tour():
+    if not open_section("Sport"):
+        return
+    time.sleep(4)
+    shot("sport-hub")
+    key("DPAD_RIGHT", wait=1.5)
+    shot("sport-hub-fokus")
+    if not to_match_card():
+        shot("sport-keine-karte")
+        return
+    shot("sport-karte")
+    key("DPAD_CENTER", wait=4)
+    shot("sport-spielseite")
+    for tab in ["Tabelle", "Form", "Aufstellungen", "Statistik"]:
+        if goto("^" + tab + "$", tries=10):
+            time.sleep(1.5)
+            shot(f"sport-spielseite-{slug(tab)}")
+    if goto(r"^Sender suchen$", tries=12):
+        time.sleep(20)
+        shot("sport-sender")
+        key("DPAD_CENTER", wait=6)
+        shot("sport-vorschau")
+        key("DPAD_CENTER", wait=6)
+        shot("sport-vollbild")
+        key("BACK", wait=4)
+        shot("sport-zurueck-spielseite")
+    else:
+        shot("sport-sender-nicht-suchbar")
+    key("BACK", wait=2.5)
+    shot("sport-zurueck-hub")
+    key("DPAD_DOWN", n=3, wait=0.8)
+    shot("sport-hub-unten")
+    # Launcher-Kachel „Für dich“: kalter Start direkt auf eine Spielseite.
+    out = sh("content query --uri content://android.media.tv/preview_program --projection intent_uri 2>&1", timeout=30)
+    m = re.search(r"tvplayer_match=([^\s,;#]+(?:%23|#)\d+)", out)
+    print(f"[sport] Launcher-Programme: {out[:300]!r}", flush=True)
+    if m:
+        uri = "owntv://open?tvplayer_match=" + m.group(1).replace("#", "%23")
+        sh(f"am force-stop {PKG}")
+        time.sleep(2)
+        sh(f"am start -a android.intent.action.VIEW -d '{uri}' {PKG}")
+        time.sleep(12)
+        shot("sport-launcher-kachel-kaltstart")
+
+
 def main():
     step("einrichtung", setup)
     # Ohne fertige Einrichtung würden die weiteren Schritte nur im Assistenten herumdrücken.
@@ -701,7 +759,7 @@ def main():
         ("menu", "menue", rail_tour), ("vod", "filme-serien", vod_tour), ("more", "mehr-tour", more_tour),
         ("guide", "guide", guide_tour), ("player", "player", player_tour),
         ("settings", "einstellungen-tour", settings_tour), ("scenes", "szenen", scenes_tour),
-        ("nav", "navigation", nav_tour),
+        ("nav", "navigation", nav_tour), ("sports", "sport", sports_tour),
     ]:
         if "all" in parts or part in parts:
             step(name, fn)
