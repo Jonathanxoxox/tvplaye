@@ -39,6 +39,7 @@ import tv.own.owntv.ui.components.trapAllFocusExit
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.mpxSp
+import tv.own.owntv.ui.theme.stageEnter
 import tv.own.owntv.ui.theme.stageAccent
 import tv.own.owntv.ui.theme.stageText
 
@@ -87,6 +88,8 @@ fun StagePopup(
                     .padding(top = if (ime.visible) edge else 0.mpx)
                     .width(width.coerceAtMost(maxWidth - edge * 2))
                     .heightIn(max = room.coerceAtLeast(120.mpx))
+                    // Rises a little and grows into place, as the menus do.
+                    .stageEnter(y = 0.04f, scale = 0.96f, fade = true, durationMs = 200)
                     .stageGlass(30.mpx, overContent = true)
                     .then(if (scroll) Modifier.verticalScroll(rememberScrollState()) else Modifier)
                     .padding(30.mpx),

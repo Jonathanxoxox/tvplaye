@@ -38,6 +38,7 @@ import tv.own.owntv.ui.stage.stageGlass
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.gradientWash
 import tv.own.owntv.ui.theme.mpx
+import tv.own.owntv.ui.theme.stageEnter
 import tv.own.owntv.ui.theme.stageText
 
 /** One row of the options panel: [value] is drawn at the row's end (the engine in use, say). */
@@ -88,6 +89,8 @@ internal fun LiveOptionsPanel(
                     .padding(horizontal = 20.mpx, vertical = 22.mpx)
                     .fillMaxHeight()
                     .width(560.mpx)
+                    // In from the right edge (its width and the 20 beside it); no buffer, which would cut off its shadow.
+                    .stageEnter(x = 1.05f, offscreen = false)
                     .stageGlass(30.mpx, overContent = true)
                     .padding(24.mpx),
                 verticalArrangement = Arrangement.spacedBy(14.mpx),

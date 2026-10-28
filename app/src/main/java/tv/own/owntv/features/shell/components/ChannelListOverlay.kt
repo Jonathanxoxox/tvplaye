@@ -65,6 +65,7 @@ import tv.own.owntv.ui.theme.StageRadii
 import tv.own.owntv.ui.theme.gradientWash
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.stageAccent
+import tv.own.owntv.ui.theme.stageEnter
 import tv.own.owntv.ui.theme.stageText
 
 /**
@@ -129,6 +130,8 @@ fun ChannelListOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
+            // Slides in from its own edge, shade and all: the sheet is 740 of the screen's 1920.
+            .stageEnter(x = if (alignEnd) 0.4f else -0.4f)
             // Darken only the side the sheet is on, so the picture stays visible beside it.
             .gradientWash(
                 vertical = false,
