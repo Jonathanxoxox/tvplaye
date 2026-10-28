@@ -160,9 +160,51 @@ internal fun clockText(m: Match): String {
         m.sport == Sport.TENNIS && clock != null && clock.period > 0 -> stringResource(R.string.sports_set, clock.period)
         m.sport == Sport.CRICKET && clock?.overs != null -> stringResource(R.string.sports_overs, clock.overs!!)
         clock != null && clock.display.isNotBlank() -> clock.display
-        else -> m.statusText
+        else -> statusText(m)
     }
 }
+
+/**
+ * A match's status once it is over, in the user's words: ESPN's football "FT", "AET" and "FT-Pens" read
+ * Abpfiff, n. V. and n. E. A postponed match and other sports keep ESPN's text.
+ */
+@Composable
+internal fun statusText(m: Match): String = when {
+    m.off || m.state != MatchState.POST || m.sport != Sport.SOCCER -> m.statusText
+    m.statusText.contains("pen", ignoreCase = true) -> stringResource(R.string.tvplayer_sports_after_pens)
+    m.statusText.contains("aet", ignoreCase = true) -> stringResource(R.string.tvplayer_sports_after_extra_time)
+    else -> stringResource(R.string.sports_event_full_time)
+}
+
+/** ESPN's football statistics, named in German (their labels come in English); others as ESPN names them. */
+@Composable
+internal fun statLabel(label: String): String {
+    val id = when (label.trim().lowercase(Locale.ROOT)) {
+        "yellow cards" -> R.string.tvplayer_stat_yellow
+        "red cards" -> R.string.tvplayer_stat_red
+        "offsides" -> R.string.tvplayer_stat_offsides
+        "corner kicks" -> R.string.tvplayer_stat_corners
+        "saves" -> R.string.tvplayer_stat_saves
+        "possession" -> R.string.tvplayer_stat_possession
+        "shots" -> R.string.tvplayer_stat_shots
+        "on goal", "shots on target" -> R.string.tvplayer_stat_on_goal
+        "on target %" -> R.string.tvplayer_stat_on_target
+        else -> return label
+    }
+    return stringResource(id)
+}
+
+/** A share ESPN gives as 0.4 or 63.3 (possession, on target %) as "40 %" and "63 %". */
+@Composable
+internal fun percentText(label: String, value: String): String {
+    val l = label.lowercase(Locale.ROOT)
+    if (!l.endsWith(PERCENT) && "possession" !in l) return value
+    val v = value.trimEnd('%').trim().toFloatOrNull() ?: return value
+    return stringResource(R.string.tvplayer_stat_percent, Math.round(if (v <= 1f) v * 100f else v))
+}
+
+private const val PERCENT = '%'
+
 
 /** "13:30" in the clock format the rest of the app uses (the device's 12/24-hour setting). */
 @Composable

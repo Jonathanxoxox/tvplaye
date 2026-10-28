@@ -69,7 +69,6 @@ import tv.own.owntv.ui.components.OwnTVPopup
 import tv.own.owntv.ui.components.longPressMenuGuard
 import tv.own.owntv.ui.components.trapAllFocusExit
 import tv.own.owntv.ui.stage.StageFocus
-import tv.own.owntv.ui.stage.StageKeyHints
 import tv.own.owntv.ui.stage.StageMenu
 import tv.own.owntv.ui.stage.StageMenuHeader
 import tv.own.owntv.ui.stage.StageMenuItem
@@ -92,6 +91,9 @@ internal sealed interface HubChip {
 
 /** Sports whose score is a line (sets, innings), not one number a side. */
 private val LINE_SCORE_SPORTS = setOf(Sport.TENNIS, Sport.CRICKET, Sport.GOLF, Sport.RACING)
+
+/** How long past kick-off a match still waiting for ESPN's live mark stays under "Heute noch". */
+private const val KICKOFF_GRACE_MS = 15 * 60_000L
 
 /** Chips shown before "+N": eight sports. */
 private const val SPORT_CHIPS = 8
@@ -125,7 +127,11 @@ fun SportsHubScreen(
         }
     }
     val config = state.config
-    val now = System.currentTimeMillis()
+    // Ticks every 30 s: the progress bars move, and a kick-off that has passed leaves "Heute noch" even
+    // when no score changes (before, `now` froze at the last recomposition).
+    val now by androidx.compose.runtime.produceState(System.currentTimeMillis()) {
+        while (true) { kotlinx.coroutines.delay(30_000L); value = System.currentTimeMillis() }
+    }
     val playback = org.koin.compose.koinInject<SportsPlayback>()
     // Both chip rows are multi-select: OK toggles a chip, nothing chosen = All. Kept while the app runs.
     @Suppress("UNCHECKED_CAST")
@@ -164,12 +170,27 @@ fun SportsHubScreen(
         .sortedWith(compareBy<Match>({ config.rankOf(it.sport, it.feed).first }, { config.rankOf(it.sport, it.feed).second }, { !it.isMine() }, { it.startMs }))
     // Coming up, by day: "Heute noch", "Morgen", then the rest. Within a day by kick-off, so the row reads
     // like a schedule; a row headed "Gleich geht's los" showed tomorrow's matches.
-    val soonByDay = state.board.matches.filter { it.state == MatchState.PRE && it.startMs > now && it.passes() }
+    // A match stays here until ESPN marks it live (often a few minutes after kick-off), so it never drops out of both rows.
+    val soonByDay = state.board.matches.filter { it.state == MatchState.PRE && it.startMs > now - KICKOFF_GRACE_MS && it.passes() }
         .sortedWith(compareBy<Match>({ it.startMs }, { config.rankOf(it.sport, it.feed).first }, { config.rankOf(it.sport, it.feed).second }))
         .groupBy { daysFromToday(it.startMs).coerceAtMost(2) }
         .mapValues { it.value.take(12) }
     val soon = soonByDay.values.flatten()
-    val onNow = state.onNow.values.flatten().take(6)
+    // Today's finished matches with their final score: in the evening the hub showed "8 matches" but only
+    // the one still live. Own teams first, then the latest.
+    val finished = today.filter { it.state == MatchState.POST && it.passes() }
+        .sortedWith(compareBy<Match>({ !it.isMine() }, { -it.startMs })).take(12)
+    // The rows under Live and the channels: later today, today's results, tomorrow, then the rest.
+    val scheduleRows = ArrayList<Triple<String, Int, List<Match>>>()
+    var resultsPlaced = finished.isEmpty()
+    for ((day, matches) in soonByDay.toSortedMap()) {
+        if (day >= 1 && !resultsPlaced) { scheduleRows += Triple("results", R.string.sports_tab_results, finished); resultsPlaced = true }
+        val title = if (day == 0) R.string.tvplayer_sports_later_today else if (day == 1) R.string.content_epg_tomorrow else R.string.tvplayer_sports_coming_up
+        scheduleRows += Triple("soon$day", title, matches)
+    }
+    if (!resultsPlaced) scheduleRows += Triple("results", R.string.sports_tab_results, finished)
+    // "Now" means running: what starts later on those channels is in the guide.
+    val onNow = state.onNow.values.flatten().filter { it.startMs <= now && now < it.stopMs }.take(6)
     val followedSports = remember(config) { vm.followedSports(config) }
 
     val featuredFocus = remember { FocusRequester() }
@@ -192,6 +213,12 @@ fun SportsHubScreen(
                     if (state.board.paused) {
                         Spacer(Modifier.height(6.mpx))
                         Text(stringResource(R.string.sports_paused), style = stageText(18, 600), color = StageColors.Warn, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    } else if ((state.failed || state.board.failing.isNotEmpty()) && state.board.matches.isNotEmpty()) {
+                        // ESPN did not answer: what shows is the stored board, so say how old it is.
+                        state.board.rebuiltAt?.let { at ->
+                            Spacer(Modifier.height(6.mpx))
+                            Text(stringResource(R.string.sports_last_updated, timeText(at)), style = stageText(18, 600), color = StageColors.Warn, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
                     }
                 }
             }
@@ -232,14 +259,22 @@ fun SportsHubScreen(
                 }
             }
 
-            val nothing = live.isEmpty() && soon.isEmpty() && onNow.isEmpty()
+            val nothing = live.isEmpty() && soon.isEmpty() && onNow.isEmpty() && finished.isEmpty()
             if (config.followedLeagues().isEmpty()) {
                 item(key = "none") { NothingFollowedNote(Modifier.padding(start = contentStart, top = 80.mpx, end = 360.mpx)) }
-            } else if (nothing && !state.rebuilding) {
+            } else if (nothing) {
                 item(key = "empty") {
-                    val unreachable = state.board.failing.isNotEmpty() && state.board.today.isEmpty()
+                    // Never "no matches today" before the board is known: the stored board is still being read,
+                    // or (first start) built, and ESPN being unreachable is not the same as a quiet day.
+                    val known = state.board.rebuiltAt != null || state.board.matches.isNotEmpty()
+                    val unreachable = (state.failed && !known) || (state.board.failing.isNotEmpty() && state.board.today.isEmpty())
+                    val text = when {
+                        unreachable && !state.rebuilding -> R.string.sports_empty_unreachable
+                        !known || state.rebuilding -> R.string.sports_rebuilding
+                        else -> R.string.sports_empty_nothing
+                    }
                     Text(
-                        stringResource(if (unreachable) R.string.sports_empty_unreachable else R.string.sports_empty_nothing),
+                        stringResource(text),
                         style = stageText(22, 600), color = StageColors.Muted,
                         modifier = Modifier.padding(start = contentStart, top = 80.mpx),
                     )
@@ -288,15 +323,10 @@ fun SportsHubScreen(
                 }
             }
 
-            for ((day, matches) in soonByDay.toSortedMap()) {
-                item(key = "soon$day") {
+            for ((rowKey, title, matches) in scheduleRows) {
+                item(key = rowKey) {
                     val context = LocalContext.current
                     Column {
-                        val title = when (day) {
-                            0 -> R.string.tvplayer_sports_later_today
-                            1 -> R.string.content_epg_tomorrow
-                            else -> R.string.tvplayer_sports_coming_up
-                        }
                         RowHeader(contentStart, stringResource(title), null)
                         // A new filter starts the row at its first card, not where the old list was scrolled.
                         val soonState = androidx.compose.foundation.lazy.rememberLazyListState()
@@ -320,15 +350,6 @@ fun SportsHubScreen(
                 }
             }
         }
-
-        StageKeyHints(
-            listOf(
-                stringResource(R.string.common_ok) to stringResource(R.string.sports_hint_match_page),
-                stringResource(R.string.content_key_hold_ok) to stringResource(R.string.sports_hint_follow_remind),
-            ),
-            Modifier.align(Alignment.BottomEnd).padding(end = 60.mpx, bottom = 27.mpx),
-            textSize = 18,
-        )
     }
 
     menuFor?.let { m ->
@@ -471,8 +492,7 @@ internal fun MatchCard(
                 val league = listOfNotNull(leagueName(m), m.subtitle?.takeIf { featured }, day).joinToString(stringResource(R.string.content_epg_bits_separator))
                 Text(league, style = stageText(16.5f, 600), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 val right = when {
-                    m.off -> m.statusText
-                    m.state == MatchState.POST -> m.statusText
+                    m.off || m.state == MatchState.POST -> statusText(m)
                     else -> timeText(m.startMs)
                 }
                 // Live: the red dot and LIVE, so a live card stands out among ones still to come.

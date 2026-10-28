@@ -87,7 +87,7 @@ internal val TierPick = Color(0xFFE7C56A)
 /**
  * A match. Left: the crumb, the score header, the tabs and their content, all
  * from the stored board. Right: *Watch live* — Find channels first (a search of this one match, only
- * when asked); then the preview (Live TV's own engine), the filter chips, every channel showing it with
+ * when asked; a live match is searched at once); then the preview (Live TV's own engine), the filter chips, every channel showing it with
  * the reason, and how many the filters hide. As in the guide, the preview stays black while ▲ ▼ walk the
  * list: OK brings a channel into it, OK again on that channel plays it full screen. Hold OK remembers it
  * for the competition, ◀ opens the filter panel.
@@ -210,8 +210,19 @@ fun SportsMatchScreen(
                     }
                 }
                 when (tab) {
-                    MatchTab.TIMELINE -> items((state.summary?.timeline ?: m.events).asReversed()) { e -> TimelineRow(e, m) }
-                    MatchTab.STATS -> items(state.summary?.stats.orEmpty()) { s -> StatRow(s.label, s.home, s.away) }
+                    MatchTab.TIMELINE -> {
+                        val events = (state.summary?.timeline ?: m.events).asReversed()
+                        items(events) { e -> TimelineRow(e, m) }
+                        // Before kick-off the tab was an empty space under the tabs.
+                        if (events.isEmpty()) item {
+                            Text(
+                                stringResource(if (m.state == MatchState.PRE) R.string.tvplayer_sports_timeline_before else R.string.tvplayer_sports_timeline_none),
+                                style = stageText(19, 400), color = StageColors.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(start = 18.mpx, top = 27.mpx),
+                            )
+                        }
+                    }
+                    MatchTab.STATS -> items(state.summary?.stats.orEmpty()) { s -> StatRow(statLabel(s.label), percentText(s.label, s.home), percentText(s.label, s.away)) }
                     MatchTab.LINEUPS -> item { Lineups(m, state.summary) }
                     MatchTab.TABLE -> item { TablePreview(state.standings, m, onOpenLeague) }
                     MatchTab.FORM -> item { Form(m, state.summary) }
@@ -412,7 +423,7 @@ private fun ScoreHeader(m: Match, summary: MatchSummary?, hidden: Boolean, onRev
                     if (m.isLive) LiveMark(stringResource(R.string.player_live) + stringResource(R.string.content_epg_bits_separator) + clockText(m))
                     else Text(
                         // Before kick-off ESPN's text is US-styled ("10/16 - 9:00 PM EDT"); the day in the user's own words instead.
-                        if (m.state == MatchState.PRE) dayOf(m.startMs, LocalConfiguration.current.locales[0]) ?: stringResource(R.string.content_epg_today) else m.statusText,
+                        if (m.state == MatchState.PRE) dayOf(m.startMs, LocalConfiguration.current.locales[0]) ?: stringResource(R.string.content_epg_today) else statusText(m),
                         style = stageText(17, 700), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -493,8 +504,8 @@ private fun TimelineRow(e: MatchEvent, m: Match) {
 /** One stat: home value, the name, away value, each side's share as a bar. */
 @Composable
 private fun StatRow(label: String, home: String, away: String) {
-    val h = home.trimEnd('%').toFloatOrNull() ?: 0f
-    val a = away.trimEnd('%').toFloatOrNull() ?: 0f
+    val h = home.trimEnd('%').trim().toFloatOrNull() ?: 0f
+    val a = away.trimEnd('%').trim().toFloatOrNull() ?: 0f
     val share = if (h + a > 0f) h / (h + a) else 0.5f
     val accent = stageAccent.accent
     Column(Modifier.fillMaxWidth().padding(horizontal = 18.mpx, vertical = 10.mpx)) {
