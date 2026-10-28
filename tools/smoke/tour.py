@@ -551,7 +551,7 @@ def to_match_card(downs=8):
         f = focused(root)
         if f is not None:
             b = bounds(f)
-            if b[3] - b[1] >= 150 and b[0] > RAIL_XMAX:
+            if b[3] - b[1] >= 150 and b[2] - b[0] >= 250 and b[0] >= 100:
                 return True
         key("DPAD_DOWN", wait=0.8)
     return False
