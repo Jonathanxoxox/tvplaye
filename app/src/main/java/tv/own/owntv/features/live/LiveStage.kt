@@ -86,7 +86,6 @@ import tv.own.owntv.ui.stage.StageTag
 import tv.own.owntv.ui.stage.drawBoxShadow
 import tv.own.owntv.ui.stage.drawInnerRing
 import tv.own.owntv.ui.stage.stageGlass
-import tv.own.owntv.ui.stage.stageSelectedBar
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.StageRadii
 import tv.own.owntv.ui.theme.mpx
@@ -599,7 +598,7 @@ internal fun LiveCategories(
                             modifier = rowModifier,
                         )
                     } else {
-                        LiveColumnItem(entry, selected, onClick = { onSelect(index) }, onLongClick = { onLongSelect(index) }, modifier = rowModifier)
+                        LiveColumnItem(entry, onClick = { onSelect(index) }, onLongClick = { onLongSelect(index) }, modifier = rowModifier)
                     }
                 }
             }
@@ -616,7 +615,6 @@ internal fun LiveCategories(
 @Composable
 private fun LiveColumnItem(
     entry: LiveCategoryEntry,
-    selected: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -626,8 +624,7 @@ private fun LiveColumnItem(
         onClick = onClick,
         onLongClick = onLongClick,
         radius = 15.mpx,
-        modifier = modifier.fillMaxWidth().padding(bottom = 2.mpx).heightIn(min = 52.mpx)
-            .then(if (selected) Modifier.stageSelectedBar(a.accent, 14.mpx) else Modifier),
+        modifier = modifier.fillMaxWidth().padding(bottom = 2.mpx).heightIn(min = 52.mpx),
     ) { focused ->
         Row(
             Modifier.fillMaxWidth().padding(horizontal = 14.mpx, vertical = 7.mpx),
