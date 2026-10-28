@@ -70,6 +70,7 @@ import tv.own.owntv.features.shell.components.ClearHistoryDialog
 import tv.own.owntv.features.shell.components.GITHUB_REPO
 import tv.own.owntv.features.shell.components.playbackDisplayName
 import tv.own.owntv.features.update.UpdateDialog
+import tv.own.owntv.perf.StartLog
 import tv.own.owntv.player.PlaybackErrorLog
 import tv.own.owntv.player.displayText
 import tv.own.owntv.ui.components.BrandMark
@@ -631,6 +632,7 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
     LaunchedEffect(showUpdate) { if (showUpdate) updateWasOpen = true else if (updateWasOpen) { updateWasOpen = false; withFrameNanos { }; runCatching { updateFocus.requestFocus() } } }
     val sep = stringResource(R.string.content_epg_bits_separator)
     val accent = stageAccent.accent
+    var showStartLog by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().focusGroup()) {
         Row(horizontalArrangement = Arrangement.spacedBy(40.mpx), verticalAlignment = Alignment.CenterVertically) {
@@ -661,10 +663,14 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
                 )
             }
         }
-        Text(stringResource(R.string.more_about_description), style = stageText(18, 500).copy(lineHeight = 29.mpxSp), color = stageTone(Color(0xFFD3DCD8), StageColors.Body),
-            modifier = Modifier.padding(top = 26.mpx).widthIn(max = 860.mpx))
-        Text(stringResource(R.string.settings_contributions), style = stageText(16, 500), color = StageColors.Dim,
-            modifier = Modifier.padding(top = 10.mpx, bottom = 24.mpx).widthIn(max = 860.mpx))
+        if (showStartLog) {
+            StartLogPanel(Modifier.padding(top = 18.mpx))
+        } else {
+            Text(stringResource(R.string.more_about_description), style = stageText(18, 500).copy(lineHeight = 29.mpxSp), color = stageTone(Color(0xFFD3DCD8), StageColors.Body),
+                modifier = Modifier.padding(top = 26.mpx).widthIn(max = 860.mpx))
+            Text(stringResource(R.string.settings_contributions), style = stageText(16, 500), color = StageColors.Dim,
+                modifier = Modifier.padding(top = 10.mpx, bottom = 24.mpx).widthIn(max = 860.mpx))
+        }
         Row(Modifier.padding(top = 22.mpx), horizontalArrangement = Arrangement.spacedBy(10.mpx)) {
             // The link is for reading: a TV has no browser to open it in.
             Row(
@@ -678,9 +684,53 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
             val languages = SupportedLocales.all.count { it.packaged }
             StageTool(pluralStringResource(R.plurals.more_about_languages, languages, languages), onClick = onOpenLanguage, icon = OwnTVIcon.LIST, boxed = true, modifier = Modifier.focusRequester(entry))
             StageTool(stringResource(R.string.settings_check_updates), onClick = { showUpdate = true }, icon = OwnTVIcon.REFRESH, boxed = true, modifier = Modifier.focusRequester(updateFocus))
+            StageTool(stringResource(R.string.tvplayer_startlog_title), onClick = { showStartLog = !showStartLog }, icon = OwnTVIcon.LIST, boxed = true)
         }
     }
     if (showUpdate) {
         UpdateDialog(onDismiss = { showUpdate = false }, checkOnOpen = true)
+    }
+}
+
+/** The start timeline for a photo of the TV: profile status, the first 10 s of frames, every stamp in two columns. */
+@Composable
+private fun StartLogPanel(modifier: Modifier = Modifier) {
+    val entries by StartLog.entries.collectAsStateWithLifecycle()
+    val profile by StartLog.profile.collectAsStateWithLifecycle()
+    val jank by StartLog.jank.collectAsStateWithLifecycle()
+    Column(modifier) {
+        Text(
+            profile?.let {
+                val state = stringResource(
+                    when (it.state) {
+                        StartLog.ProfileState.COMPILED -> R.string.tvplayer_startlog_profile_compiled
+                        StartLog.ProfileState.WAITING -> R.string.tvplayer_startlog_profile_waiting
+                        StartLog.ProfileState.NONE -> R.string.tvplayer_startlog_profile_none
+                        StartLog.ProfileState.ERROR -> R.string.tvplayer_startlog_profile_error
+                    },
+                )
+                stringResource(R.string.tvplayer_startlog_profile, state, it.code)
+            } ?: stringResource(R.string.tvplayer_startlog_profile_pending),
+            style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            jank?.let { stringResource(R.string.tvplayer_startlog_jank, it.janky, it.frames, it.worstMs) }
+                ?: stringResource(R.string.tvplayer_startlog_jank_pending),
+            style = stageText(18, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 4.mpx),
+        )
+        val half = (entries.size + 1) / 2
+        Row(Modifier.padding(top = 12.mpx), horizontalArrangement = Arrangement.spacedBy(40.mpx)) {
+            for (column in listOf(entries.take(half), entries.drop(half))) {
+                Column(Modifier.width(560.mpx)) {
+                    for (e in column) {
+                        Text(
+                            stringResource(R.string.tvplayer_startlog_entry, e.label, e.atMs, e.sinceLastMs),
+                            style = stageText(15, 500), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
+        }
     }
 }

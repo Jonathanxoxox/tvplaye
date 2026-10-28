@@ -212,6 +212,7 @@ internal class LauncherRows(private val context: Context) {
      * (the 15-minute refresh) redraws all of them, as programmes end.
      */
     suspend fun decorateRecent(force: Boolean): Unit = recentLock.withLock {
+        tv.own.owntv.perf.StartLog.stampOnce("recent-decorate")
         val koin = GlobalContext.get()
         val settings = koin.get<SettingsRepository>()
         val profileId = settings.activeProfileId.first().takeIf { it >= 0 } ?: return@withLock

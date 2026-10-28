@@ -69,6 +69,7 @@ class RailCountsViewModel(
                 seriesDao.countAll(ids(MediaType.SERIES)),
                 downloadDao.count(c.profileId),
             ) { live, movies, series, downloads ->
+                tv.own.owntv.perf.StartLog.stampOnce("rail-counts")
                 mapOf(
                     MainSection.LIVE_TV to live,
                     MainSection.MOVIES to movies,
