@@ -43,6 +43,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
@@ -940,6 +941,17 @@ fun PlayerHud(
         // Status overlay (always shown).
         when {
             error != null -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                // Which channel failed: the list-first player shows no bar over a dead channel, so the error
+                // alone left "which one was that?" open while ▲▼ zap on from it.
+                val failedChannel = if (listFirst && isLive) zapInfo?.invoke()?.channel else null
+                failedChannel?.title?.takeIf { it.isNotBlank() }?.let { name ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        val line = tv.own.owntv.ui.theme.stageText(28, 600)
+                        failedChannel?.subtitle?.takeIf { it.isNotBlank() }?.let { Text(it, style = line, color = Color.White.copy(alpha = 0.5f), maxLines = 1) }
+                        Text(name, style = line, color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
                 Text(stringResource(R.string.player_playback_error), style = tv.own.owntv.ui.theme.stageText(40, 600), color = Color.White)
                 Spacer(Modifier.height(8.dp))
                 error?.let {
