@@ -25,7 +25,7 @@ import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.GlobalContext
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
-import tv.own.owntv.core.util.Perf
+import tv.own.owntv.perf.StartLog
 import tv.own.owntv.core.di.coreModule
 import tv.own.owntv.core.di.databaseModule
 import tv.own.owntv.core.di.dataModule
@@ -85,7 +85,7 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
     }
 
     override fun onCreate() {
-        Perf.begin() // zero-point for the OwnTVPerf startup timeline (adb logcat -s OwnTVPerf)
+        StartLog.begin() // zero-point for the OwnTVPerf startup timeline (adb logcat -s OwnTVPerf)
         super.onCreate()
         // Debug builds name every disk or network access on the main thread in logcat (tag StrictMode).
         // Log only: it is a finder, never a crash.
@@ -130,7 +130,7 @@ class OwnTVApp : Application(), SingletonImageLoader.Factory, androidx.work.Conf
             androidContext(this@OwnTVApp)
             modules(coreModule, appModule, databaseModule, dataModule, playerModule)
         }
-        Perf.stamp("koin-started")
+        StartLog.stamp("koin-started")
         // Open the database now, in parallel with the Activity's start; MainActivity waits on the result.
         DatabaseProbe.start()
         // A chosen icon colour ("Later", the first-run pick, a restore) reaches the launcher when the app

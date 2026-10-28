@@ -510,7 +510,7 @@ fun OwnTVShell(
         // Live TV is the guide now: it loads itself, and a second load() would cancel that one and start over.
         val guide = epgVm.state.value
         if (sectionNow != MainSection.EPG && sectionNow != MainSection.LIVE_TV && guide.channels.isEmpty() && !guide.loading) {
-            tv.own.owntv.core.util.Perf.stamp("epg-preload"); epgVm.load()
+            tv.own.owntv.perf.StartLog.stamp("epg-preload"); epgVm.load()
         }
     }
 
@@ -839,8 +839,17 @@ fun OwnTVShell(
         tv.own.owntv.ui.FrameJankLog.screen = selectedSection.name + ":" + playerMode.name
     }
 
+    // The first picture of the process, for the start log (either engine).
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.flow.merge(
+            liveVm.previewEngine.state.map { it == tv.own.owntv.player.LivePreviewEngine.State.PLAYING },
+            player.isPlaying,
+        ).first { it }
+        tv.own.owntv.perf.StartLog.stampOnce("player-first-frame")
+    }
+
     LaunchedEffect(sidebarFocus) {
-        tv.own.owntv.core.util.Perf.stamp("shell-composed")
+        tv.own.owntv.perf.StartLog.stamp("shell-composed")
         withFrameNanos { }
         // Focus only: [focusRail] would stamp railKeyAt and open the menu with its names on every start.
         runCatching { sidebarFocus.requestFocus() }

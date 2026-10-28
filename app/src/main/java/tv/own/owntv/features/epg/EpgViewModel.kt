@@ -345,7 +345,7 @@ class EpgViewModel(
         val list = guideReader.row(channel, custom.value, epgOffset.value, s.windowStart, s.windowEnd)
         // An empty answer is not kept: while many rows load at once the provider fallback can still be
         // on its way, and a cached empty row stayed blank until something else re-read it.
-        if (list.isNotEmpty()) putRow(key, list)
+        if (list.isNotEmpty()) { putRow(key, list); tv.own.owntv.perf.StartLog.stampOnce("guide-rows") }
         prefetchAfter(channel)
         return list
     }
@@ -1027,6 +1027,7 @@ class EpgViewModel(
         return GuideBase(key, pid, playlistIds, q, showAll, cust, favoriteIds, sortMode, hiddenCatIds).apply {
             withGuide = sortShape(this, raw)
             if (showAll) allSorted = withGuide
+            tv.own.owntv.perf.StartLog.stampOnce("guide-base")
         }
     }
 

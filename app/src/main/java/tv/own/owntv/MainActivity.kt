@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.asImageBitmap
@@ -34,7 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.android.ext.android.inject
 import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.viewmodel.ext.android.viewModel
-import tv.own.owntv.core.util.Perf
+import tv.own.owntv.perf.StartLog
 import tv.own.owntv.core.launcher.LauncherDeepLink
 import tv.own.owntv.features.profiles.ProfileGate
 import tv.own.owntv.features.profiles.ProfileGateSessionViewModel
@@ -195,9 +196,12 @@ open class MainActivity : ComponentActivity() {
             }
             return
         }
-        Perf.stamp("db-probed") // main thread was blocked here: everything above is pre-composition
+        StartLog.stamp("db-probed") // main thread was blocked here: everything above is pre-composition
         // Janky frames per screen for the screenshot tour's report; compiled out of normal builds.
         if (BuildConfig.PERF_LOG) tv.own.owntv.ui.FrameJankLog.attach(window)
+        // Frames of the first seconds for the start log (More > About), in every build.
+        // Once per process: a recreated Activity (language switch) is not a start.
+        val startJank = if (StartLog.firstTime("jank-watch")) StartLog.JankWatch(window) else null
         setContent {
             // First composition pass — splits "process start → Compose is running" from
             // "Compose is running → the destination's data arrived".
@@ -205,7 +209,7 @@ open class MainActivity : ComponentActivity() {
             // the first composition pass. LaunchedEffect/SideEffect would run after it and measure
             // something else.
             @Suppress("RememberReturnType")
-            remember { Perf.stamp("first-composition"); Unit }
+            remember { StartLog.stamp("first-composition"); Unit }
 
             // Hold the screen on while video is actually playing, so the TV screensaver doesn't
             // start mid-channel/episode; released when paused/stopped (then the screensaver is fine).
@@ -281,7 +285,7 @@ open class MainActivity : ComponentActivity() {
                 gateSession.invalidateIfNotProfile(loadedProfileId)
             }
             LaunchedEffect(loadedProfileId != null) {
-                if (loadedProfileId != null) Perf.stamp("profile-id-loaded")
+                if (loadedProfileId != null) StartLog.stamp("profile-id-loaded")
             }
             val shouldShowProfileGate = profilesLoaded && tv.own.owntv.features.profiles.profileGateRequired(profiles)
             // Keep the pure launch policy in the actual composition path as well as in its unit
@@ -302,14 +306,26 @@ open class MainActivity : ComponentActivity() {
                 gateSession.cancelSwitchProfileRequest(loadedProfileId)
             }
             LaunchedEffect(profilesLoaded) {
-                if (profilesLoaded) Perf.stamp("profiles-loaded")
+                if (profilesLoaded) StartLog.stamp("profiles-loaded")
             }
             val destinationReady = loadedProfileId != null && profilesLoaded
             LaunchedEffect(destinationReady) {
                 if (destinationReady && !contentReady) {
                     contentReady = true
-                    Perf.stamp("destination-ready") // splash hand-off — the number startup work moves
+                    StartLog.stamp("destination-ready") // splash hand-off — the number startup work moves
                 }
+            }
+            // The start log's frame count ends 10 s after the destination was ready.
+            LaunchedEffect(contentReady) {
+                if (contentReady) {
+                    kotlinx.coroutines.delay(10_000)
+                    startJank?.finish()
+                }
+            }
+            // Whether Android compiled the baseline profile in, once the first frame is out.
+            LaunchedEffect(Unit) {
+                withFrameNanos { }
+                StartLog.readProfileStatus()
             }
 
             // "Refresh on startup" — re-sync sources once the active profile is known.

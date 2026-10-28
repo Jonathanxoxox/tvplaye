@@ -4,6 +4,16 @@
     <string name="tvplayer_panel_history" translatable="false">Verlauf</string>
     <string name="tvplayer_about_based_on" translatable="false">Basiert auf OwnTV (GPLv3) · %1$s</string>
     <string name="tvplayer_app_name" translatable="false">Mayo TV</string>
+    <string name="tvplayer_startlog_title" translatable="false">Start-Protokoll</string>
+    <string name="tvplayer_startlog_profile" translatable="false">Profil: %1$s (Code %2$d)</string>
+    <string name="tvplayer_startlog_profile_pending" translatable="false">Profil: wird abgefragt …</string>
+    <string name="tvplayer_startlog_profile_compiled" translatable="false">kompiliert</string>
+    <string name="tvplayer_startlog_profile_waiting" translatable="false">wartet auf Kompilierung</string>
+    <string name="tvplayer_startlog_profile_none" translatable="false">keins</string>
+    <string name="tvplayer_startlog_profile_error" translatable="false">Fehler</string>
+    <string name="tvplayer_startlog_jank" translatable="false">Ruckler in den ersten 10 s – ruckelnd: %1$d, Bilder gesamt: %2$d, längstes Bild: %3$d ms</string>
+    <string name="tvplayer_startlog_jank_pending" translatable="false">Ruckler: noch nicht gemessen (10 s nach dem Start)</string>
+    <string name="tvplayer_startlog_entry" translatable="false">%1$s @ %2$d ms (+%3$d)</string>
     <string name="tvplayer_update_allow_install" translatable="false">Erlaube Mayo TV im geöffneten Fenster, Apps zu installieren, und drücke dann Zurück. Das Update startet danach von selbst.</string>
     <string name="tvplayer_no_guide" translatable="false">Keine Programminfo</string>
     <string name="tvplayer_next_at" translatable="false">Danach %1$s</string>

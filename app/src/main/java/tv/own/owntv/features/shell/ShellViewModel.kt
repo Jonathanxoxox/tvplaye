@@ -71,7 +71,9 @@ class ShellViewModel(
                 .collect { pid ->
                     Log.d(TAG, "activeProfileChanged profile=$pid androidTvHomeEnabled=${settings.androidTvHomeEnabled.first()}")
                     if (pid >= 0 && settings.androidTvHomeEnabled.first()) {
+                        tv.own.owntv.perf.StartLog.stampOnce("launcher-refresh-start")
                         runCatching { launcherIntegrationRepository.refreshProfile(pid, allowBrowsableRequest = true) }
+                        tv.own.owntv.perf.StartLog.stampOnce("launcher-refresh-end")
                     }
                 }
         }
@@ -83,6 +85,7 @@ class ShellViewModel(
 
     /** The Auto refresh settings — core's [tv.own.owntv.core.sync.AutoRefresh], shared with the phone. */
     fun checkAutoRefresh(includeStartup: Boolean) {
+        if (includeStartup) tv.own.owntv.perf.StartLog.stampOnce("autorefresh-check")
         viewModelScope.launch { autoRefresh.check(includeStartup) }
     }
 

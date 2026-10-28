@@ -1524,6 +1524,7 @@ class LiveViewModel(
 
     /** [ensurePlaying] without forgetting the zap press: the tune a CH+/- step opens, timed from that press. */
     private fun startTune(channel: ChannelEntity) {
+        tv.own.owntv.perf.StartLog.stampOnce("tune-start")
         zapList.cancelPendingRebuild()
         // A deliberate pick supersedes a CH+/- step still waiting out its delay — otherwise the deferred
         // tune would land half a second later and drag the user off the channel they just chose.

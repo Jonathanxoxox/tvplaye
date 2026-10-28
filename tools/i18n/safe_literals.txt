@@ -31,6 +31,7 @@
 1	performance	app/src/main/java/tv/own/owntv/MainActivity.kt	db-probed
 1	performance	app/src/main/java/tv/own/owntv/MainActivity.kt	destination-ready
 1	performance	app/src/main/java/tv/own/owntv/MainActivity.kt	first-composition
+1	log	app/src/main/java/tv/own/owntv/MainActivity.kt	jank-watch
 2	technical	app/src/main/java/tv/own/owntv/MainActivity.kt	none
 1	log	app/src/main/java/tv/own/owntv/MainActivity.kt	onCreate deepLinkHost=${intent.data?.host} deepLinkType=${pendingDeepLink?.javaClass?.simpleName ?: "none"}
 1	log	app/src/main/java/tv/own/owntv/MainActivity.kt	onNewIntent deepLinkHost=${intent.data?.host} deepLinkType=${pendingDeepLink?.javaClass?.simpleName ?: "none"}
@@ -83,6 +84,8 @@
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	Stalker catch-up resolve failed channelId=${channel.id}
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	cache-reused
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	first-load
+1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	guide-base
+1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	guide-rows
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	guide_load channels=${channels.size} rawChannels=${b.withGuide.size} reused=${b === reusedBase}
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	lookbackH=${lookbackMs / 3_600_000}
 1	log	app/src/main/java/tv/own/owntv/features/epg/EpgViewModel.kt	rebuilt=$windowChanged reason=$rebuildReason cachedRows=${cachedRowCount()}
@@ -138,6 +141,7 @@
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	ensurePlaying history profile=$pid channelId=${channel.id}
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	ensurePlaying history record failed channelId=${channel.id} profile=$pid
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	stalker resolve failed channelId=${channel.id}
+1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	tune-start
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	tuneByNumber($number) failed
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	zap: tune wait ${delayMs}ms — ${zapWaitReason(lastZapPressMs, now, singleConnection)}
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveZapList.kt	LiveZapList
@@ -681,15 +685,20 @@
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	:
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	ass
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	epg-preload
+1	log	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	player-first-frame
 1	performance	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	shell-composed
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	srt
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	ssa
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	vtt
 1	protocol	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	webvtt
 1	technical	app/src/main/java/tv/own/owntv/features/shell/OwnTVShell.kt	·
+1	log	app/src/main/java/tv/own/owntv/features/shell/RailCountsViewModel.kt	rail-counts
 8	technical	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	\0
 1	log	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	OwnTVHome
 1	log	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	activeProfileChanged profile=$pid androidTvHomeEnabled=${settings.androidTvHomeEnabled.first()}
+1	log	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	autorefresh-check
+1	log	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	launcher-refresh-end
+1	log	app/src/main/java/tv/own/owntv/features/shell/ShellViewModel.kt	launcher-refresh-start
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/AvatarPickerDialog.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/shell/components/ChannelListOverlay.kt	CH±
 2	technical	app/src/main/java/tv/own/owntv/features/shell/components/ChannelListOverlay.kt	·
@@ -1187,6 +1196,7 @@
 1	protocol	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	owntv:recent_live:
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	r:${ch.id}:${current?.startMs}
 1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	recent row not decorated
+1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	recent-decorate
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_channel
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_favorites
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_for_you
@@ -1216,6 +1226,9 @@
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	LauncherRows
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row not decorated
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row watcher not registered
+1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	jank frames=${result.frames} janky=${result.janky} worstMs=${result.worstMs}
+1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	profile=${status.state.name.lowercase()}(${status.code})
+1	log	app/src/main/java/tv/own/owntv/perf/StartLog.kt	start-jank
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR apply failed: ${it.message}
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR reset failed: ${it.message}
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR: ${fps}fps -> mode $targetId deferred ${waitMs}ms (cooldown)
