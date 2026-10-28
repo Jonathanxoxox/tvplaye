@@ -458,8 +458,9 @@ def vod_details():
     if not open_section("Filme"):
         return
     time.sleep(3)
+    # ▶ erreicht die Kategorien-Spalte, zweimal ▶ das zweite Poster (wie in vod_section).
     key("DPAD_RIGHT", wait=1.0)
-    key("DPAD_DOWN", wait=1.0)
+    key("DPAD_RIGHT", n=2, wait=0.8)
     key("DPAD_CENTER", wait=1.5, long=True)
     shot("vod-filme-optionen")
     if goto(r"details", tries=12):
@@ -474,7 +475,8 @@ def search_tour():
     """Suche: ein Titel, ein Schauspieler (TMDB) und eine Beschreibung (Jev), jeweils Liste und erste Zeile."""
     if not open_section("Suche"):
         return
-    key("DPAD_RIGHT", wait=1.0)
+    # Die Suche setzt den Fokus selbst ins Feld; ▶ wäre schon das Mikrofon.
+    time.sleep(1.0)
     shot("suche-leer")
     for q, tag in [("top gun", "titel"), ("Tom Cruise", "schauspieler"), ("gruseliger Vampirfilm", "beschreibung")]:
         key("DPAD_CENTER", wait=1.5)
