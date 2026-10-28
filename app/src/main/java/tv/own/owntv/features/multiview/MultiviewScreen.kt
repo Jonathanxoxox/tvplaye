@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -195,8 +195,8 @@ private fun Tile(
                 // A sound-only tile has no picture to draw by design, so the tile says what it is
                 // instead of showing the black rectangle that would otherwise read as a fault.
                 val engine = state.pool.engineFor(index)
-                val engineState by engine.state.collectAsState()
-                val failure by engine.error.collectAsState()
+                val engineState by engine.state.collectAsStateWithLifecycle()
+                val failure by engine.error.collectAsStateWithLifecycle()
                 // A tile whose picture stops while the rest of the grid plays on. The provider was
                 // already asked and said yes, so this is the television running out of what it has —
                 // and the tile says that, rather than the eighty seconds of silent black the engine's

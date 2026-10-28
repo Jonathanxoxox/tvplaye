@@ -1632,77 +1632,19 @@ fun OwnTVShell(
       // ExoPlayer's picture is on screen: a promoted live channel, the guide's corner, or the move between them.
       val exoShown = liveOnExo || inCorner || guideHandover
       if (multiview == null && (playerMode == PlayerMode.FULLSCREEN || inCorner || guideHandover)) {
-        val isFull = playerMode == PlayerMode.FULLSCREEN
-        // 0 = the whole screen, 1 = the guide's corner. Read in layout and draw only, so only this box moves.
-        val cornerness = {
-            when {
-                playerMode == PlayerMode.NONE -> 1f
-                handoverGrow -> 1f - handoverShrink.value
-                else -> handoverShrink.value
-            }
-        }
-        val cornerRadius = 20.mpx
-        Box(
-            modifier = if (guideHandover || inCorner) {
-                // Laid out full screen and only transformed while drawing: the picture moves and shrinks as a
-                // picture, with no layout pass and no new surface size per frame (the video plane is scaled by
-                // the display hardware, as a SurfaceView under a scaled layer is).
-                Modifier.fillMaxSize().graphicsLayer {
-                    val f = cornerness()
-                    val to = tv.own.owntv.features.epg.GuidePreviewSpot.rect
-                    transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0f)
-                    if (to != null && size.width > 0f && size.height > 0f) {
-                        scaleX = 1f + (to.width / size.width - 1f) * f
-                        scaleY = 1f + (to.height / size.height - 1f) * f
-                        translationX = (to.left + tv.own.owntv.features.epg.GuidePreviewSpot.shift()) * f
-                        translationY = to.top * f
-                    }
-                    // The corner's rounding grows in as the picture lands (drawn before the scale shrinks it).
-                    shape = RoundedCornerShape(cornerRadius.toPx() * f / scaleX.coerceAtLeast(0.05f))
-                    clip = true
-                }.background(Color.Black)
-            } else {
-                Modifier.fillMaxSize().background(Color.Black)
-            },
-        ) {
-            // "Promote Preview": a Live channel playing on ExoPlayer renders the ExoPlayer surface, in full screen
-            // and in the guide's corner (same call site = the surface persists, so playback never blips).
-            // Everything else (mpv) renders mpv's surface.
-            if (exoShown) {
-                tv.own.owntv.player.ExoPreviewSurface(
-                    engine = liveVm.previewEngine, modifier = Modifier.fillMaxSize(),
-                    keepAwake = playerMode != PlayerMode.NONE,
-                    // Kept through the corner too: a display mode switched back and forth on every Back
-                    // is a black screen each way.
-                    autoFrameRate = (isFull || inCorner || guideHandover) && autoFrameRate,
-                )
-                if (inCorner) {
-                    val cornerState by liveVm.previewEngine.state.collectAsStateWithLifecycle()
-                    if (cornerState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) {
-                        tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 24, modifier = Modifier.align(Alignment.Center))
-                    }
-                }
-            } else {
-                MpvVideoSurface(
-                    player = player, modifier = Modifier.fillMaxSize(), autoFrameRate = isFull && autoFrameRate,
-                    afrMatchResolution = afrMatchResolution, afrHoldSecs = afrPauseSecs,
-                )
-            }
-            // The item has no video track of its own (a radio channel, a music-only "movie"). Playing it is
-            // correct — but a black screen with sound reads as a broken player, so name what is happening.
-            // Read from whichever engine is on screen; only ever composed when there is no video to lose.
-            val audioOnlyMedia by if (exoShown) {
-                liveVm.previewEngine.audioOnlyMedia.collectAsStateWithLifecycle()
-            } else {
-                player.audioOnlyMedia.collectAsStateWithLifecycle()
-            }
-            if (audioOnlyMedia) {
-                tv.own.owntv.player.AudioOnlyBadge(modifier = Modifier.fillMaxSize(), compact = !isFull)
-            }
-            // Direct render mode: mpv can't draw subtitles on the decoder-owned surface — the app does.
-            if (!exoShown) {
-                tv.own.owntv.player.SubtitleOverlay(player = player, modifier = Modifier.fillMaxSize(), sizeScale = 1f)
-            }
+        ShellVideoLayer(
+            playerMode = playerMode,
+            inCorner = inCorner,
+            guideHandover = guideHandover,
+            handoverGrow = handoverGrow,
+            handoverShrink = handoverShrink,
+            exoShown = exoShown,
+            liveVm = liveVm,
+            player = player,
+            autoFrameRate = autoFrameRate,
+            afrMatchResolution = afrMatchResolution,
+            afrPauseSecs = afrPauseSecs,
+        ) { isFull ->
             if (isFull && !guideHandover) {
                 // Engine state still distinguishes the live edge from catch-up/archive playback for
                 // controls such as direct number tuning. It must not gate the physical CH keys below.
