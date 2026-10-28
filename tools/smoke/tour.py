@@ -376,9 +376,32 @@ def guide_tour():
 
 
 def in_fullscreen():
-    """Vollbild: kein Menü und keine Senderliste mit Fokus."""
-    root = dump()
-    return not RAIL.match(focused_text(root) or "") and find(root, r"^Fußball$") is None
+    """Vollbild ohne Einblendung: der Fokus liegt auf der bildschirmfüllenden Fangfläche des Players.
+    (Der Guide bleibt hinter dem Vollbild aufgebaut, seine Texte stehen also auch im UI-Baum.)"""
+    f = focused(dump())
+    if f is None:
+        return False
+    b = bounds(f)
+    return b[2] - b[0] >= 1600 and b[3] - b[1] >= 900
+
+
+def start_fullscreen(row, group=None):
+    """Von überall frisch in den Vollbild-Player: Menü › Live-TV › (Gruppe) › Senderzeile › OK, OK."""
+    if not open_section("Live-TV"):
+        return False
+    key("DPAD_RIGHT", wait=1.0)
+    if group:
+        goto(group, press=False, xmax=RAIL_XMAX + 400)
+        time.sleep(1.5)
+    key("DPAD_RIGHT", wait=1.0)
+    if not goto_row(row):
+        return False
+    # Erstes OK spielt in der Vorschau, das zweite geht ins Vollbild.
+    for _ in range(2):
+        key("DPAD_CENTER", wait=3)
+        if in_fullscreen():
+            return True
+    return in_fullscreen()
 
 
 def player_tour():
@@ -393,11 +416,10 @@ def player_tour():
     if not goto_row(r"^Sky Sport Bundesliga 1"):
         return
     key("DPAD_CENTER", wait=1.0)
-    time.sleep(5)
+    time.sleep(4)
     shot("live-vorschau")
-    # Erstes OK spielt in der Vorschau, das zweite geht ins Vollbild
     if not in_fullscreen():
-        key("DPAD_CENTER", wait=5)
+        key("DPAD_CENTER", wait=4)
     shot("player")
     # Zurück: das Bild gleitet in die Vorschau-Ecke des Guides und läuft dort weiter; OK holt es zurück.
     key("BACK", wait=0.15)
@@ -406,85 +428,86 @@ def player_tour():
     shot("player-zurueck-im-guide")
     key("DPAD_CENTER", wait=4)
     shot("player-wieder-vollbild")
-    key("DPAD_CENTER", wait=1.5)
-    shot("player-ok-infoleiste")
-    # ▼ unter den Kacheln öffnet die Einstellungszeile; daraus Ton, Untertitel und Format.
+
+    # Zappen: ▲▼ und die CH-Tasten, einzeln und als schnelle Folge (wie eine gehaltene Taste).
+    # Das Foto direkt nach dem Druck zeigt, ob die Infoleiste schon den neuen Sender nennt.
+    if True:
+        key("DPAD_UP", wait=0.3)
+        shot("player-hoch-zappen-sofort")
+        time.sleep(2)
+        shot("player-hoch-zappen")
+        key("DPAD_DOWN", wait=2)
+        shot("player-runter-zappen")
+        key("CHANNEL_UP", wait=0.3)
+        shot("player-ch-plus-sofort")
+        time.sleep(2)
+        shot("player-ch-plus")
+        key("CHANNEL_DOWN", wait=2)
+        shot("player-ch-minus")
+        key("CHANNEL_UP", n=4, wait=0.2)
+        shot("player-ch-schnell-zappen")
+        time.sleep(3)
+        shot("player-ch-schnell-angekommen")
+        time.sleep(3)
+        key("DPAD_RIGHT", wait=1.5)
+        shot("player-rechts-letzter-sender")
+        time.sleep(3)
+        key("DPAD_LEFT", wait=1.5)
+        shot("player-links-senderliste")
+        key("DPAD_LEFT", wait=1.5)
+        shot("player-links-gruppen")
+        key("BACK", wait=1.0)
+        key("BACK", wait=1.0)
+        shot("player-nach-liste")
+
+    # OK: Infoleiste mit Kacheln; ▼ öffnet die Einstellungszeile; daraus Ton, Untertitel und Format.
     for name in ("Ton", "Untertitel", "Format"):
-        if not in_fullscreen():
+        if not in_fullscreen() and not start_fullscreen(r"^Sky Sport Bundesliga 1"):
             break
         key("DPAD_CENTER", wait=1.5)
+        if name == "Ton":
+            shot("player-ok-infoleiste")
         key("DPAD_DOWN", wait=1.2)
         if name == "Ton":
             shot("player-ok-einstellungszeile")
         if goto(rf"^{name}"):
             time.sleep(1.2)
             shot(f"player-dialog-{name.lower()}")
-            key("BACK", wait=1.2)
-        else:
-            key("BACK", wait=1.0)
-        key("BACK", wait=1.0)
-    key("BACK", wait=1.0)
-    key("DPAD_UP", wait=1.2)
-    shot("player-hoch-zappen")
-    key("DPAD_DOWN", wait=1.2)
-    shot("player-runter-zappen")
-    # Senderwechsel mit den CH-Tasten, einzeln und als schnelle Folge (wie gehaltene Taste).
-    key("CHANNEL_UP", wait=0.3)
-    shot("player-ch-plus-sofort")
-    time.sleep(2)
-    shot("player-ch-plus")
-    key("CHANNEL_DOWN", wait=2)
-    shot("player-ch-minus")
-    key("CHANNEL_UP", n=4, wait=0.2)
-    shot("player-ch-schnell-zappen")
-    time.sleep(3)
-    shot("player-ch-schnell-angekommen")
-    key("DPAD_RIGHT", wait=1.2)
-    shot("player-rechts-letzter-sender")
-    key("DPAD_LEFT", wait=1.5)
-    shot("player-links-senderliste")
-    key("DPAD_LEFT", wait=1.5)
-    shot("player-links-gruppen")
-    key("BACK", wait=1.0)
-    key("BACK", wait=1.0)
-    shot("player-nach-liste")
+            key("BACK", wait=1.5)
+        if not in_fullscreen():
+            key("BACK", wait=1.5)
+
+    # Die übrigen Tasten der Fernbedienung, jede aus dem freien Vollbild.
     for code, name in [
         ("DPAD_CENTER", "ok-lang-optionen"), ("MENU", "menue"), ("MENU", "menue-lang-epg"),
-        ("DPAD_UP", "hoch-lang-verlauf"), ("DPAD_DOWN", "runter-lang-suche"), ("PROG_RED", "rot"),
-        ("PROG_BLUE", "blau"), ("INFO", "info"),
+        ("PROG_RED", "rot"), ("PROG_BLUE", "blau"), ("INFO", "info"),
     ]:
-        key(code, long=name.endswith(("lang-optionen", "lang-epg", "lang-verlauf", "lang-suche")), wait=1.8)
+        if not in_fullscreen() and not start_fullscreen(r"^Sky Sport Bundesliga 1"):
+            break
+        key(code, long=name.endswith(("lang-optionen", "lang-epg")), wait=1.8)
         shot(f"player-{name}")
         if name == "ok-lang-optionen":
             key("DPAD_DOWN", n=3, wait=0.5)
             shot("player-optionen-unten")
-        key("BACK", wait=1.2)
+        key("BACK", wait=1.5)
         if dismiss_exit(dump()):
             break
-    key("BACK", wait=1.5)
-    shot("player-zurueck")
-    key("BACK", wait=1.5)
-    shot("player-zurueck-2")
+
     # Ein Sender ohne Signal: Fehlerbild mit „Erneut versuchen“, ▲▼ zappen weiter weg.
     to_rail()
-    if open_section("Live-TV"):
-        key("DPAD_RIGHT", wait=1.0)
-        goto(r"^Dokumentationen", press=False, xmax=RAIL_XMAX + 400)
-        time.sleep(1.5)
-        key("DPAD_RIGHT", wait=1.0)
-        if goto_row(r"^Kein Signal"):
-            key("DPAD_CENTER", wait=1.0)
-            time.sleep(1)
-            if not in_fullscreen():
-                key("DPAD_CENTER", wait=1)
-            time.sleep(1)
-            shot("player-fehler-laedt")
-            time.sleep(12)
-            shot("player-fehler")
-            key("DPAD_DOWN", wait=3)
-            shot("player-fehler-weggezappt")
-            key("BACK", wait=1.5)
-
+    # Auch ohne Vollbild-Bestätigung weiter: das Fehlerbild hält den Fokus auf „Erneut versuchen“.
+    start_fullscreen(r"^Kein Signal", group=r"^Dokumentationen")
+    if True:
+        time.sleep(1)
+        shot("player-fehler-laedt")
+        time.sleep(12)
+        shot("player-fehler")
+        key("DPAD_DOWN", wait=0.4)
+        shot("player-fehler-weggezappt-sofort")
+        time.sleep(3)
+        shot("player-fehler-weggezappt")
+        key("BACK", wait=1.5)
+    shot("player-zurueck")
 
 def vod_section(name, layout):
     """Filme oder Serien: Raster, Hero, Kategorien und die Detailseite eines Titels."""
