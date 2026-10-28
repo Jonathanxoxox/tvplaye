@@ -47,7 +47,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -56,8 +55,6 @@ import androidx.tv.material3.Text
 import kotlinx.coroutines.launch
 import tv.own.owntv.R
 import tv.own.owntv.core.nav.MainSection
-import tv.own.owntv.core.settings.SettingsRepository.NavLength
-import tv.own.owntv.core.settings.SettingsRepository.NavSize
 import tv.own.owntv.ui.components.BrandMark
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.Wordmark
@@ -71,7 +68,6 @@ import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.ownTvTween
 import tv.own.owntv.ui.theme.stageAccent
 import tv.own.owntv.ui.theme.stageText
-import java.text.NumberFormat
 
 /** What the Stage rail shows right now: the Navigation setting plus where focus is (see OwnTVShell). */
 enum class RailState {
@@ -98,22 +94,16 @@ private val StageRailOrder = listOf(
 val StageContentTop = 110.mpx
 
 /**
- * The Stage navigation rail: a floating glass capsule, the rail at its
- * [size] over a scrim or docked, or only the accent glow at the edge. [count] is the number beside an
- * item (Wide and up) and [detail] the line under its name (Extra wide), null for none. [length] Full
- * runs the rail the height of the screen. Entering the rail from the content always lands on the
- * selected section, and ▶ out of it returns to exactly where the content was ([contentFocusRequester]).
+ * The Stage navigation rail: a strip of icons down the left edge that opens with the names while it holds
+ * focus. Entering the rail from the content always lands on the selected section, and ▶ out of it returns
+ * to exactly where the content was ([contentFocusRequester]).
  */
 @Composable
 fun StageRail(
     state: RailState,
-    size: NavSize,
-    length: NavLength,
     selected: MainSection,
     visibleSections: Set<MainSection>,
     onSelect: (MainSection) -> Unit,
-    count: (MainSection) -> Int?,
-    detail: @Composable (MainSection) -> String?,
     profileName: String,
     profileLine: String,
     onSwitchProfile: () -> Unit,
@@ -134,7 +124,6 @@ fun StageRail(
     // left edge; with focus it widens to icons and names, the app name on top and Settings at the bottom.
     // Focus is the near-white bar every list uses; the open section keeps a lighter bar.
     val expanded = state == RailState.OPEN || state == RailState.PINNED
-    val counts = size >= NavSize.WIDE
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     val scope = rememberCoroutineScope()
     var hasFocus by remember { mutableStateOf(false) }
@@ -211,7 +200,6 @@ fun StageRail(
                 RailItem(
                     icon = section.stageIcon,
                     label = stringResource(section.labelRes),
-                    trailing = if (counts) count(section)?.let { NumberFormat.getIntegerInstance(LocalConfiguration.current.locales[0]).format(it) } else null,
                     expanded = drawnOpen,
                     active = section == selected,
                     onClick = { onSelect(section) },
@@ -224,7 +212,6 @@ fun StageRail(
             RailItem(
                 icon = OwnTVIcon.GEAR,
                 label = stringResource(MainSection.MORE.labelRes),
-                trailing = null,
                 expanded = drawnOpen,
                 active = selected == MainSection.MORE || selected == MainSection.SETTINGS,
                 onClick = { onSelect(MainSection.MORE) },
@@ -312,7 +299,6 @@ private val MainSection.stageIcon: OwnTVIcon
 private fun RailItem(
     icon: OwnTVIcon,
     label: String,
-    trailing: String?,
     expanded: Boolean,
     active: Boolean,
     onClick: () -> Unit,
@@ -345,9 +331,6 @@ private fun RailItem(
                 maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            if (trailing != null) {
-                Text(trailing, style = stageText(18, 500), color = if (focused) a.onAccent else StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
         }
     }
 }

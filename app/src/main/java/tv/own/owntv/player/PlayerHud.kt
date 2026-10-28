@@ -137,9 +137,6 @@ private sealed interface TuneOsd {
 fun PlayerHud(
     player: PlaybackEngine,
     onBack: () -> Unit,
-    onPip: (() -> Unit)? = null,
-    // Switch to audio-only mode (stops video decode, surfaces the top-bar now-playing bar). Null hides it.
-    onAudioMode: (() -> Unit)? = null,
     // Live only, and only when Multiview is switched on in Settings: turn this channel into tile 1 of
     // the grid. Null hides the button entirely — the feature is opt-in, like the record button.
     onMultiview: (() -> Unit)? = null,
@@ -567,7 +564,6 @@ fun PlayerHud(
             }
             add(LiveOption(stringResource(R.string.player_sleep_timer), OwnTVIcon.BEDTIME) { open(HudDialog.SLEEP_TIMER) })
             add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { close(); showInfo = !showInfo })
-            onPip?.let { pip -> add(LiveOption(stringResource(R.string.player_tool_mini), OwnTVIcon.PIP) { close(); pip() }) }
             add(LiveOption(stringResource(R.string.tvplayer_option_controls), OwnTVIcon.LIST) { close(); controlsVisible = true })
         }
     } else emptyList()
@@ -893,7 +889,7 @@ fun PlayerHud(
                         engineFlash++
                     },
                     favorite = favorite, onToggleFavorite = onToggleFavorite,
-                    onOpenDialog = { dialog = it }, onPip = onPip, onAudioMode = onAudioMode,
+                    onOpenDialog = { dialog = it },
                     onMultiview = onMultiview, onRecordThis = onRecordThis, recordingThis = recordingThis, onBack = onBack,
                     modifier = Modifier.align(Alignment.BottomStart),
                 )
