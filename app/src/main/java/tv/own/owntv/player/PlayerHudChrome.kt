@@ -331,7 +331,7 @@ internal fun BottomBar(
     favorite: Boolean = false, onToggleFavorite: (() -> Unit)? = null,
     onPreviousChannel: (() -> Unit)? = null,
     onOtherChannels: (() -> Unit)? = null, otherChannelsCount: Int = 0,
-    onOpenDialog: (HudDialog) -> Unit, onPip: (() -> Unit)?, onAudioMode: (() -> Unit)?,
+    onOpenDialog: (HudDialog) -> Unit,
     onMultiview: (() -> Unit)? = null, onRecordThis: (() -> Unit)? = null, recordingThis: Boolean = false,
     /** Given to whichever timeline is drawn, so Left/Right with the controls hidden can land on it. */
     seekFocus: FocusRequester? = null,
@@ -469,15 +469,10 @@ internal fun BottomBar(
                                 CtrlButton(OwnTVIcon.VIDEO, active = pick != null, label = stringResource(R.string.player_tool_quality)) { onOpenDialog(HudDialog.QUALITY) }
                             }
                         }
-                        PlayerControl.MINI_PLAYER -> if (onPip != null) {
-                            CtrlButton(OwnTVIcon.PIP, label = stringResource(R.string.player_tool_mini)) { onPip() }
-                        }
-                        PlayerControl.AUDIO_ONLY -> if (onAudioMode != null) {
-                            CtrlButton(OwnTVIcon.HEADPHONES, label = stringResource(R.string.player_tool_audio_only)) { onAudioMode() }
-                        }
+                        // Mayo TV has no mini player or audio-only mode; a stored layout that lists them draws nothing.
+                        PlayerControl.MINI_PLAYER, PlayerControl.AUDIO_ONLY -> Unit
                         // Live only, and only once the user has switched Multiview on: four tiles
-                        // from the channel already playing. Next to the mini-player button, which is
-                        // its nearest relative.
+                        // from the channel already playing.
                         PlayerControl.MULTIVIEW -> if (onMultiview != null) {
                             CtrlButton(OwnTVIcon.LIST_GRID, label = stringResource(R.string.multiview_button)) { onMultiview() }
                         }

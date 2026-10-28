@@ -835,18 +835,6 @@ class SettingsViewModel(
         viewModelScope.launch { settings.setNavMenuMode(mode) }
     }
 
-    // --- Stage navigation (the rail's size and length; one rail, no style or hide delay) ---
-    val navSize: StateFlow<tv.own.owntv.core.settings.SettingsRepository.NavSize> =
-        settings.navSize.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
-    fun setNavSize(size: tv.own.owntv.core.settings.SettingsRepository.NavSize) {
-        viewModelScope.launch { settings.setNavSize(size) }
-    }
-    val navLength: StateFlow<tv.own.owntv.core.settings.SettingsRepository.NavLength> =
-        settings.navLength.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.NavLength.FIT)
-    fun setNavLength(length: tv.own.owntv.core.settings.SettingsRepository.NavLength) {
-        viewModelScope.launch { settings.setNavLength(length) }
-    }
-
     /** Browse sections the user has hidden (STATIC mode only). */
     val navMenuHidden: StateFlow<Set<tv.own.owntv.core.nav.MainSection>> = settings.navMenuHidden
         .map { raw -> raw.mapNotNull { name -> runCatching { tv.own.owntv.core.nav.MainSection.valueOf(name) }.getOrNull() }.toSet() }
@@ -943,21 +931,12 @@ class SettingsViewModel(
     val vodLayout: StateFlow<tv.own.owntv.core.settings.SettingsRepository.VodLayout> =
         settings.vodLayout.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.VodLayout.SEPARATE)
     fun setVodLayout(layout: tv.own.owntv.core.settings.SettingsRepository.VodLayout) { viewModelScope.launch { settings.setVodLayout(layout) } }
-    val liveLayout: StateFlow<tv.own.owntv.core.settings.SettingsRepository.LiveLayout> =
-        settings.liveLayout.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.LiveLayout.STAGE)
-    fun setLiveLayout(layout: tv.own.owntv.core.settings.SettingsRepository.LiveLayout) { viewModelScope.launch { settings.setLiveLayout(layout) } }
     val reminderMode: StateFlow<tv.own.owntv.core.settings.SettingsRepository.ReminderMode> =
         settings.reminderMode.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.settings.SettingsRepository.ReminderMode.ASK)
     fun setReminderMode(mode: tv.own.owntv.core.settings.SettingsRepository.ReminderMode) { viewModelScope.launch { settings.setReminderMode(mode) } }
     val reminderLeadMinutes: StateFlow<Int> =
         settings.reminderLeadMinutes.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), tv.own.owntv.core.reminder.ReminderSchedule.DEFAULT_LEAD_MINUTES)
     fun setReminderLeadMinutes(minutes: Int) { viewModelScope.launch { settings.setReminderLeadMinutes(minutes) } }
-    /** Live TV's Stage-layout widths: the categories sheet on its own, list + preview = 100. */
-    val liveStageWidths: StateFlow<tv.own.owntv.core.settings.LiveStageWidths?> =
-        settings.liveStageWidths.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
-    fun setLiveStageWidths(enabled: Boolean, widths: tv.own.owntv.core.settings.LiveStageWidths) {
-        viewModelScope.launch { settings.setLiveStageWidths(enabled, widths) }
-    }
 
     val ambientGlowEnabled: StateFlow<Boolean> =
         settings.ambientGlowEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), false)

@@ -199,20 +199,8 @@ fun OwnTVShell(
     val ambientGlowEnabled by settingsRepo.ambientGlowEnabled.collectAsStateWithLifecycle(initialValue = false)
     val ambientGlowPulse by settingsRepo.ambientGlowPulse.collectAsStateWithLifecycle(initialValue = true)
     val shellAnimationLevel by settingsRepo.animationLevel.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.theme.AnimationLevel.FULL)
-    // Stage navigation: what the rail shows and its length. Mayo TV has one rail (26 Oct 2026): the icon strip
-    // always at the left edge, opening with names while it holds focus. No floating or docked variants.
-    val navSize by settingsRepo.navSize.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavSize.COMPACT)
-    val navLength by settingsRepo.navLength.collectAsStateWithLifecycle(initialValue = tv.own.owntv.core.settings.SettingsRepository.NavLength.FIT)
-    val railVm = org.koin.androidx.compose.koinViewModel<RailCountsViewModel>()
-    // The counts (a COUNT over every channel, film and series) and the last-watched names are shown only with
-    // the rail open: read nothing until it has opened once, then keep them current as before.
-    var railOpenedOnce by remember { mutableStateOf(false) }
-    val railCounts by produceState(emptyMap<MainSection, Int>(), railOpenedOnce) {
-        if (railOpenedOnce) railVm.counts.collect { value = it }
-    }
-    val railDetails by produceState(RailDetails(), railOpenedOnce) {
-        if (railOpenedOnce) railVm.details.collect { value = it }
-    }
+    // Stage navigation: Mayo TV has one rail (26 Oct 2026): the icon strip always at the left edge, opening
+    // with names while it holds focus. No floating or docked variants, no counts or detail lines.
     // Where ▶ out of the Stage rail returns to: the content, exactly as it was left.
     val contentAreaFocus = remember { FocusRequester() }
     var homeEntry by remember { mutableStateOf<(() -> Boolean)?>(null) }
@@ -526,7 +514,7 @@ fun OwnTVShell(
         tv.own.owntv.StartupGate.awaitFirstFrame()
         // Live TV is the guide now: it loads itself, and a second load() would cancel that one and start over.
         val guide = epgVm.state.value
-        if (sectionNow != MainSection.EPG && sectionNow != MainSection.LIVE_TV && guide.channels.isEmpty() && !guide.loading) {
+        if (sectionNow != MainSection.LIVE_TV && guide.channels.isEmpty() && !guide.loading) {
             tv.own.owntv.perf.StartLog.stamp("epg-preload"); epgVm.load()
         }
     }
@@ -753,7 +741,6 @@ fun OwnTVShell(
     // page (#7.1). So a visit opens it only when it was meant: within [RAIL_KEY_WINDOW_MS] of ◀ / ▶ or
     // of [focusRail], or once a key is pressed while the rail holds focus.
     var railFocused by remember { mutableStateOf(false) }
-    LaunchedEffect(railFocused) { if (railFocused) railOpenedOnce = true }
     // Keyed on [railKeyAt] too: at start-up focus already counts as on the rail before [focusRail] runs.
     LaunchedEffect(railHasFocus, railKeyAt) {
         railFocused = railHasFocus && android.os.SystemClock.uptimeMillis() - railKeyAt <= RAIL_KEY_WINDOW_MS
@@ -763,7 +750,7 @@ fun OwnTVShell(
     val railPush = tv.own.owntv.features.shell.components.rememberRailPush(railState)
     // The guide, and a match page: pages that take the strip's room while they hold focus.
     val fullPage = selectedSection == MainSection.SPORTS && tv.own.owntv.features.shell.components.StageRailOpen.fullPage
-    val guideSection = selectedSection == MainSection.LIVE_TV || selectedSection == MainSection.EPG || fullPage
+    val guideSection = selectedSection == MainSection.LIVE_TV || fullPage
     // Only the strip itself brings the strip back: with nobody focused (the moment after full screen shrinks
     // onto the guide) it must stay out, or it flashes in for the frames before a guide row takes focus.
     val guideStripHidden = guideSection &&
@@ -828,7 +815,7 @@ fun OwnTVShell(
             RemoteShortcutAction.OPEN_MOVIES -> openShortcutSection(MainSection.MOVIES)
             RemoteShortcutAction.OPEN_SERIES -> openShortcutSection(MainSection.SERIES)
             RemoteShortcutAction.OPEN_DOWNLOADS -> openShortcutSection(MainSection.DOWNLOADS)
-            RemoteShortcutAction.OPEN_GUIDE -> openShortcutSection(MainSection.EPG)
+            RemoteShortcutAction.OPEN_GUIDE -> openShortcutSection(MainSection.LIVE_TV)
             RemoteShortcutAction.OPEN_SEARCH -> openShortcutSection(MainSection.SEARCH)
             RemoteShortcutAction.OPEN_SETTINGS -> openShortcutSection(MainSection.SETTINGS)
             RemoteShortcutAction.OPEN_PROFILE_SWITCHER -> {
@@ -967,7 +954,7 @@ fun OwnTVShell(
         // channel on in its preview, so it must not be stopped, and forgotten, here first.
         val matchPageNext = selectedSection == MainSection.SPORTS &&
             (sportsMatchRequests.returnToMatch != null || sportsMatchRequests.returnedFromPlayer)
-        if (selectedSection != MainSection.LIVE_TV && selectedSection != MainSection.EPG && playerMode == PlayerMode.NONE && !matchPageNext) liveVm.stopPreview()
+        if (selectedSection != MainSection.LIVE_TV && playerMode == PlayerMode.NONE && !matchPageNext) liveVm.stopPreview()
         if (selectedSection != MainSection.HOME || playerMode != PlayerMode.NONE) homeVm.stopPreview()
     }
 
@@ -1450,7 +1437,7 @@ fun OwnTVShell(
                         selectedSection == MainSection.DOWNLOADS -> DownloadsScreen(
                             onFullscreen = { openFullscreen() },
                             onChildFocused = { focusedLayer = ShellLayer.CONTENT },
-                            onOpenGuide = { onSelectSection(MainSection.EPG) },
+                            onOpenGuide = { onSelectSection(MainSection.LIVE_TV) },
                             restoreFocus = restoreFocus,
                             onRestored = { restoreFocus = false },
                             onEntryHook = { downloadsEntry = it },
@@ -1469,30 +1456,13 @@ fun OwnTVShell(
                             modifier = Modifier.fillMaxSize(),
                         )
 
-                        selectedSection == MainSection.EPG -> EpgScreen(
-                            onFullscreen = { openFullscreen() },
-                            onPlayChannel = guidePlayChannel,
-                            onPlayCatchup = guidePlayCatchup,
-                            onOpenSearch = { onSelectSection(MainSection.SEARCH) },
-                            onOpenSettings = { onSelectSection(MainSection.SETTINGS) },
-                            previewEnabled = playerMode == PlayerMode.NONE,
-                            onEntryHook = { guideEntry = it },
-                            onAddEpg = { openEpgAdd = true; onSelectSection(MainSection.SETTINGS) },
-                            restoreFocus = restoreFocus,
-                            onRestored = { restoreFocus = false },
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .onFocusChanged { if (it.hasFocus) focusedLayer = ShellLayer.CONTENT }
-                                .focusGroup(),
-                        )
-
                     }
                 }
             }
           }
             // The guide shows no clock and no pills at all, as in TiviMate (Jonathan, 27 Oct 2026: "unnötig").
             // A match page neither: its Watch live column needs the room.
-            val clusterAside = selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV || fullPage
+            val clusterAside = selectedSection == MainSection.LIVE_TV || fullPage
             val clusterAlpha by androidx.compose.animation.core.animateFloatAsState(if (clusterAside) 0f else 1f, tv.own.owntv.ui.theme.stageSlide())
             tv.own.owntv.features.shell.components.StageStatusCluster(
                 continuePill = continueTarget?.let { target ->
@@ -1526,13 +1496,9 @@ fun OwnTVShell(
             )
             tv.own.owntv.features.shell.components.StageRail(
                 state = railState,
-                size = navSize,
-                length = navLength,
                 selected = selectedSection,
                 visibleSections = visibleSections,
                 onSelect = selectFromNav,
-                count = { section -> railCounts[section]?.takeIf { it > 0 } },
-                detail = { section -> railDetail(section, railDetails) },
                 profileName = profileName.ifBlank { stringResource(R.string.common_own_tv_user) },
                 profileLine = stringResource(R.string.shell_rail_profile_line, playlistLabel),
                 onSwitchProfile = onSwitchProfile,
@@ -1543,7 +1509,7 @@ fun OwnTVShell(
                 contentFocusRequester = contentAreaFocus,
                 enterContent = when (selectedSection) {
                     MainSection.HOME -> homeEntry
-                    MainSection.EPG, MainSection.LIVE_TV -> guideEntry
+                    MainSection.LIVE_TV -> guideEntry
                     MainSection.MOVIES, MainSection.SERIES -> vodEntry
                     MainSection.DOWNLOADS -> downloadsEntry
                     MainSection.MORE -> moreEntry
@@ -2110,7 +2076,7 @@ fun OwnTVShell(
     // there the line beside the button, or the review window, already says it.
     val epgMatchToast = tv.own.owntv.ui.components.rememberInAppToast()
     val guideOnScreen = playerMode != PlayerMode.FULLSCREEN && multiview == null &&
-        (selectedSection == MainSection.EPG || selectedSection == MainSection.LIVE_TV)
+        selectedSection == MainSection.LIVE_TV
     val currentGuideOnScreen by rememberUpdatedState(guideOnScreen)
     var finishedMatch by remember { mutableStateOf<tv.own.owntv.features.epg.EpgMatchSummary?>(null) }
     LaunchedEffect(epgVm) {
@@ -2213,26 +2179,6 @@ private fun OfflineBanner() {
             color = tv.own.owntv.ui.theme.StageColors.Text,
         ) }
     }
-
-/** The line under a rail item at Size = Extra wide; real data only, so most items can have none. */
-@Composable
-private fun railDetail(section: MainSection, d: RailDetails): String? = when (section) {
-    MainSection.LIVE_TV -> d.lastChannel?.let { stringResource(R.string.shell_rail_detail_last, it) }
-    MainSection.MOVIES -> d.resumeMovie?.let { stringResource(R.string.shell_rail_detail_resume, it) }
-    MainSection.SERIES -> d.episode?.let { e ->
-        val title = stringResource(R.string.shell_rail_detail_episode, e.series, stringResource(R.string.content_season_episode, e.season, e.episode))
-        stringResource(if (e.resume) R.string.shell_rail_detail_resume else R.string.shell_rail_detail_next, title)
-    }
-    MainSection.DOWNLOADS -> if (d.downloading == 0) null else {
-        val progress = d.downloadProgress?.let {
-            java.text.NumberFormat.getPercentInstance(androidx.compose.ui.platform.LocalConfiguration.current.locales[0]).format(it)
-        }
-        if (progress == null) null
-        else androidx.compose.ui.res.pluralStringResource(R.plurals.shell_rail_detail_downloads, d.downloading, d.downloading, progress)
-    }
-    MainSection.MORE -> stringResource(R.string.shell_rail_detail_more)
-    else -> null
-}
 
 /** How recently ◀ / ▶ or [focusRail] must have happened for a rail visit to open the rail. */
 private const val RAIL_KEY_WINDOW_MS = 400L

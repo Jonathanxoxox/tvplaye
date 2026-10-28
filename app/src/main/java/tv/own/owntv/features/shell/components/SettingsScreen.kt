@@ -1430,15 +1430,9 @@ private fun startupLabel(mode: tv.own.owntv.core.settings.StartupMode): String =
 /** Settings › Layout › Navigation, hosted outside [SettingsScreen] (whose body is at the JVM method-size limit). */
 @Composable
 private fun NavigationPopupHost(settingsVm: SettingsViewModel, onDismiss: () -> Unit) {
-    val navSize by settingsVm.navSize.collectAsStateWithLifecycle()
-    val navLength by settingsVm.navLength.collectAsStateWithLifecycle()
     val navMenuMode by settingsVm.navMenuMode.collectAsStateWithLifecycle()
     val navMenuHidden by settingsVm.navMenuHidden.collectAsStateWithLifecycle()
     tv.own.owntv.features.settings.NavigationSettingsPopup(
-        size = navSize,
-        onSize = settingsVm::setNavSize,
-        length = navLength,
-        onLength = settingsVm::setNavLength,
         menuMode = navMenuMode,
         onMenuMode = settingsVm::setNavMenuMode,
         hiddenSections = navMenuHidden,
@@ -1450,12 +1444,12 @@ private fun NavigationPopupHost(settingsVm: SettingsViewModel, onDismiss: () -> 
 /** The Layout group's Navigation row, built here to keep [SettingsScreen] under the JVM method-size limit. */
 @Composable
 private fun navigationRootRow(settingsVm: SettingsViewModel, focus: FocusRequester, onClick: () -> Unit): RootRow {
-    val size by settingsVm.navSize.collectAsStateWithLifecycle()
+    val mode by settingsVm.navMenuMode.collectAsStateWithLifecycle()
     return RootRow(
         "navigation", TileTone.PRIMARY, OwnTVIcon.MENU,
         title = stringResource(R.string.settings_navigation),
         desc = stringResource(R.string.settings_navigation_description),
-        chip = stringResource(size.labelRes),
+        chip = stringResource(mode.labelRes),
         chipTone = TileTone.PRIMARY,
         focus = focus,
         onClick = onClick,
@@ -1465,11 +1459,11 @@ private fun navigationRootRow(settingsVm: SettingsViewModel, focus: FocusRequest
 /** The Navigation row's settings-search entry (see [navigationRootRow]). */
 @Composable
 private fun navigationSearchEntry(settingsVm: SettingsViewModel, onClick: () -> Unit): SettingsSearchEntry {
-    val size by settingsVm.navSize.collectAsStateWithLifecycle()
+    val mode by settingsVm.navMenuMode.collectAsStateWithLifecycle()
     return SettingsSearchEntry(
         stringResource(R.string.settings_group_layout), stringResource(R.string.settings_navigation),
         stringResource(R.string.settings_search_keywords_navigation), OwnTVIcon.MENU, TileTone.PRIMARY,
-        chip = stringResource(size.labelRes), chipTone = TileTone.PRIMARY, onClick = onClick,
+        chip = stringResource(mode.labelRes), chipTone = TileTone.PRIMARY, onClick = onClick,
     )
 }
 
@@ -2479,7 +2473,7 @@ private fun stageRowExtras(
     val weatherOn by vm.weatherEnabled.collectAsStateWithLifecycle()
     val weatherPlace by vm.weatherLocation.collectAsStateWithLifecycle()
     val fahrenheit by vm.weatherFahrenheit.collectAsStateWithLifecycle()
-    val navSize by vm.navSize.collectAsStateWithLifecycle()
+    val navMenuMode by vm.navMenuMode.collectAsStateWithLifecycle()
     val appIcon by vm.appIcon.collectAsStateWithLifecycle()
     val brandAccent by vm.brandAccentTriangle.collectAsStateWithLifecycle()
     val focusHighlight by vm.focusHighlight.collectAsStateWithLifecycle()
@@ -2557,7 +2551,7 @@ private fun stageRowExtras(
             if (!weatherOn) stringResource(R.string.common_off)
             else listOfNotNull(weatherPlace.ifBlank { null }, stringResource(if (fahrenheit) R.string.settings_degree_fahrenheit else R.string.settings_degree_celsius)).joinToString(sep),
         )),
-        "navigation" to RowExtra(SettingValue.Opens(stringResource(navSize.labelRes))),
+        "navigation" to RowExtra(SettingValue.Opens(stringResource(navMenuMode.labelRes))),
         "app_icon" to RowExtra(SettingValue.Opens(stringResource(appIcon.label))),
         "brand_accent" to RowExtra(SettingValue.Switch(brandAccent), onClick = { vm.setBrandAccentTriangle(!brandAccent) }),
         "check_updates" to RowExtra(SettingValue.Action(stringResource(R.string.settings_check_now))),
