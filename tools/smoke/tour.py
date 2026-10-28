@@ -367,7 +367,9 @@ def player_tour():
     if not open_section("Live-TV"):
         return
     shot("live")
-    # Live-TV ist immer der Guide; der Sender wird per Namen in den Zeilen gesucht.
+    # Live-TV ist immer der Guide: ▶ führt vom Menü in die Gruppen, ein zweites ▶ in die Senderzeilen.
+    # Erst dort wird der Sender per Namen gesucht; in der Gruppenspalte wechselte ▼ sonst die Gruppe.
+    key("DPAD_RIGHT", wait=1.0)
     key("DPAD_RIGHT", wait=1.0)
     shot("live-guide")
     if not goto(r"^Sky Sport Bundesliga 1"):
@@ -447,6 +449,9 @@ def player_tour():
     # Ein Sender ohne Signal: Fehlerbild mit „Erneut versuchen“, ▲▼ zappen weiter weg.
     to_rail()
     if open_section("Live-TV"):
+        key("DPAD_RIGHT", wait=1.0)
+        goto(r"^Dokumentationen", press=False, xmax=RAIL_XMAX + 400)
+        time.sleep(1.5)
         key("DPAD_RIGHT", wait=1.0)
         if goto(r"^Kein Signal"):
             time.sleep(1)
