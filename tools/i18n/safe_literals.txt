@@ -1162,8 +1162,7 @@
 3	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/uefa.euro
 3	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	soccer/uefa.nations
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballSetup.kt	tvplayer
-3	empty	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	\0
-1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$label: ${p.title}
+4	empty	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	\0
 1	protocol	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	$profileId|${MediaType.LIVE.name}|recent-live
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	%02x
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	1080p
@@ -1180,16 +1179,18 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	fhd
 1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	football group not updated
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	hd
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	m:${m.key}
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	m:${m.key}:${m.state}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	old football reminders not cleared
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	open
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	owntv
 1	protocol	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	owntv:recent_live:
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	r:${ch.id}:${current?.startMs}
 1	log	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	recent row not decorated
-2	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	s:${pick.channel.id}:${p.startMs}
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_channel
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_favorites
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_for_you
+1	uri	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_match
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	tvplayer_source
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	uhd
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherRows.kt	·
@@ -1211,6 +1212,7 @@
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	image/png
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_logos
 1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	launcher_tiles
+1	technical	app/src/main/java/tv/own/owntv/launcher/LauncherTiles.kt	–
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	LauncherRows
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row not decorated
 1	log	app/src/main/java/tv/own/owntv/launcher/RecentRowWatcher.kt	recent row watcher not registered

@@ -46,6 +46,8 @@ internal class LauncherTiles(private val context: Context) {
         val live: Boolean,
         val timeRange: String?,
         val progress: Float?,
+        /** A match's two crests (home, away), drawn side by side in the logo's place; null for a channel. */
+        val crests: List<String?>? = null,
     )
 
     /**
@@ -55,7 +57,7 @@ internal class LauncherTiles(private val context: Context) {
     suspend fun tile(id: String, content: Content, reuse: Boolean = false): Uri? = runCatching {
         if (reuse) recent(id)?.let { return@runCatching uriOf(it.name) }
         val name = "${hash(id)}_$stamp.png"
-        val bitmap = draw(content, content.logoUrl?.let { loadLogo(it) })
+        val bitmap = draw(content, content.logoUrl?.let { loadLogo(it) }, content.crests?.map { url -> url?.let { loadLogo(it) } })
         File(tilesDir, name).outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
         bitmap.recycle()
         uriOf(name)
@@ -83,7 +85,7 @@ internal class LauncherTiles(private val context: Context) {
         File(context.cacheDir, OLD_LOGO_DIR).takeIf { it.exists() }?.deleteRecursively()
     }
 
-    private fun draw(c: Content, logo: Bitmap?): Bitmap {
+    private fun draw(c: Content, logo: Bitmap?, crests: List<Bitmap?>? = null): Bitmap {
         val bmp = Bitmap.createBitmap(W, H, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bmp)
         val bg = Paint().apply {
@@ -94,7 +96,24 @@ internal class LauncherTiles(private val context: Context) {
         // The logo large on a light plate, so dark logos stay readable.
         val box = RectF((W - LOGO_W) / 2, PAD, (W + LOGO_W) / 2, PAD + LOGO_H)
         canvas.drawRoundRect(box, 18f, 18f, Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.argb(240, 245, 246, 250) })
-        if (logo != null) {
+        if (crests != null && crests.size == 2 && crests.any { it != null }) {
+            // A match: home crest left, away crest right, a dash between them.
+            val side = LOGO_H - 2 * LOGO_INSET - 20f
+            crests.forEachIndexed { i, crest ->
+                val cx = if (i == 0) box.left + LOGO_W / 4 else box.right - LOGO_W / 4
+                if (crest != null) {
+                    val scale = minOf(side / crest.width, side / crest.height)
+                    val w = crest.width * scale
+                    val h = crest.height * scale
+                    val dst = RectF(cx - w / 2, box.centerY() - h / 2, cx + w / 2, box.centerY() + h / 2)
+                    canvas.drawBitmap(crest, null, dst, Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG))
+                }
+            }
+            val dash = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                color = Color.rgb(0x26, 0x29, 0x30); textSize = 56f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER
+            }
+            canvas.drawText("–", box.centerX(), box.centerY() - (dash.descent() + dash.ascent()) / 2, dash)
+        } else if (logo != null) {
             val scale = minOf((LOGO_W - 2 * LOGO_INSET) / logo.width, (LOGO_H - 2 * LOGO_INSET) / logo.height)
             val w = logo.width * scale
             val h = logo.height * scale
@@ -129,7 +148,7 @@ internal class LauncherTiles(private val context: Context) {
         layout.draw(canvas)
         canvas.restore()
 
-        // Badge (LIVE, "In 20 Min.") and times on one centred line.
+        // Badge ("In 20 Min.", "20:30") and times on one centred line; a running programme has no badge.
         val badgePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 22f; typeface = Typeface.DEFAULT_BOLD }
         val timePaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.rgb(0xC8, 0xCC, 0xD3); textSize = 24f }
         val badgeW = c.badge?.let { badgePaint.measureText(it) + 20f } ?: 0f
