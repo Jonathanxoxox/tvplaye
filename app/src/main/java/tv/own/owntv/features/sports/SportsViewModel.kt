@@ -6,6 +6,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emitAll
@@ -95,6 +96,8 @@ data class SportsHubState(
     val onNow: Map<GuideSport, List<GuideSportItem>> = emptyMap(),
     val hasPlaylist: Boolean = true,
     val rebuilding: Boolean = false,
+    /** The last rebuild reached nothing at ESPN (offline, or paused after 403/429). */
+    val failed: Boolean = false,
     /** Start times of the profile's programme reminders, keyed `start|title`, so a card can show "Reminder". */
     val reminders: Set<String> = emptySet(),
 )
@@ -150,7 +153,7 @@ class SportsViewModel(
     }
 
     val hub: StateFlow<SportsHubState> = combine(board, config, onNow, hasPlaylist, repository.rebuild) { b, c, n, has, r ->
-        SportsHubState(b, c, n, has, rebuilding = r is RebuildState.Running)
+        SportsHubState(b, c, n, has, rebuilding = r is RebuildState.Running, failed = r is RebuildState.Failed)
     }.combine(reminderKeys) { s, r -> s.copy(reminders = r) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SportsHubState())
 
@@ -179,6 +182,9 @@ class SportsViewModel(
     // --- The match page ------------------------------------------------------------------------------
 
     private val openMatch = MutableStateFlow<Match?>(null)
+
+    /** The match of the page [matchPage] last showed. */
+    @Volatile private var pageKey: String? = null
 
     /** The filter while a match page is open; null = the profile's defaults (Settings → Sports). */
     private val pageFilter = MutableStateFlow<WatchFilter?>(null)
@@ -261,7 +267,11 @@ class SportsViewModel(
                 playlists = lists,
                 preferredLanguages = preferred,
             )
-        }
+        }.onStart<MatchPageState?> {
+            // Another match than the page last shown: nothing until its own page is ready, never the old
+            // match's score for a moment. The same match again (Back from the player) keeps its page.
+            if (pageKey != m.key) emit(null)
+        }.onEach { pageKey = it?.match?.key }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     // --- The league page -----------------------------------------------------------------------------

@@ -71,10 +71,12 @@ class SportsPlayback(
 
     /**
      * The match with [key] from the board the Sports section shows; asking loads its stored copy on a
-     * cold start. Null when the board has no such match within a few seconds.
+     * cold start. Null as soon as a loaded board lacks it (a tile older than the board), or after a few seconds.
      */
     suspend fun matchByKey(key: String): Match? =
-        withTimeoutOrNull(MATCH_WAIT_MS) { repository.observe(Demand.Hub).first { it.match(key) != null } }?.match(key)
+        withTimeoutOrNull(MATCH_WAIT_MS) {
+            repository.observe(Demand.Hub).first { it.match(key) != null || it.rebuiltAt != null }
+        }?.match(key)
 
     /** [match] as it stands now, refreshed while collected (`Demand.PlayerScore`: that one league, 30 s live). */
     fun score(match: Match): Flow<Match> =

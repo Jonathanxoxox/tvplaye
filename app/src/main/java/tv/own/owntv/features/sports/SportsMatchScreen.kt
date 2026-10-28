@@ -210,7 +210,18 @@ fun SportsMatchScreen(
                     }
                 }
                 when (tab) {
-                    MatchTab.TIMELINE -> items((state.summary?.timeline ?: m.events).asReversed()) { e -> TimelineRow(e, m) }
+                    MatchTab.TIMELINE -> {
+                        val events = (state.summary?.timeline ?: m.events).asReversed()
+                        items(events) { e -> TimelineRow(e, m) }
+                        // Before kick-off the tab was an empty space under the tabs.
+                        if (events.isEmpty()) item {
+                            Text(
+                                stringResource(if (m.state == MatchState.PRE) R.string.tvplayer_sports_timeline_before else R.string.tvplayer_sports_timeline_none),
+                                style = stageText(19, 400), color = StageColors.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.padding(start = 18.mpx, top = 27.mpx),
+                            )
+                        }
+                    }
                     MatchTab.STATS -> items(state.summary?.stats.orEmpty()) { s -> StatRow(s.label, s.home, s.away) }
                     MatchTab.LINEUPS -> item { Lineups(m, state.summary) }
                     MatchTab.TABLE -> item { TablePreview(state.standings, m, onOpenLeague) }

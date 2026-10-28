@@ -109,6 +109,13 @@ fun SportsLeagueScreen(vm: SportsViewModel, onOpenMatch: (Match) -> Unit, onBack
                 Text(stringResource(R.string.sports_this_matchday), style = stageText(25.5f, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 18.mpx, bottom = 9.mpx))
                 LazyColumn(Modifier.fillMaxSize().focusGroup(), contentPadding = PaddingValues(bottom = 60.mpx)) {
                     items(matches, key = { it.key }) { m -> LeagueMatchRow(m, state.config.spoilerFree) { onOpenMatch(m) } }
+                    // A league between matchdays: say so instead of an empty column.
+                    if (matches.isEmpty()) item {
+                        Text(
+                            stringResource(R.string.tvplayer_sports_league_none), style = stageText(19, 400), color = StageColors.Muted,
+                            maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(start = 18.mpx, top = 9.mpx),
+                        )
+                    }
                 }
             }
         }
