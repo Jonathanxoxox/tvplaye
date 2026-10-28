@@ -86,6 +86,8 @@ fun StageSearchField(
     onEditingChange: (Boolean) -> Unit = {},
     /** The microphone button (Jonathan's keyboard has its mic off). Not where OK hands over to another search. */
     voice: Boolean = onActivate == null,
+    /** Turns what the mic heard (best guess first) into the search text; null = the best guess. */
+    voiceResolve: (suspend (List<String>) -> String)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pillFocused by interaction.collectIsFocusedAsState()
@@ -99,8 +101,9 @@ fun StageSearchField(
     val imeWatcher = LocalTvImeWatcher.current
     val imeMetrics = LocalTvImeMetrics.current
     val focus = stageAccent.focus
-    val voiceSearch = if (voice) rememberVoiceSearch(onQueryChange) else null
-    val voiceNote = voiceSearch?.note?.let { stringResource(it) }
+    val voiceSearch = if (voice) rememberVoiceSearch(onQueryChange, voiceResolve) else null
+    val voiceNote = voiceSearch?.heard
+        ?: voiceSearch?.note?.let { note -> voiceSearch.noteArg?.let { stringResource(note, it) } ?: stringResource(note) }
     val micFocus = remember { FocusRequester() }
     val micInteraction = remember { MutableInteractionSource() }
     val micFocused by micInteraction.collectIsFocusedAsState()
@@ -199,7 +202,7 @@ fun StageSearchField(
         }
     }
     if (voiceSearch != null) {
-        val lit = micFocused || voiceSearch.listening
+        val lit = micFocused || voiceSearch.busy
         Box(
             Modifier
                 .size(height)
@@ -211,7 +214,7 @@ fun StageSearchField(
         ) {
             OwnTVIcon(
                 OwnTVIcon.MIC,
-                if (voiceSearch.listening) stageAccent.accent else if (micFocused) StageColors.Text else StageColors.Dim,
+                if (voiceSearch.busy) stageAccent.accent else if (micFocused) StageColors.Text else StageColors.Dim,
                 Modifier.size(20.mpx),
             )
         }

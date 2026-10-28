@@ -24,6 +24,7 @@ import tv.own.owntv.features.movies.MovieViewModel
 import tv.own.owntv.features.profiles.ProfileGateSessionViewModel
 import tv.own.owntv.features.profiles.ProfilesViewModel
 import tv.own.owntv.features.search.MoodSearch
+import tv.own.owntv.features.search.VoiceQuery
 import tv.own.owntv.features.shell.components.WatchProviders
 import tv.own.owntv.features.vod.VodCatalogSource
 import tv.own.owntv.features.search.SearchViewModel
@@ -111,6 +112,8 @@ val appModule = module {
     viewModelOf(::SeriesViewModel)
     // Search by description (Jev + TMDB); off without a TypeSafe key.
     singleOf(::MoodSearch)
+    // What a spoken search meant (Jev picks among the recogniser's guesses and playlist names).
+    singleOf(::VoiceQuery)
     singleOf(::WatchProviders)
     // The TMDB catalogs of Movies and Series, matched to the playlist once a day.
     singleOf(::VodCatalogSource)

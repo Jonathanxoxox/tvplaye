@@ -16,17 +16,12 @@
     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
-    <!-- Voice search's own button: only used when the box has no voice-search screen of its own
-         (RecognizerIntent), then the recogniser is run in-app and needs the microphone. -->
+    <!-- Voice search's mic button records the microphone itself and recognises the speech in-app
+         (like TizenTube), so it works with the box's own voice search switched off. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-feature
         android:name="android.hardware.microphone"
         android:required="false" />
-    <queries>
-        <intent>
-            <action android:name="android.speech.RecognitionService" />
-        </intent>
-    </queries>
 
     <!-- Downloads & backup to user-chosen folders (SAF's document picker is absent on most TVs).
          READ stays declared through API 32: dropping it left some OEM builds (TCL Android 12,

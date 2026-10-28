@@ -1,116 +1,143 @@
 package tv.own.owntv.ui.components
 
 import android.Manifest
-import android.app.Activity
-import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.Bundle
-import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import tv.own.owntv.R
-import java.util.Locale
+import tv.own.owntv.features.voice.OfflineSpeech
+import java.io.IOException
 
 /**
- * The microphone button beside a search field, for remotes whose keyboard has its own mic switched off.
- * First the box's voice-search screen (RecognizerIntent: Google TV's, the remote's mic); a box without one
- * runs the speech recogniser here, asking for the microphone the first time. [note] is what the field
- * says meanwhile ("Speak now…", or why nothing happened), null when it shows its own placeholder.
+ * The microphone button beside a search field. Like TizenTube, the app records the microphone itself
+ * and never hands over to the box's voice search (Jonathan has Google's switched off, which is why the
+ * old hand-over did nothing): [OfflineSpeech] turns the speech into text on the box. The microphone
+ * permission is asked for on the first press, the language model downloaded on the first press too.
+ *
+ * While it works, the field shows [heard] (the words so far) or [note] ("Speak now…", the download's
+ * [noteArg] percent, or why nothing happened); both null = the field's own text.
  */
 @Stable
 class VoiceSearch internal constructor() {
     var listening by mutableStateOf(false)
         internal set
+    /** Downloading, listening or working out what was meant: a second press cancels. */
+    var busy by mutableStateOf(false)
+        internal set
     @get:StringRes
     var note by mutableStateOf<Int?>(null)
+        internal set
+    var noteArg by mutableStateOf<Int?>(null)
+        internal set
+    var heard by mutableStateOf<String?>(null)
         internal set
     internal var launch: () -> Unit = {}
     fun start() = launch()
 }
 
+/**
+ * [resolve] turns what the recogniser heard (best guess first) into the search text, e.g. Jev picking
+ * the channel or title the speaker meant; without it, or when it takes too long, the best guess is used.
+ */
 @Composable
-fun rememberVoiceSearch(onResult: (String) -> Unit): VoiceSearch {
+fun rememberVoiceSearch(
+    onResult: (String) -> Unit,
+    resolve: (suspend (List<String>) -> String)? = null,
+): VoiceSearch {
     val context = LocalContext.current
     val result by rememberUpdatedState(onResult)
+    val resolver by rememberUpdatedState(resolve)
     val voice = remember { VoiceSearch() }
-    val recognizer = remember { mutableStateOf<SpeechRecognizer?>(null) }
-    DisposableEffect(Unit) { onDispose { recognizer.value?.destroy() } }
-    // A "why not" note goes after a few seconds; "Speak now…" stays while it listens.
-    LaunchedEffect(voice.note, voice.listening) {
-        if (voice.note != null && !voice.listening) { kotlinx.coroutines.delay(4_000); voice.note = null }
+    val scope = rememberCoroutineScope()
+    val job = remember { mutableStateOf<Job?>(null) }
+    val stop = remember { mutableStateOf(false) }
+    // A "why not" note goes after a few seconds; the working notes stay while it works.
+    LaunchedEffect(voice.note, voice.busy) {
+        if (voice.note != null && !voice.busy) { kotlinx.coroutines.delay(4_000); voice.note = null }
     }
 
-    fun deliver(texts: List<String>?) {
-        texts?.firstOrNull()?.trim()?.takeIf { it.isNotEmpty() }?.let { result(it) }
-    }
-
-    fun listenHere() {
-        val sr = recognizer.value ?: SpeechRecognizer.createSpeechRecognizer(context).also { recognizer.value = it }
-        sr.setRecognitionListener(object : RecognitionListener {
-            override fun onResults(results: Bundle?) {
+    fun startListening() {
+        stop.value = false
+        job.value = scope.launch {
+            voice.busy = true
+            voice.heard = null
+            try {
+                if (OfflineSpeech.needsDownload(context)) { voice.note = R.string.voice_search_loading_model; voice.noteArg = 0 }
+                // Both callbacks come from the recording thread; the field's state is set on the main thread.
+                val model = OfflineSpeech.prepare(context) { p -> scope.launch { if (voice.note == R.string.voice_search_loading_model) voice.noteArg = p } }
+                voice.noteArg = null
+                voice.note = R.string.voice_search_listening
+                voice.listening = true
+                val said = OfflineSpeech.listen(model, stopRequested = { stop.value }) { words -> scope.launch { if (voice.listening) voice.heard = words } }
                 voice.listening = false
+                if (said.isEmpty()) {
+                    voice.heard = null
+                    voice.note = R.string.voice_search_not_understood
+                    return@launch
+                }
+                voice.heard = said.first()
+                val text = resolver?.let { r ->
+                    runCatching { withTimeoutOrNull(RESOLVE_TIMEOUT_MS) { r(said) } }
+                        .onFailure { if (it is CancellationException) throw it; Log.w(TAG, "resolve failed: ${it.message}") }
+                        .getOrNull()
+                }?.takeIf { it.isNotBlank() } ?: said.first()
+                voice.heard = null
                 voice.note = null
-                deliver(results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION))
-            }
-            override fun onError(error: Int) {
+                result(text)
+            } catch (e: CancellationException) {
+                voice.heard = null
+                voice.note = null
+                throw e
+            } catch (e: IOException) {
+                Log.w(TAG, "voice model: ${e.message}")
+                voice.heard = null
+                voice.note = R.string.voice_search_model_failed
+            } catch (e: Exception) {
+                Log.w(TAG, "microphone: ${e.message}")
+                voice.heard = null
+                voice.note = R.string.voice_search_mic_failed
+            } finally {
+                voice.noteArg = null
                 voice.listening = false
-                voice.note = R.string.voice_search_not_understood
+                voice.busy = false
+                OfflineSpeech.release()
             }
-            override fun onReadyForSpeech(params: Bundle?) {}
-            override fun onBeginningOfSpeech() {}
-            override fun onRmsChanged(rmsdB: Float) {}
-            override fun onBufferReceived(buffer: ByteArray?) {}
-            override fun onEndOfSpeech() {}
-            override fun onPartialResults(partialResults: Bundle?) {}
-            override fun onEvent(eventType: Int, params: Bundle?) {}
-        })
-        voice.listening = true
-        voice.note = R.string.voice_search_listening
-        sr.startListening(recognizeIntent())
+        }
     }
 
     val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) listenHere() else { voice.note = R.string.voice_search_no_microphone }
-    }
-    val screen = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { r ->
-        if (r.resultCode == Activity.RESULT_OK) deliver(r.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS))
+        if (granted) startListening() else { voice.note = R.string.voice_search_no_microphone }
     }
 
     voice.launch = launch@{
-        if (voice.listening) {
-            recognizer.value?.stopListening()
+        if (voice.busy) {
+            // While listening: done talking, search with what was heard. Otherwise: never mind.
+            if (voice.listening) { stop.value = true } else { job.value?.cancel() }
             return@launch
         }
         voice.note = null
-        // No voice-search screen on the box (ActivityNotFoundException): listen here instead.
-        val opened = runCatching {
-            screen.launch(recognizeIntent().putExtra(RecognizerIntent.EXTRA_PROMPT, context.getString(R.string.voice_search_listening)))
-        }.isSuccess
-        if (opened) return@launch
-        when {
-            !SpeechRecognizer.isRecognitionAvailable(context) -> { voice.note = R.string.voice_search_unavailable }
-            ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED -> listenHere()
-            else -> micPermission.launch(Manifest.permission.RECORD_AUDIO)
-        }
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) startListening()
+        else micPermission.launch(Manifest.permission.RECORD_AUDIO)
     }
     return voice
 }
 
-private fun recognizeIntent(): Intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-    .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-    .putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault().toLanguageTag())
-    .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+private const val RESOLVE_TIMEOUT_MS = 5_000L
+private const val TAG = "VoiceSearch"
