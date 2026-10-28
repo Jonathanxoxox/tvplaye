@@ -66,6 +66,12 @@ zxing = "3.5.4"
 # Charset detection for local subtitle files — tiny, pure-Java
 # Mozilla universalchardet port; local .srt files are frequently Windows-125x, not UTF-8.
 juniversalchardet = "2.5.0"
+# Offline speech recognition for the search fields' mic button: Kaldi in-app, like TizenTube records
+# the mic itself instead of asking the box's (Google's) voice search. The language model (~45 MB) is
+# downloaded on the first mic press, not shipped. JNA is the AAR's native bridge, named explicitly
+# because the @aar artifacts below bring no transitive dependencies.
+vosk = "0.3.75"
+jna = "5.18.1"
 
 # --- Test ---
 junit = "4.13.2"
@@ -144,6 +150,8 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" 
 
 # Charset detection for local subtitle files.
 juniversalchardet = { group = "com.github.albfernandez", name = "juniversalchardet", version.ref = "juniversalchardet" }
+vosk-android = { group = "com.alphacephei", name = "vosk-android", version.ref = "vosk" }
+jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 
 # Networking (M3U/Xtream fetch)
 okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }

@@ -55,6 +55,7 @@ class SearchViewModel(
     private val searchReader: SearchReader,
     private val metadata: MetadataRepository,
     private val moodSearch: MoodSearch,
+    private val voiceQuery: VoiceQuery,
 ) : ViewModel() {
 
     // Observe the active profile's sources reactively so adding/removing a playlist refreshes Search
@@ -98,6 +99,12 @@ class SearchViewModel(
         if (q.trim() != _query.value.trim()) lastFocusKey = null
         _query.value = q
         if (q.isNotBlank()) _intent.value = null // typing overrides an active launcher intent
+    }
+
+    /** The mic's guesses (best first) → the text to search for: Jev picks the channel or title meant. */
+    suspend fun resolveSpoken(heard: List<String>): String {
+        val pid = currentProfileId() ?: return heard.first()
+        return voiceQuery.resolve(heard) { q -> searchReader.search(pid, ctx.value, q) }
     }
 
     // --- Empty-state launcher (recent search terms + Continue / Unwatched / Channels) ---

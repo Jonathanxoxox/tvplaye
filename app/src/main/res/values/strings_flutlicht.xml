@@ -77,7 +77,9 @@
     <string name="voice_search_listening">Speak now…</string>
     <string name="voice_search_not_understood">Didn\'t catch that – press the mic again</string>
     <string name="voice_search_no_microphone">Microphone not allowed</string>
-    <string name="voice_search_unavailable">This device has no speech recognition</string>
+    <string name="voice_search_loading_model">Loading speech recognition (once only)… %1$d %%</string>
+    <string name="voice_search_model_failed">Speech recognition could not be loaded – check the internet</string>
+    <string name="voice_search_mic_failed">Microphone not available</string>
     <string name="content_move_in_group_only">only within a group</string>
     <string name="vod_catalog_continue">Continue watching</string>
     <string name="vod_catalog_trending">Trending now</string>

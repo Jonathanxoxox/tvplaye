@@ -318,6 +318,16 @@
 2	empty	app/src/main/java/tv/own/owntv/features/search/SearchViewModel.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/search/SearchViewModel.kt	m${item.id}
 1	technical	app/src/main/java/tv/own/owntv/features/search/SearchViewModel.kt	s${item.id}
+1	protocol	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	"${o.text}" (${kindLabels.getValue(o.kind)})
+1	log	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	VoiceQuery
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	criteria
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	filler
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	heard
+1	log	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	heard=$heard picked=${describe(picked)}
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	kinds
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	meant
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	o
+1	json	app/src/main/java/tv/own/owntv/features/search/VoiceQuery.kt	options
 1	empty	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	,
 2	preference-key	app/src/main/java/tv/own/owntv/features/series/SeriesScreen.kt	delete_subtitles
@@ -1034,6 +1044,27 @@
 1	json	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	vote_average
 1	url	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	watch/providers/$path
 1	technical	app/src/main/java/tv/own/owntv/features/vod/VodCatalogs.kt	with Ads
+2	empty	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	\0
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	${spec.name}.unpacking
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	${spec.name}.zip.part
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	HTTP ${connection.responseCode}
+1	compiler	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	MissingPermission
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	OfflineSpeech
+1	json	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	alternatives
+2	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	conf
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	could not move the voice model into place
+1	locale	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	en
+1	url	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	https://alphacephei.com/vosk/models/$name.zip
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	microphone could not be opened
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	microphone is busy
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	microphone read failed: $n
+1	json	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	partial
+2	json	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	text
+1	log	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	unreadable result: ${it.message}
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	voice
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	voice/${spec.name}
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	vosk-model-small-de-0.15
+1	file-path	app/src/main/java/tv/own/owntv/features/voice/OfflineSpeech.kt	vosk-model-small-en-us-0.15
 1	technical	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	,
 1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	football_group_id_$profileId
 1	preference-key	app/src/main/java/tv/own/owntv/launcher/FootballGroup.kt	football_group_members_$profileId
@@ -1378,6 +1409,10 @@
 1	uri	app/src/main/java/tv/own/owntv/ui/components/TrailerPlayerScreen.kt	vnd.youtube:$videoKey
 1	technical	app/src/main/java/tv/own/owntv/ui/components/TrailerPlayerScreen.kt	◀ ▶
 1	log	app/src/main/java/tv/own/owntv/ui/components/TvImeMetrics.kt	frame=$rect imeBottom=$imeBottom
+1	log	app/src/main/java/tv/own/owntv/ui/components/VoiceSearch.kt	VoiceSearch
+1	log	app/src/main/java/tv/own/owntv/ui/components/VoiceSearch.kt	microphone: ${e.message}
+1	log	app/src/main/java/tv/own/owntv/ui/components/VoiceSearch.kt	resolve failed: ${it.message}
+1	log	app/src/main/java/tv/own/owntv/ui/components/VoiceSearch.kt	voice model: ${e.message}
 1	technical	app/src/main/java/tv/own/owntv/ui/format/TimeFormat.kt	Hm
 1	technical	app/src/main/java/tv/own/owntv/ui/format/TimeFormat.kt	hHkKjJCmsabB
 1	technical	app/src/main/java/tv/own/owntv/ui/format/TimeFormat.kt	hm

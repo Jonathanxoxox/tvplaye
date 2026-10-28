@@ -315,6 +315,7 @@ fun SearchScreen(
             query = query,
             onQueryChange = vm::setQuery,
             placeholder = stringResource(R.string.search_field_hint),
+            voiceResolve = vm::resolveSpoken,
             modifier = Modifier
                 .padding(start = listX, top = 118.mpx)
                 .width(listW)
