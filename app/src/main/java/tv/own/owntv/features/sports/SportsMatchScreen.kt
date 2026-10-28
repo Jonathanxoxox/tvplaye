@@ -222,7 +222,7 @@ fun SportsMatchScreen(
                             )
                         }
                     }
-                    MatchTab.STATS -> items(state.summary?.stats.orEmpty()) { s -> StatRow(s.label, s.home, s.away) }
+                    MatchTab.STATS -> items(state.summary?.stats.orEmpty()) { s -> StatRow(statLabel(s.label), percentText(s.label, s.home), percentText(s.label, s.away)) }
                     MatchTab.LINEUPS -> item { Lineups(m, state.summary) }
                     MatchTab.TABLE -> item { TablePreview(state.standings, m, onOpenLeague) }
                     MatchTab.FORM -> item { Form(m, state.summary) }
@@ -423,7 +423,7 @@ private fun ScoreHeader(m: Match, summary: MatchSummary?, hidden: Boolean, onRev
                     if (m.isLive) LiveMark(stringResource(R.string.player_live) + stringResource(R.string.content_epg_bits_separator) + clockText(m))
                     else Text(
                         // Before kick-off ESPN's text is US-styled ("10/16 - 9:00 PM EDT"); the day in the user's own words instead.
-                        if (m.state == MatchState.PRE) dayOf(m.startMs, LocalConfiguration.current.locales[0]) ?: stringResource(R.string.content_epg_today) else m.statusText,
+                        if (m.state == MatchState.PRE) dayOf(m.startMs, LocalConfiguration.current.locales[0]) ?: stringResource(R.string.content_epg_today) else statusText(m),
                         style = stageText(17, 700), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     )
                 }
@@ -504,8 +504,8 @@ private fun TimelineRow(e: MatchEvent, m: Match) {
 /** One stat: home value, the name, away value, each side's share as a bar. */
 @Composable
 private fun StatRow(label: String, home: String, away: String) {
-    val h = home.trimEnd('%').toFloatOrNull() ?: 0f
-    val a = away.trimEnd('%').toFloatOrNull() ?: 0f
+    val h = home.trimEnd('%').trim().toFloatOrNull() ?: 0f
+    val a = away.trimEnd('%').trim().toFloatOrNull() ?: 0f
     val share = if (h + a > 0f) h / (h + a) else 0.5f
     val accent = stageAccent.accent
     Column(Modifier.fillMaxWidth().padding(horizontal = 18.mpx, vertical = 10.mpx)) {

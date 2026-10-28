@@ -890,7 +890,6 @@
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	${sportEmoji(s)} ${sportLabel(s)}
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	+${followedSports.size - SPORT_CHIPS}
 2	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	UNCHECKED_CAST
-1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	aet
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	chips
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	cricket/all
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	empty
@@ -899,7 +898,6 @@
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	live
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	none
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	onNow
-1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	pen
 2	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	results
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	soon$day
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsHubScreen.kt	–
@@ -923,6 +921,18 @@
 2	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	\0
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	EEE
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	EEEd
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	aet
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	corner kicks
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	offsides
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	on goal
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	on target %
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	pen
+2	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	possession
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	red cards
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	saves
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	shots
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	shots on target
+1	protocol	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	yellow cards
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	⚽
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	⚾
 1	technical	app/src/main/java/tv/own/owntv/features/sports/SportsParts.kt	⛳

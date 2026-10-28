@@ -492,15 +492,7 @@ internal fun MatchCard(
                 val league = listOfNotNull(leagueName(m), m.subtitle?.takeIf { featured }, day).joinToString(stringResource(R.string.content_epg_bits_separator))
                 Text(league, style = stageText(16.5f, 600), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
                 val right = when {
-                    m.off -> m.statusText
-                    // ESPN's "FT", "AET", "FT-Pens" in the user's words.
-                    m.state == MatchState.POST -> stringResource(
-                        when {
-                            m.statusText.contains("pen", ignoreCase = true) -> R.string.tvplayer_sports_after_pens
-                            m.statusText.contains("aet", ignoreCase = true) -> R.string.tvplayer_sports_after_extra_time
-                            else -> R.string.sports_event_full_time
-                        },
-                    )
+                    m.off || m.state == MatchState.POST -> statusText(m)
                     else -> timeText(m.startMs)
                 }
                 // Live: the red dot and LIVE, so a live card stands out among ones still to come.

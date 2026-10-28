@@ -134,7 +134,7 @@ private fun LeagueMatchRow(m: Match, spoilerFree: Boolean, onClick: () -> Unit) 
         Column(Modifier.weight(1f)) {
             val title = if (m.state == MatchState.PRE || spoilerFree) MatchNotifications.pair(context, m) else MatchNotifications.scoreLine(context, m)
             Text(title, style = stageText(20, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            val time = if (m.isLive) clockText(m) else if (m.state == MatchState.PRE) timeText(m.startMs) else m.statusText
+            val time = if (m.isLive) clockText(m) else if (m.state == MatchState.PRE) timeText(m.startMs) else statusText(m)
             Text(time, style = stageText(18, 400), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }

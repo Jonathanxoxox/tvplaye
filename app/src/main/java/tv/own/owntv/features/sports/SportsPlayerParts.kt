@@ -69,7 +69,7 @@ fun MatchScoreLine(playback: SportsPlayback, match: Match, spoilerFree: Boolean)
         val status = when {
             m.isLive -> clockText(m)
             pre -> (dayOf(m.startMs, locale) ?: today) + sep + timeText(m.startMs)
-            else -> m.statusText
+            else -> statusText(m)
         }
         Text(
             listOfNotNull(status, ESPN).joinToString(sep, prefix = sep),
