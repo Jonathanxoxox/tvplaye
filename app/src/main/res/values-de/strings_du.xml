@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Mayo TV duzt: the core texts that said "Sie", in the app's own "du" (OwnTV_Core 1.0.69 names). -->
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+    <plurals name="settings_customize_move_items_selected"> <item quantity="one"><xliff:g id="count">%1$d</xliff:g> Element ausgewählt. Drück weiter ⤒ ↑ ↓ ⤓, um es zu verschieben.</item> <item quantity="other"><xliff:g id="count">%1$d</xliff:g> Elemente ausgewählt. Drück weiter ⤒ ↑ ↓ ⤓, um sie gemeinsam zu verschieben.</item> </plurals>
+    <plurals name="sync_warning_catalog_shrink"> <item quantity="one"><xliff:g id="stored">%1$d</xliff:g> vorhandener Eintrag wurde beibehalten — beim Importieren kamen <xliff:g id="percent">%2$d</xliff:g>%% weniger Einträge zurück. Synchronisiere noch einmal oder verwende „Bereinigte Synchronisierung erzwingen“, wenn der Anbieter ihn wirklich entfernt hat.</item> <item quantity="other"><xliff:g id="stored">%1$d</xliff:g> vorhandene Einträge wurden beibehalten — beim Importieren kamen <xliff:g id="percent">%2$d</xliff:g>%% weniger Einträge zurück. Synchronisiere noch einmal oder verwende „Bereinigte Synchronisierung erzwingen“, wenn der Anbieter sie wirklich entfernt hat.</item> </plurals>
+    <string name="common_resume_position">Du hast bei <xliff:g id="position">%1$s</xliff:g> aufgehört.</string>
+    <string name="companion_add_description">Füll die Angaben für eine Quelle aus und drück „Senden“. Sie wird auf dem Fernseher angezeigt — nimm die Fernbedienung und drück dort „Importieren starten“, wenn du bereit bist.</string>
+    <string name="companion_saved_source_body"><xliff:g id="name">%1$s</xliff:g> ist jetzt auf dem Bildschirm „Quelle hinzufügen“ deines Fernsehers. Prüf dort die Angaben und drück auf der Fernbedienung „Importieren starten“.</string>
+    <string name="content_download_watch_body">Ein Download von <xliff:g id="playlist">%1$s</xliff:g> hat ihn genutzt und ist jetzt pausiert. Möchtest du schauen oder den Player schließen und weiter herunterladen?</string>
+    <string name="content_download_watch_setting_description">Bei Playlists, die nur einen Stream erlauben: was mit einem Download passiert, wenn du die Wiedergabe startest.</string>
+    <string name="content_downloads_reason_paused_watching">Pausiert, während du schaust</string>
+    <string name="content_downloads_reason_too_large">Zu groß für dieses Laufwerk: Es kann keine Dateien über 4 GB speichern. Wähle einen anderen Downloadordner oder formatiere das Laufwerk als exFAT</string>
+    <string name="content_downloads_reason_waiting_watching">Wartet: startet, sobald du nicht mehr schaust</string>
+    <string name="content_epg_match_prompt">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den Sender der Programmübersicht aus.</string>
+    <string name="content_epg_match_prompt_current">Wähle für „<xliff:g id="channel">%1$s</xliff:g>“ den Sender der Programmübersicht aus. Aktuell: <xliff:g id="match">%2$s</xliff:g></string>
+    <string name="content_epg_no_programme">Keine Programminfo</string>
+    <string name="content_restore_incomplete_message">Die App wurde geschlossen, während <xliff:g id="description">%1$s</xliff:g> wiederhergestellt wurde, daher fehlt möglicherweise ein Teil davon. Nichts wurde gelöscht — führ dieselbe Wiederherstellung über Einstellungen → Sicherung &amp; Wiederherstellen noch einmal aus, um den Rest zu ergänzen.</string>
+    <string name="recovery_data_safe_full">Deine Profile, Wiedergabelisten, Favoriten und dein Wiedergabeverlauf wurden NICHT gelöscht — das Upgrade der Datenbank ist fehlgeschlagen, und die Daten befinden sich weiterhin auf diesem Gerät.\n\nBitte melde das, damit der Fehler behoben werden kann, und füg die Meldung unten bei.</string>
+    <string name="settings_accent_yours">Deine</string>
+    <string name="settings_auto_frame_rate_description">Die Bildwiederholfrequenz des Fernsehers im Vollbild für Live-TV und VOD an das Video anpassen (24/25/50/60 Bilder/s) und beim Beenden wiederherstellen. Schalte das aus, wenn dein Fernseher oder Receiver bei jedem Senderwechsel umständlich einen neuen HDMI-Handshake macht.</string>
+    <string name="settings_browsing_description_full">Wohin Live-TV, Filme und Serien bei deiner Rückkehr zurückkehren.</string>
+    <string name="settings_bulk_rename_too_many_description">Diese Kategorie enthält zu viele Elemente für eine einzige Massenumbenennung – benenne sie in kleineren Abschnitten um.</string>
+    <string name="settings_catchup_timezone_description">Wie Catch-up-Zeitstempel gesendet werden. Automatisch verwendet die Zeitzone, die der Server deines Anbieters meldet, sonst die deines Geräts. Du kannst auch Gerät wählen oder den Versatz selbst festlegen.</string>
+    <string name="settings_choose_history">Wähle aus, was für dieses Profil entfernt werden soll. Wiedergabelisten, Favoriten und Downloads sind nicht betroffen.</string>
+    <string name="settings_custom_location_description">Lege die Stadt für das Wetter selbst fest. Lass das Feld für die automatische Erkennung leer oder gib eine Stadt (z. B. London) oder „Breitengrad,Längengrad“ (z. B. 51.5,-0.12) ein. Das hilft bei einem VPN, bei dem die automatische Erkennung die Stadt des Servers ermittelt.</string>
+    <string name="settings_customize_new_category_description">Eine kombinierte Kategorie für dieses Profil – verschieb Sender, Filme oder Serien dorthin.</string>
+    <string name="settings_dns_connection_refused">Verbindung abgelehnt – prüf die Serveradresse und den Port.</string>
+    <string name="settings_dns_enter_server">Gib den Host eines DNS-Servers oder eine DoH-URL ein.</string>
+    <string name="settings_dns_explanation">Benutzerdefiniertes DNS kann dabei helfen, Domain-Sperren durch den Internetanbieter oder Geoblocking mithilfe von SmartDNS-Diensten zu umgehen. DNS-over-HTTPS (DoH) wird empfohlen – dabei werden deine Abfragen verschlüsselt.</string>
+    <string name="settings_dns_network_unreachable">Netzwerk nicht erreichbar – prüf die Serveradresse.</string>
+    <string name="settings_dns_server_missing">Benutzerdefiniertes DNS ist aktiviert, aber es wurde kein Server eingerichtet. Gib eine Serveradresse ein und wähle „Speichern“ oder schalte diese Option aus.</string>
+    <string name="settings_dns_test_failed">DNS-Test fehlgeschlagen – prüf die Serveradresse.</string>
+    <string name="settings_download_remote_description">Scanne auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffne die URL), gib diese PIN ein und lade deine Sicherungsdatei herunter, um sie aufzubewahren.</string>
+    <string name="settings_group_summary_quick">Die Schalter, die du am häufigsten brauchst</string>
+    <string name="settings_hardware_decoding_description">Den Hardwaredecoder des Fernsehers verwenden. Schalte das aus, wenn einige Streams ruckeln oder Bildfehler zeigen.</string>
+    <string name="settings_help_accent">Färbt Schaltflächen, das Fokusleuchten, Fortschrittsbalken und Hervorhebungen überall. Wähle eine Vorgabe oder drück OK für die Palette und einen beliebigen Hex-Code.</string>
+    <string name="settings_help_add_from_phone">Öffne die Adresse oder scanne den Code im Browser eines beliebigen Geräts im selben WLAN – Smartphone, Computer oder ein anderer Fernseher –, füll dort deine Playlist aus und schick sie hierher. Viel schneller, als eine URL mit der Fernbedienung zu tippen.</string>
+    <string name="settings_help_add_type_here">Gib Xtream-Zugangsdaten, eine M3U-Adresse oder ein Stalker-Portal mit der Fernbedienung ein und starte den Import im Bereich rechts.</string>
+    <string name="settings_help_catchup_timezone">Catch-up spielt Sendungen aus dem Archiv deines Anbieters ab. Automatisch verwendet die Zeitzone, die dein Anbieter meldet, sonst die Uhr des Fernsehers; wähle einen festen UTC-Versatz, wenn Catch-up trotzdem zur falschen Zeit beginnt. Hier wählst du auch den Player für Catch-up.</string>
+    <string name="settings_help_channel_numbers">Zeigt die Sendernummer deines Anbieters neben dem Namen in der Live-TV-Liste, der Senderliste im Player und im Player selbst, und du kannst im Vollbild eine Nummer auf der Fernbedienung eingeben, um zu diesem Sender zu springen.</string>
+    <string name="settings_help_customize">Blende Kategorien und Einträge aus, die du nie ansiehst, gib Kategorien eigene Namen und bring sie in deine Reihenfolge. Ausgeblendetes holst du hier zurück — nichts geht verloren.</string>
+    <string name="settings_help_dns">Löst die Adressen deines Anbieters über einen DNS-Server deiner Wahl statt über den deines Netzes auf — hilfreich, wenn dein Netz sie sperrt oder umleitet.</string>
+    <string name="settings_help_epg_sources">Füg einen XMLTV-Guide per Link hinzu, aktualisiere oder entferne ihn. Die Quellen füllen den TV-Guide und die Sendungszeilen in Live-TV.</string>
+    <string name="settings_help_focus">Der Ring um das, was den Fokus hat. Wähle Farbe und Stärke, damit er vom Sofa aus gut zu verfolgen ist.</string>
+    <string name="settings_help_home">Wähle, welche Zeilen die Startseite in welcher Reihenfolge zeigt und wie die Zeile „Gerade angesagt“ aussieht.</string>
+    <string name="settings_help_hw">Nutzt den Hardware-Decoder des Fernsehers: flüssiges 4K und weniger Wärme. Schalte ihn nur aus, wenn Streams ruckeln oder Blöcke zeigen; dann übernimmt der Software-Decoder.</string>
+    <string name="settings_help_live_preview">Der fokussierte Sender läuft in der Vorschau neben der Live-TV-Liste, damit du siehst, was läuft, bevor du ihn öffnest. Braucht ein Layout mit Platz für die Vorschau.</string>
+    <string name="settings_help_mini">Der kleine Player, der einen Sender in einer Ecke weiterlaufen lässt, während du stöberst. Wähle Größe und Ecke.</string>
+    <string name="settings_help_playlist_url">Die Adresse deiner .m3u- oder .m3u8-Liste.</string>
+    <string name="settings_help_playlists">Füg eine Playlist per Link, Xtream-Login, Stalker-Portal oder Datei hinzu, synchronisiere sie neu oder entferne sie.</string>
+    <string name="settings_help_resume">Fragen bietet Fortsetzen oder Von vorn an, wenn ein Film oder eine Folge eine gespeicherte Position hat. Immer fortsetzen macht dort weiter, wo du aufgehört hast; Nie fortsetzen beginnt von vorn.</string>
+    <string name="settings_help_sub_lang">Untertitel in dieser Sprache werden von selbst eingeschaltet, wenn der Stream sie hat. Sonst bleiben sie aus, bis du im Player eine Spur wählst.</string>
+    <string name="settings_help_volume">Die Lautstärke, mit der jeder Sender, Film und jede Folge startet. Über 100 %% werden leise Streams verstärkt. Eine im Player geänderte Lautstärke bleibt für diesen Titel, bis du sie zurücksetzt.</string>
+    <string name="settings_help_weather">Zeigt Temperatur und deinen Ort neben der Uhr. Leg den Ort von Hand fest, wenn der automatische falsch ist — etwa hinter einem VPN — und wähle Celsius oder Fahrenheit.</string>
+    <string name="settings_hex_error">Gib 6 Hexadezimalziffern ein, z. B. 52DBC8</string>
+    <string name="settings_hidden_sections">Ausgeblendete Bereiche bleiben aufgeführt, damit du sie wieder einschalten kannst.</string>
+    <string name="settings_language_contribution_copy_failed">Der Link konnte nicht kopiert werden. Lies die URL oben ab oder gib sie ein.</string>
+    <string name="settings_language_contribution_open_failed">Der Link konnte nicht geöffnet werden. Kopiere ihn stattdessen.</string>
+    <string name="settings_language_contribution_qr_failed">Der QR-Code konnte nicht erstellt werden. Verwende stattdessen den Link unten.</string>
+    <string name="settings_line_fill_from_playlist">Die Guide-Adresse deiner Playlist verwenden</string>
+    <string name="settings_line_remote_shortcuts_on">Aus behält deine Belegungen</string>
+    <string name="settings_line_saved_choices">Filme und Folgen, die du von Hand umgestellt hast</string>
+    <string name="settings_line_saved_live_choices">Sender, die du von Hand umgestellt hast</string>
+    <string name="settings_line_timeshift_window">Wie weit du zurückspulen kannst</string>
+    <string name="settings_live_preview_note">Änderungen erscheinen hier schon beim Durchgehen, bevor du die Zeile verlässt.</string>
+    <string name="settings_live_preview_panel_hidden_description">Das Vorschau-Panel für Live-TV ist ausgeblendet. Weise ihm unter „Anpassung der Panelbreite“ eine Breite von mehr als 0%% zu, bevor du das Vorschauvideo einschaltest.</string>
+    <string name="settings_location_hint">Für die automatische Erkennung anhand deiner öffentlichen IP-Adresse leer lassen. Gib eine Stadt (z. B. London) oder „Breitengrad,Längengrad“ (z. B. 51.5,-0.12) ein.</string>
+    <string name="settings_metadata_allowance">Dein Tagesanteil</string>
+    <string name="settings_metadata_empty_title">Gib einen Titel für die Suche ein.</string>
+    <string name="settings_metadata_key_from_phone_desc">Öffne die Adresse im Browser eines beliebigen Geräts – Smartphone, Computer oder ein anderer Fernseher –, melde dich dort bei TMDB an und schick den Schlüssel herüber. Nichts mit der Fernbedienung zu tippen.</string>
+    <string name="settings_metadata_limit_reached">Tagesanteil an Metadaten aufgebraucht — füg unter Einstellungen → Metadaten deinen eigenen TMDB-Schlüssel hinzu, um diese Beschränkung aufzuheben.</string>
+    <string name="settings_metadata_provider_description">Nur die Daten deiner Wiedergabeliste verwenden. Keine TMDB-Abfragen.</string>
+    <string name="settings_metadata_provider_tmdb_description">Die Angaben deiner Wiedergabeliste haben Vorrang; TMDB füllt Lücken und ergänzt Besetzung, Genres und Hintergrundbilder.</string>
+    <string name="settings_metadata_server_description">Lass beide Felder leer, um den integrierten gemeinsamen Server zu verwenden (keine Einrichtung nötig). Gib deinen eigenen TMDB-API-Schlüssel ein, um TMDB direkt aufzurufen, oder die URL eines selbst gehosteten Servers, um deinen eigenen Proxy/Spiegelserver zu verwenden. Eine URL hat Vorrang vor einem Schlüssel.</string>
+    <string name="settings_metadata_source_description">Wähle aus, woher die Details zu Filmen und Serien stammen.</string>
+    <string name="settings_metadata_tmdb_only_description">TMDB für jedes Feld bevorzugen; nur auf deine Wiedergabeliste zurückgreifen, wenn TMDB keine Angaben enthält.</string>
+    <string name="settings_mini_player_description">Der kleine schwebende Player, der erscheint, wenn du beim Stöbern einen Sender andockst (PiP). Ändere diese Einstellungen hier oder direkt über die Knöpfe zum Vergrößern und Verschieben am Mini-Player.</string>
+    <string name="settings_move_category_description">Das Element wird aus „<xliff:g id="name">%1$s</xliff:g>“ entfernt, sofern du es nicht auch dort behältst.</string>
+    <string name="settings_multiview_description">Mehrere Livekanäle gleichzeitig ansehen. Wie viele es sind, entscheidest du jedes Mal selbst, höchstens jedoch so viele — jede Kachel belegt eine Verbindung deines Anbieters.</string>
+    <string name="settings_open_subtitles_setup_remote_description">Gib deine Daten im Browser eines anderen Geräts im selben WLAN ein – Smartphone, Computer oder ein anderer Fernseher.</string>
+    <string name="settings_panel_width_disable_preview_description">Das Video der Live-Vorschau ist derzeit eingeschaltet. Wenn du das Vorschau-Panel ausblendest, wird das Video ausgeschaltet. Es lässt sich erst wieder einschalten, nachdem du dem Vorschau-Panel unter „Anpassung der Panelbreite“ eine Breite zugewiesen hast.</string>
+    <string name="settings_playback_error_description_full">Der letzte Absturz und die neuesten Wiedergabefehler (neueste zuerst). Gib diese Details an, wenn du ein Problem meldest.</string>
+    <string name="settings_proxy_invalid_address">Gib einen gültigen Host und Port ein (1–65535).</string>
+    <string name="settings_proxy_privacy">Dein Proxy-Anbieter kann sehen, mit welchen Servern du dich verbindest, sowie die Inhalte des gesamten Datenverkehrs, der nicht über HTTPS läuft.</string>
+    <string name="settings_record_watching_description">Fügt dem Player eine Aufnahmetaste hinzu, die den laufenden Sender speichert. Sie ruft den Sender selbst ab, belegt währenddessen also eine der Verbindungen deines Anbieters, und nimmt weiter auf, wenn du umschaltest oder den Player verlässt.</string>
+    <string name="settings_record_watching_warning_description">Die Aufnahme ruft den Sender ein zweites Mal ab und belegt damit eine weitere Verbindung deines Anbieters. Bei einem Konto mit nur einer Verbindung wird die Aufnahme während des Zusehens abgelehnt. Einmal gestartet läuft sie allein weiter — schalt um oder verlass den Player, sie läuft bis zum Ende der Sendung oder bis du sie unter „Aufnahmen“ stoppst.</string>
+    <string name="settings_remote_details_note">Die Angaben erscheinen hier; den Import startest du mit der Fernbedienung.</string>
+    <string name="settings_subtitle_color_hex_hint">Gib 6 Hexadezimalziffern ein, z. B. FFEB3B</string>
+    <string name="settings_subtitle_customize_description">Schalte diese Option ein und ändere dann nur das Gewünschte – alles, was auf „Standard“ bleibt, behält die Originaldarstellung einschließlich der Farben und Positionierung, die Sender in Live-TV-Untertiteln vorgeben.</string>
+    <string name="settings_subtitle_delete_help">Löschen gibt den Speicher frei; im Player kannst du die Datei erneut herunterladen.</string>
+    <string name="settings_tier_key">Dein TMDB-Schlüssel</string>
+    <string name="setup_phone_background_description">Scanne auf einem beliebigen Gerät mit Browser im selben WLAN – Smartphone, Computer oder ein anderer Fernseher – den QR-Code (oder öffne die URL), gib diese PIN ein und schick ein Foto. Es wird sofort zum Hintergrund.</string>
+    <string name="setup_profile_sub">Ein Profil hat eigene Favoriten, einen eigenen Verlauf und eine eigene Startseite. Weitere fügst du später unter Einstellungen › Profil hinzu.</string>
+    <string name="setup_restore_choice_description">Schick die Sicherung per Extern von einem beliebigen Gerät mit Browser im selben WLAN, oder wähle eine Sicherungsdatei auf diesem Gerät.</string>
+    <string name="setup_setup_choice_description">Fang neu an oder stell deine Profile, Wiedergabelisten und Favoriten aus einer Sicherungsdatei oder von einem anderen Gerät wieder her.</string>
+    <string name="setup_welcome_sub">Dein eigener IPTV-Player. Wähle zum Start eine Sprache – du kannst sie später in den Einstellungen ändern.</string>
+    <string name="sync_error_auth">Der Server hat deine Anmeldedaten abgelehnt. Prüf deinen Benutzernamen und dein Passwort.</string>
+    <string name="sync_error_generic">Etwas ist schiefgelaufen. Bitte versuch es noch einmal.</string>
+    <string name="sync_error_guide_empty">Diese Programmübersicht ist derzeit leer. Der Anbieter hat sie möglicherweise noch nicht veröffentlicht — bitte versuch es später noch einmal.</string>
+    <string name="sync_error_interrupted">Der Server hat den Download unterbrochen. Bitte versuch es noch einmal.</string>
+    <string name="sync_error_invalid_mac">Ungültige MAC-Adresse — verwende das Format AA:BB:CC:DD:EE:FF</string>
+    <string name="sync_error_mac">Das Portal hat diese MAC-Adresse abgelehnt. Prüf die MAC-Adresse (sowie Datum und Uhrzeit des Fernsehers) — oder das Abonnement ist möglicherweise abgelaufen.</string>
+    <string name="sync_error_malformed_guide">Die Daten der Programmübersicht vom Server waren fehlerhaft. Ein Teil davon wurde möglicherweise trotzdem geladen — bitte versuch es noch einmal oder prüf die EPG-URL.</string>
+    <string name="sync_error_not_found">Auf dem Server nicht gefunden. Prüf die URL.</string>
+    <string name="sync_error_offline">Du scheinst offline zu sein. Prüf deine Verbindung und versuch es noch einmal.</string>
+    <string name="sync_error_portal">Das Portal war nicht erreichbar. Prüf die Portal-URL — sie endet normalerweise auf /c/.</string>
+    <string name="sync_error_server">Beim Server ist ein Problem aufgetreten. Bitte versuch es später noch einmal.</string>
+    <string name="sync_error_session">Die Portal-Sitzung ist abgelaufen. Bitte versuch es noch einmal.</string>
+    <string name="sync_error_timeout">Der Server hat zu lange für die Antwort gebraucht. Bitte versuch es noch einmal.</string>
+    <string name="sync_error_unreachable">Der Server war nicht erreichbar. Prüf die Adresse und deine Verbindung.</string>
+    <string name="sync_remainder_note">Der Rest des Katalogs wird noch im Hintergrund synchronisiert — du kannst jetzt schon Inhalte ansehen. Der Fortschritt steht in der kleinen Anzeige am unteren Bildschirmrand.</string>
+</resources>

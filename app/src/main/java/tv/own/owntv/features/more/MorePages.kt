@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -77,6 +78,7 @@ import tv.own.owntv.player.displayText
 import tv.own.owntv.ui.components.BrandMark
 import tv.own.owntv.ui.components.MoveOrderOverlay
 import tv.own.owntv.ui.components.Wordmark
+import tv.own.owntv.ui.components.WordmarkInset
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.OwnTVPopup
 import tv.own.owntv.ui.components.displayText
@@ -640,7 +642,8 @@ internal fun AboutPage(vm: MoreCountsViewModel, entry: FocusRequester, onOpenLan
             // The app's own icon (150) and the wordmark (300).
             BrandMark(150.mpx)
             Column {
-                Wordmark(300.mpx)
+                // Its letters line up with the version line below, not its glow margin.
+                Wordmark(300.mpx, Modifier.offset(x = -300.mpx * WordmarkInset))
                 Row(Modifier.padding(top = 16.mpx), horizontalArrangement = Arrangement.spacedBy(14.mpx), verticalAlignment = Alignment.CenterVertically) {
                     Text(stringResource(R.string.settings_about_version, BuildConfig.VERSION_NAME), style = stageText(22, 700), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     // Only what a real check said: no tag before one has run.
