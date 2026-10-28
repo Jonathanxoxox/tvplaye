@@ -280,21 +280,44 @@ class EpgViewModel(
      * Keyed by channel id and shift, not by EPG id: two channels can share one guide channel, and the
      * same channel at two offsets is two different rows.
      */
-    private val rowCache = object : LinkedHashMap<String, List<EpgProgrammeEntity>>(64, 0.75f, true) {
-        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, List<EpgProgrammeEntity>>?) =
+    private val rowCache = object : LinkedHashMap<String, CachedRow>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, CachedRow>?) =
             size > MAX_CACHED_ROWS
     }
 
+    /** A cached row and when it was read. [provider]: it came from the provider's short guide (synthetic,
+     *  negative ids), which covers a few hours only and so goes stale; a stored row stays right for the window. */
+    private class CachedRow(val rows: List<EpgProgrammeEntity>, val at: Long, val provider: Boolean)
+
     private fun cacheKey(channel: ChannelEntity, shift: Int) = "${channel.id}|$shift"
 
-    private fun cachedRow(key: String): List<EpgProgrammeEntity>? = synchronized(rowCache) { rowCache[key] }
+    private fun cachedRow(key: String): List<EpgProgrammeEntity>? = synchronized(rowCache) { rowCache[key]?.rows }
 
     private fun putRow(key: String, rows: List<EpgProgrammeEntity>) {
-        synchronized(rowCache) { rowCache[key] = rows }
+        val row = CachedRow(rows, System.currentTimeMillis(), provider = rows.any { it.id < 0 })
+        synchronized(rowCache) { rowCache[key] = row }
     }
 
     private fun clearRows() {
         synchronized(rowCache) { rowCache.clear() }
+        lastProviderRefresh = System.currentTimeMillis()
+    }
+
+    @Volatile private var lastProviderRefresh = 0L
+
+    /**
+     * Read the provider-guide rows again once they are [PROVIDER_ROW_TTL_MS] old, and give rows that found
+     * nothing another try. The screen calls this as its clock ticks, while the guide is on screen: rows
+     * otherwise kept what they first read for as long as the guide stayed open, and the provider's ~8
+     * entries ran out into "No programme" an evening later. Stored rows stay cached; visible rows that
+     * are still cached redraw nothing.
+     */
+    fun refreshProviderRows() {
+        val now = System.currentTimeMillis()
+        if (now - lastProviderRefresh < PROVIDER_ROW_TTL_MS) return
+        lastProviderRefresh = now
+        synchronized(rowCache) { rowCache.entries.removeAll { it.value.provider && now - it.value.at >= PROVIDER_ROW_TTL_MS } }
+        _cacheRevision.value++
     }
 
     private fun cachedRowCount(): Int = synchronized(rowCache) { rowCache.size }
@@ -404,6 +427,24 @@ class EpgViewModel(
             .map { it.hiddenItems.keys to it.hiddenCategories }
             .distinctUntilChanged()
             .onEach { hidden -> if (loadedHidden != null && hidden != loadedHidden) load() }
+            .launchIn(viewModelScope)
+        // A favourite added or taken away anywhere (the guide's menu, the red key, the player) shows in Favoriten
+        // at once. The channel base is reused across category switches and kept the favourites it was read
+        // with, so a channel starred a minute ago was missing from Favoriten until the guide was reopened.
+        settings.activeProfileId
+            .flatMapLatest { pid -> if (pid < 0) flowOf(emptyList()) else favoriteDao.observeFavoriteIds(pid, MediaType.LIVE) }
+            .map { it.toSet() }
+            .distinctUntilChanged()
+            .onEach { ids ->
+                val b = base ?: return@onEach
+                if (b.favoriteIds == ids) return@onEach
+                b.favoriteIds = ids
+                when {
+                    // The sort floats favourites to the top of the base itself: read it again.
+                    b.sortMode == SettingsRepository.GuideSort.FAVORITES -> load()
+                    _categoryFilter.value == tv.own.owntv.core.live.LiveKey.Favorites -> load(reuseChannels = true)
+                }
+            }
             .launchIn(viewModelScope)
         // Reload when the category filter changes (#8), from the channels already read.
         _categoryFilter
@@ -556,8 +597,7 @@ class EpgViewModel(
             } else {
                 favoriteDao.add(tv.own.owntv.core.database.entity.FavoriteEntity(profileId = pid, mediaType = MediaType.LIVE, itemId = channel.id))
             }
-            // The "Favorites" guide sort shows only favourited channels — refresh it to match.
-            if (settings.sortGuide.first() == SettingsRepository.GuideSort.FAVORITES) load()
+            // Favoriten and the Favourites sort follow on their own (the favourites watcher in init).
         }
     }
 
@@ -867,7 +907,10 @@ class EpgViewModel(
         val windowEnd = nowAligned + settings.guideDaysToKeep.first() * DAY_MS
 
         val q = _query.value.trim()
-        val showAll = settings.guideShowEmpty.first()
+        // Live TV is the guide, so every channel of a group is listed, guide or not, as in TiviMate. This was
+        // the "show channels without guide" switch (on since the v5 defaults); with it off, the channels of a
+        // group without stored programmes vanished from Live TV, and the switch has no menu any more.
+        val showAll = true
         // The channel table is read once and reused while only the category moves: a switch used to read up
         // to 20,000 channels again, twice on a playlist without XMLTV (Jonathan, 27 Oct 2026: switching groups
         // was slow). Anything else that reloads — opening the guide, a sort, a hidden channel — reads afresh.
@@ -946,7 +989,8 @@ class EpgViewModel(
         val q: String,
         val showAll: Boolean,
         val cust: tv.own.owntv.core.customize.SectionCustomizations,
-        val favoriteIds: Set<Long>,
+        /** Kept current by the favourites watcher in init, so Favoriten never shows the list it was read with. */
+        @Volatile var favoriteIds: Set<Long>,
         val sortMode: SettingsRepository.GuideSort,
         val hiddenCatIds: Set<Long>,
     ) {
@@ -1150,6 +1194,9 @@ class EpgViewModel(
         // back never re-reads, and small enough that the grid's memory does not grow with the
         // catalogue. ~100 programmes a row, so a few megabytes at the cap.
         private const val MAX_CACHED_ROWS = 240
+        // How long a row read from the provider's short guide is kept before it is read again. Core keeps
+        // the provider's answer five minutes, so a refresh any sooner would only get the same rows back.
+        private const val PROVIDER_ROW_TTL_MS = 10L * 60 * 1000
         // Rows read ahead of the one that came into view. Roughly a screen's worth on a television,
         // measure before making it two screens; do not raise it on a hunch.
         private const val PREFETCH_AHEAD = 10
