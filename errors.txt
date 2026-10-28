@@ -1,0 +1,400 @@
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.223  4274  8126 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@4044caa} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:120)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:92)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.226  4274  5540 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.230  4274  8115 E MDD     : MDDManager Failed to init shared file metadata.
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@7373e4} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.b(SourceFile:93)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.staticplugins.cb.c.a(SourceFile:1)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.c.a(SourceFile:20)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.apps.gsa.tasks.b.a.a(Unknown Source:4)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.android.libraries.gsa.l.a.n.a(Unknown Source:2)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.dm.b(SourceFile:7)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.cg.run(SourceFile:11)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.common.v.a.do.run(SourceFile:8)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.234  4274  8122 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.298  3100  3999 E system_server: Invalid class loader spec: =UnsupportedClassLoaderContext=
+10-28 22:33:00.298  3100  3999 E PackageDexUsage: Unsupported context?
+10-28 22:33:00.650  4274  8122 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793226780259
+10-28 22:33:00.652  4274  8122 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/datadownload/shared/public/datadownloadfile_1793226780259
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@acc5eb7} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@77058d} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@b3e2f53} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@15b6d89} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.775  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@4f26daf} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@8045945} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@30235cb} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.779  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: RuntimeException while executing runnable bq{com.google.android.libraries.mdi.download.i.ax@49644c1} with executor MoreExecutors.directExecutor()
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: java.lang.NullPointerException: Attempt to read from field 'java.lang.String com.google.android.libraries.mdi.download.s.b' on a null object reference
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.ax.a(SourceFile:3)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bq.run(SourceFile:7)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.aw.execute(SourceFile:3)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.b(SourceFile:73)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.d.a(SourceFile:25)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.bu.a(SourceFile:2)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-28 22:33:00.786  4274  8123 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:33:00.787  4274  4620 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/refreshzeroprefixtask/shared/ZeroPrefixTaskStats.pb.tmp
+10-28 22:33:04.391  4274  4596 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-28 22:33:04.391  4274  4596 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-28 22:33:05.806  4274  4622 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-28 22:33:05.806  4274  4622 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-28 22:33:08.988  3824  3824 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 4 ms, mainThreadForSure=true.
+10-28 22:33:09.253  3100  3100 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:33:09.546  3824  4826 E native  : android-decoder-jni.cc:521 Failed to load dynamic LM from /data/user/0/com.google.android.inputmethod.latin/files/personal/blacklist.de.list
+10-28 22:33:09.553  3824  4826 E native  : dynamic-lm.cc:754 Cannot load dynamic lm from /data/user/0/com.google.android.inputmethod.latin/files/personal/userhistory/UserHistory.de.dict, openBuffer failed.
+10-28 22:33:14.555  3824  4826 E native  : bikey-model.cc:1023 Invalid frame index: 5
+10-28 22:33:14.555  3824  4826 E native  : bikey-model.cc:1023 Invalid frame index: 5
+10-28 22:33:14.907  3824  3824 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 10 ms, mainThreadForSure=true.
+10-28 22:33:16.601  3824  3824 E SessionManager: SessionManager.beginSession():60 Try to begin a session [IME_SESSION] whose parent [INPUT_VIEW_SESSION] hasn't begun.
+10-28 22:33:16.758  3824  3824 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#694ead2 mMissingMethods=}
+10-28 22:33:16.761  3824  3824 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#694ead2 mMissingMethods=}
+10-28 22:33:16.766  3824  3824 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#694ead2 mMissingMethods=}
+10-28 22:33:55.622  3824  6651 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-28 22:33:55.679  3100  3100 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:34:00.504  3824  4826 E native  : bikey-model.cc:1023 Invalid frame index: 7
+10-28 22:34:00.504  3824  4826 E native  : bikey-model.cc:1023 Invalid frame index: 7
+10-28 22:34:19.217  7512  9003 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:34:19.217  7512  9003 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:34:30.344  9054  9072 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:34:30.344  9054  9072 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:37:00.297  9054  9072 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:37:00.297  9054  9072 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:37:48.640  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:37:48.684  7512 10078 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:37:48.684  7512 10078 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:38:18.457  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:38:23.155  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:38:27.819  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:38:59.641  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:39:04.314  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:39:09.035  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:39:40.945  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:39:45.601  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:39:50.276  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:40:25.521  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:40:30.174  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:40:34.286  9054 10231 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:40:34.286  9054 10231 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:40:34.439  9054 10231 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:40:34.439  9054 10231 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:40:34.831  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: Exception during register request.
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: ciau: UNAUTHENTICATED: Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at ciat.c(:com.google.android.gms@201817023@20.18.17 (040800-311416286):3)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at sdn.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):48)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at afgm.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):12)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at com.google.android.libraries.matchstick.net.SilentRegisterIntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):207)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):2)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at qgf.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):4)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at cui.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):5)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at cuh.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):9)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-28 22:40:35.108  4220 11491 E MS_RegisterService: 	at java.lang.Thread.run(Thread.java:923)
+10-28 22:41:08.124  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:41:13.035  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:41:13.321  3756  7050 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:41:17.880  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:41:50.659  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:41:55.425  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:42:00.181  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:42:13.336  3756 12310 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:42:32.187  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:42:36.831  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:42:41.499  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:42:51.733  3100  3202 E NsdService: Failed to execute mdnssd [start-service]
+10-28 22:42:51.733  3100  3202 E NsdService: com.android.server.NativeDaemonConnector$NativeDaemonFailureException: command '1 mdnssd start-service' failed with '402 1 Service already running'
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NativeDaemonConnector.executeForList(NativeDaemonConnector.java:516)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:412)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NativeDaemonConnector.execute(NativeDaemonConnector.java:407)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NsdService$DaemonConnection.execute(NsdService.java:695)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NsdService$DaemonConnection.start(NsdService.java:704)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.server.NsdService$NsdStateMachine$EnabledState.processMessage(NsdService.java:257)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.processMsg(StateMachine.java:992)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at com.android.internal.util.StateMachine$SmHandler.handleMessage(StateMachine.java:809)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at android.os.Handler.dispatchMessage(Handler.java:106)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at android.os.Looper.loop(Looper.java:223)
+10-28 22:42:51.733  3100  3202 E NsdService: 	at android.os.HandlerThread.run(HandlerThread.java:67)
+10-28 22:43:13.395  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:43:18.022  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:43:22.690  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:43:52.801  7512 13179 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 22:43:52.802   435   435 E OMXNodeInstance: getParameter(0xee541120:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:43:52.803   435   472 E OMXNodeInstance: getConfig(0xee541120:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:43:52.803   435   782 E OMXNodeInstance: getConfig(0xee541120:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 22:43:53.425   435   435 E OMXNodeInstance: getConfig(0xee541120:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 22:43:53.430  7512 13163 E mpv     : mpv_get_property(track-list/1/title) format 1 returned error property unavailable
+10-28 22:43:53.430  7512 13163 E mpv     : mpv_get_property(track-list/1/lang) format 1 returned error property unavailable
+10-28 22:43:53.431  7512 13163 E mpv     : mpv_get_property(track-list/2/title) format 1 returned error property unavailable
+10-28 22:43:53.431  7512 13163 E mpv     : mpv_get_property(track-list/2/lang) format 1 returned error property unavailable
+10-28 22:43:53.553  7512 13165 E mpv     : mpv_get_property(video-bitrate) format 1 returned error property unavailable
+10-28 22:43:57.589  7512 13165 E mpv     : mpv_get_property(video-bitrate) format 1 returned error property unavailable
+10-28 22:43:57.589  7512 13165 E mpv     : mpv_get_property(display-fps) format 1 returned error property unavailable
+10-28 22:43:57.589  7512 13165 E mpv     : mpv_get_property(estimated-display-fps) format 1 returned error property unavailable
+10-28 22:43:57.589  7512 13165 E mpv     : mpv_get_property(vsync-jitter) format 1 returned error property unavailable
+10-28 22:43:57.589  7512 13165 E mpv     : mpv_get_property(mistimed-frame-count) format 1 returned error property unavailable
+10-28 22:44:02.273  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:44:08.820  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:44:41.789  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:44:48.071  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:45:21.050  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:45:27.203  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:46:04.086  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:46:48.291  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:46:53.502  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:46:58.689  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:47:30.405  3100  3100 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:47:30.585  3824  6651 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-28 22:47:33.944  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:47:53.376  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:47:59.541  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:48:04.685  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:48:28.018  3210  3218 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-28 22:48:28.041  7512 15401 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-28 22:48:28.041   435   435 E OMXNodeInstance: getParameter(0xee540ef0:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:48:28.042   435   435 E OMXNodeInstance: setConfig(0xee540ef0:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:48:28.042   435   435 E OMXNodeInstance: getConfig(0xee540ef0:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:48:28.042   435   435 E OMXNodeInstance: getConfig(0xee540ef0:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 22:48:28.194   435   785 E OMXNodeInstance: getConfig(0xee540ef0:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-28 22:48:28.271  7512 15404 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.271  7512 15404 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.273   439   479 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.273   439   479 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.275  7512 15404 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-28 22:48:28.277  7512 15404 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.277   439   479 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.353   439 15408 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:28.356  7512 13180 E FMQ     : grantorIdx must be less than 3
+10-28 22:48:29.213   435   435 E OMXNodeInstance: setConfig(0xee540ef0:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-28 22:48:32.827 15414 15414 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:48:35.988 15437 15437 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:48:36.666  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:48:42.556 15472 15472 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:48:47.759 15508 15508 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:48:53.340 15544 15544 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:48:58.714 15579 15579 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:04.109 15615 15615 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:05.867 15634 15634 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:08.892 15666 15666 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:10.726 15685 15685 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:13.744 15717 15717 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:15.496 15736 15736 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:18.643 15769 15769 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:21.464 15801 15801 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-28 22:49:22.308   351   351 E Layer   : [SurfaceView - io.github.jonathanxoxox.tvplayer/tv.own.owntv.MainActivity#0] No local sync point found
+10-28 22:49:26.364  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:49:34.589  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:49:40.720  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:49:41.938  9054  9110 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-28 22:49:41.938  9054  9110 E libc    : Access denied finding property "service.adb.tls.port"
+10-28 22:50:29.745  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:50:35.871  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:50:41.010  3100  3122 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-28 22:50:50.499  3100  3140 E libprocessgroup: AddTidToCgroup failed to write '16459'; fd=52: Invalid argument
+10-28 22:50:50.499  3100  3140 E libprocessgroup: Failed to add task into cgroup
+10-28 22:50:50.742 16440 16440 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-28 22:50:50.957  4002  4002 E HwDetectorWithState: a: 3
+10-28 22:50:51.683 16440 16469 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:50:57.369   413   413 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:50:58.484 16521 16558 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:50:58.485 16521 16558 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:03.325 16440 16469 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:51:10.197   413   413 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:51:10.900 16606 16642 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:10.901 16606 16642 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:15.799 16440 16468 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:51:22.681   413   413 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:51:23.453  3756 12311 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-28 22:51:23.816 16689 16716 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:23.816 16689 16716 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:28.352 16440 16468 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:51:35.218   413   413 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:51:36.521 16769 16804 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:36.522 16769 16804 E ActivityThread: Failed to find provider info for android.media.tv
+10-28 22:51:41.644 16440 16468 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-28 22:51:45.545   413   413 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-28 22:51:49.233 16852 16874 E ActivityThread: Failed to find provider info for android.media.tv
