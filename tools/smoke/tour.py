@@ -387,11 +387,37 @@ def player_tour():
     shot("player-wieder-vollbild")
     key("DPAD_CENTER", wait=1.5)
     shot("player-ok-infoleiste")
+    # ▼ unter den Kacheln öffnet die Einstellungszeile; daraus Ton, Untertitel und Format.
+    for name in ("Ton", "Untertitel", "Format"):
+        if not in_fullscreen():
+            break
+        key("DPAD_CENTER", wait=1.5)
+        key("DPAD_DOWN", wait=1.2)
+        if name == "Ton":
+            shot("player-ok-einstellungszeile")
+        if goto(rf"^{name}"):
+            time.sleep(1.2)
+            shot(f"player-dialog-{name.lower()}")
+            key("BACK", wait=1.2)
+        else:
+            key("BACK", wait=1.0)
+        key("BACK", wait=1.0)
     key("BACK", wait=1.0)
     key("DPAD_UP", wait=1.2)
     shot("player-hoch-zappen")
     key("DPAD_DOWN", wait=1.2)
     shot("player-runter-zappen")
+    # Senderwechsel mit den CH-Tasten, einzeln und als schnelle Folge (wie gehaltene Taste).
+    key("CHANNEL_UP", wait=0.3)
+    shot("player-ch-plus-sofort")
+    time.sleep(2)
+    shot("player-ch-plus")
+    key("CHANNEL_DOWN", wait=2)
+    shot("player-ch-minus")
+    key("CHANNEL_UP", n=4, wait=0.2)
+    shot("player-ch-schnell-zappen")
+    time.sleep(3)
+    shot("player-ch-schnell-angekommen")
     key("DPAD_RIGHT", wait=1.2)
     shot("player-rechts-letzter-sender")
     key("DPAD_LEFT", wait=1.5)
@@ -418,6 +444,21 @@ def player_tour():
     shot("player-zurueck")
     key("BACK", wait=1.5)
     shot("player-zurueck-2")
+    # Ein Sender ohne Signal: Fehlerbild mit „Erneut versuchen“, ▲▼ zappen weiter weg.
+    to_rail()
+    if open_section("Live-TV"):
+        key("DPAD_RIGHT", wait=1.0)
+        if goto(r"^Kein Signal"):
+            time.sleep(1)
+            if not in_fullscreen():
+                key("DPAD_CENTER", wait=1)
+            time.sleep(1)
+            shot("player-fehler-laedt")
+            time.sleep(12)
+            shot("player-fehler")
+            key("DPAD_DOWN", wait=3)
+            shot("player-fehler-weggezappt")
+            key("BACK", wait=1.5)
 
 
 def vod_section(name, layout):
