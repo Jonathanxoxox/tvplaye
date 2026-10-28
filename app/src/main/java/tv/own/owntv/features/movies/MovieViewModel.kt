@@ -152,6 +152,9 @@ class MovieViewModel(
     private fun catalogIds(key: LiveKey): List<Long>? =
         tv.own.owntv.features.vod.VodCatalogKeys.idOf(key)?.let { id -> catalogs.value.firstOrNull { it.id == id }?.ids.orEmpty() }
 
+    /** The Filme search's people and description finds (TMDB / Jev); Koin directly, like the catalogs. */
+    private val moodSearch: tv.own.owntv.features.search.MoodSearch = org.koin.core.context.GlobalContext.get().get()
+
     private val categories = VodCategories(
         viewModelScope, MediaType.MOVIE, ctx, settings.sortMovies, categoryDao, contentOrderDao, customize,
         customCategoryDao, profileDao, userDataWriter, catalogPriority, { currentProfileId() }, catalogs,
@@ -330,11 +333,18 @@ class MovieViewModel(
         // A catalog's list is fixed per build: the pager is rebuilt when the open catalog's titles change.
         .combine(_selected.combine(catalogs) { key, _ -> catalogIds(key) }.distinctUntilChanged()) { p, _ -> p }
         .flatMapLatest { (args, cs) ->
+            // The search covers every film, whatever category is open: titles at once, then the films
+            // of a person of that name and what a described search finds (TMDB / Jev, a moment later).
+            val extras: Flow<List<Long>> = if (args.query.isBlank()) flowOf(emptyList())
+            else flow { emit(emptyList<Long>()); emit(runCatching { moodSearch.sectionExtras(args.query, MediaType.MOVIE, args.ctx.sourceIds) }.getOrDefault(emptyList())) }
             // Hidden items/categories are filtered on each fresh PagingData inside the pager chain —
             // a customization change re-creates the pager (same pattern as Live TV).
-            Pager(PagingConfig(pageSize = 60, prefetchDistance = 30, initialLoadSize = 90, maxSize = 300)) {
-                pagingSource(args.key, args.ctx, args.query, args.sort)
-            }.flow.map { paging ->
+            extras.distinctUntilChanged().flatMapLatest { extraIds ->
+                Pager(PagingConfig(pageSize = 60, prefetchDistance = 30, initialLoadSize = 90, maxSize = 300)) {
+                    if (args.query.isBlank()) pagingSource(args.key, args.ctx, args.query, args.sort)
+                    else searchSource(args.ctx, args.query, args.sort, extraIds)
+                }.flow
+            }.map { paging ->
                 val cust = cs.cust
                 val movedFrom = cust.movedFromOrigin
                 if (cust.hiddenItems.isEmpty() && cust.itemNames.isEmpty() && cs.hiddenCats.isEmpty() && movedFrom.isEmpty()) paging
@@ -878,6 +888,18 @@ class MovieViewModel(
     }
 
     /** A catalog's titles of the active playlists, in the catalog's order. */
+    /** Title matches over all films; with [extraIds] (people, descriptions) one page: titles first, then those. */
+    private fun searchSource(c: VodCtx, query: String, sort: SettingsRepository.SortMode, extraIds: List<Long>): PagingSource<Int, MovieEntity> {
+        val titles = pagingSource(LiveKey.All, c, query, sort)
+        if (extraIds.isEmpty()) return titles
+        return tv.own.owntv.features.vod.SearchPagingSource(
+            titles = titles,
+            extraIds = extraIds,
+            fetch = { wanted -> movieDao.getByIds(wanted).filter { it.sourceId in c.sourceIds } },
+            idOf = { it.id },
+        )
+    }
+
     private fun catalogSource(ids: List<Long>, c: VodCtx, query: String): PagingSource<Int, MovieEntity> =
         tv.own.owntv.features.vod.CatalogPagingSource(
             ids = ids,

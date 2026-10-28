@@ -458,9 +458,11 @@ internal fun LiveCategories(
     showGroupsHeading: Boolean = true,
     /** The category search is being typed in (the player's sheet then leaves ◀ to the text cursor). */
     onSearchEditingChange: (Boolean) -> Unit = {},
+    /** False = no search field on top (Filme / Serien: their one search is above the titles). */
+    showSearch: Boolean = true,
 ) {
     var localQuery by remember { mutableStateOf("") }
-    val query = searchQuery ?: localQuery
+    val query = if (showSearch) searchQuery ?: localQuery else ""
     val setQuery: (String) -> Unit = onSearchQueryChange ?: { localQuery = it }
     val visible = remember(entries, query) {
         val q = query.trim()
@@ -469,7 +471,7 @@ internal fun LiveCategories(
     val rowFocusers = remember(visible.size) { List(visible.size) { FocusRequester() } }
     // The list item of row [pos]: the search field is item 0, and each heading above it is one more.
     fun lazyIndex(pos: Int): Int =
-        pos + 1 + if (query.isBlank()) visible.take(pos + 1).count { entries[it].heading != null } else 0
+        pos + (if (showSearch) 1 else 0) + if (query.isBlank()) visible.take(pos + 1).count { entries[it].heading != null } else 0
     val searchFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     // CH+/− in the categories changes the selection; the highlight follows it there.
@@ -542,7 +544,7 @@ internal fun LiveCategories(
                 .focusProperties {
                     onEnter = {
                         val pos = visible.indexOf(selectedIndex)
-                        val target = if (pos in rowFocusers.indices) rowFocusers[pos] else searchFocus
+                        val target = if (pos in rowFocusers.indices) rowFocusers[pos] else if (showSearch) searchFocus else rowFocusers.firstOrNull() ?: searchFocus
                         if (!runCatching { target.requestFocus() }.getOrDefault(false)) {
                             scope.launch {
                                 runCatching { listState.scrollToItem(if (pos >= 0) lazyIndex(pos) else 0) }
@@ -557,7 +559,7 @@ internal fun LiveCategories(
             // Room for the 2 px outer focus ring, which the list would otherwise clip.
             contentPadding = PaddingValues(start = 4.mpx, end = 4.mpx, top = 4.mpx, bottom = 8.mpx),
         ) {
-            item(key = "__search__") {
+            if (showSearch) item(key = "__search__") {
                 StageSearchField(
                     query = query,
                     onQueryChange = setQuery,

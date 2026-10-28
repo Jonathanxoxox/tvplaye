@@ -21,14 +21,17 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
+import org.koin.compose.koinInject
 import tv.own.owntv.R
 import tv.own.owntv.features.voice.OfflineSpeech
+import tv.own.owntv.features.voice.ScribeClient
 import java.io.IOException
 
 /**
  * The microphone button beside a search field. Like TizenTube, the app records the microphone itself
  * and never hands over to the box's voice search (Jonathan has Google's switched off, which is why the
- * old hand-over did nothing): [OfflineSpeech] turns the speech into text on the box. The microphone
+ * old hand-over did nothing). [OfflineSpeech] on the box hears when the sentence ends; with an
+ * ElevenLabs key [ScribeClient] then writes it down (far better), else the box's own guess is used. The microphone
  * permission is asked for on the first press, the language model downloaded on the first press too.
  *
  * While it works, the field shows [heard] (the words so far) or [note] ("Speak now…", the download's
@@ -65,6 +68,7 @@ fun rememberVoiceSearch(
     val result by rememberUpdatedState(onResult)
     val resolver by rememberUpdatedState(resolve)
     val voice = remember { VoiceSearch() }
+    val scribe: ScribeClient = koinInject()
     val scope = rememberCoroutineScope()
     val job = remember { mutableStateOf<Job?>(null) }
     val stop = remember { mutableStateOf(false) }
@@ -85,8 +89,17 @@ fun rememberVoiceSearch(
                 voice.noteArg = null
                 voice.note = R.string.voice_search_listening
                 voice.listening = true
-                val said = OfflineSpeech.listen(model, stopRequested = { stop.value }) { words -> scope.launch { if (voice.listening) voice.heard = words } }
+                // With Scribe, the box's own guesses are too rough to show while speaking.
+                val heard = OfflineSpeech.listen(model, stopRequested = { stop.value }) { words ->
+                    if (!scribe.available) scope.launch { if (voice.listening) voice.heard = words }
+                }
                 voice.listening = false
+                val said = if (scribe.available && heard.pcm.isNotEmpty()) {
+                    voice.note = R.string.voice_search_understanding
+                    scribe.transcribe(heard.pcm)?.let { listOf(it) } ?: heard.guesses
+                } else {
+                    heard.guesses
+                }
                 if (said.isEmpty()) {
                     voice.heard = null
                     voice.note = R.string.voice_search_not_understood
