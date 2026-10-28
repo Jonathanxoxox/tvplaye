@@ -52,7 +52,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import tv.own.owntv.R
 import tv.own.owntv.core.i18n.HorizontalDirection
-import tv.own.owntv.core.live.EpgNowNext
 import tv.own.owntv.core.i18n.horizontalDirection
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutPress
@@ -213,7 +212,7 @@ fun PlayerHud(
     // switches the live player to the classic IPTV remote: OK shows the info bar with the control panel,
     // Left the channel list, Right the channel before, Up/Down change channel (held: history / search),
     // long OK or Menu the options panel, long Menu the guide.
-    zapInfo: (@Composable () -> EpgNowNext?)? = null,
+    zapInfo: (@Composable () -> ZapInfo?)? = null,
     // The classic remote's extra targets (guide, search, the control panel's channel tiles). Grouped in
     // one value: one more parameter each pushed this function past what the release build verifies.
     remote: LiveRemoteActions? = null,
@@ -1152,7 +1151,7 @@ class LiveRemoteActions(
 @Composable
 private fun HudControlPanel(
     player: PlaybackEngine,
-    guide: EpgNowNext?,
+    info: ZapInfo?,
     remote: LiveRemoteActions?,
     onOpenHistoryList: (() -> Unit)?,
     focus: FocusRequester,
@@ -1175,12 +1174,13 @@ private fun HudControlPanel(
         recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { onClose(); ch.onClick() }) }
     }
     val u = rememberScreenUnits()
+    val guide = info?.guide
     // The panel opens on a moment; the seek line and minutes left are read from it, as in the zap bar.
     val nowMs = remember(guide) { System.currentTimeMillis() }
     // Proportions of the classic player at 1920×1080: the programme block from y 622, the seek line
     // at 790, tiles 236×172 from 820, the arrow at 1030 (Jonathan's photo, 27 Oct 2026).
     Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60))) {
-        PlayerZapInfoBlock(player, guide, nowMs)
+        PlayerZapInfoBlock(player, info, nowMs)
         Spacer(Modifier.height(u.dp(8)))
         ProgrammeSeekLine(guide, nowMs)
         Column {
