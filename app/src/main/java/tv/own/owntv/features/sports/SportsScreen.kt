@@ -99,6 +99,7 @@ fun SportsScreen(
                 if (ch != null) onPlayChannel(ch, playback.session.value?.options?.map { it.channel }.orEmpty())
             },
             active = active,
+            onEntryHook = onEntryHook,
             contentStart = contentStart,
             modifier = pageModifier,
         )

@@ -39,6 +39,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
 import tv.own.owntv.R
@@ -52,6 +54,7 @@ import tv.own.owntv.core.sports.model.MatchEvent
 import tv.own.owntv.core.sports.model.MatchState
 import tv.own.owntv.core.sports.model.MatchSummary
 import tv.own.owntv.core.sports.model.StandingsTable
+import tv.own.owntv.features.epg.GuidePreviewSpot
 import tv.own.owntv.features.epg.GuideVideo
 import tv.own.owntv.features.live.LiveViewModel
 import tv.own.owntv.features.shell.components.StageRailOpen
@@ -103,6 +106,8 @@ fun SportsMatchScreen(
     modifier: Modifier = Modifier,
     /** False while the player is full screen over the page. */
     active: Boolean = true,
+    /** The shell's way to put focus back on the page (the menu's right key, and Back from the player). */
+    onEntryHook: (((() -> Boolean)?) -> Unit)? = null,
 ) {
     // Back is registered before the data: while the page loads, Back must still mean "back to the hub",
     // not fall through to the shell (which would leave the section empty with focus on the rail).
@@ -142,6 +147,13 @@ fun SportsMatchScreen(
     // Back from the player: focus the channel that was playing, not the first.
     val focusTarget = shown.firstOrNull { it.channel.id == vm.lastPlayedChannelId } ?: shown.firstOrNull()
 
+    // The shell reaches the channel list through this: Back from the player takes the row that was playing.
+    androidx.compose.runtime.DisposableEffect(onEntryHook) {
+        onEntryHook?.invoke { runCatching { firstRow.requestFocus() }.getOrDefault(false) }
+        onDispose { onEntryHook?.invoke(null) }
+    }
+    // No corner left behind for the shell to draw into once this page is gone.
+    androidx.compose.runtime.DisposableEffect(Unit) { onDispose { GuidePreviewSpot.rect = null } }
     // The page takes the whole width, as the guide does: while it holds focus the menu strip steps aside
     // and the clock and pills with it, so Watch live is never cut off on the right. ◀ brings the strip back.
     androidx.compose.runtime.DisposableEffect(Unit) {
@@ -230,13 +242,16 @@ fun SportsMatchScreen(
                     return@Column
                 }
                 val video = picked?.takeIf { previewOn }
+                // The picture alone, as in the guide: the shell draws it over this corner with the view full screen
+                // uses, so it grows into full screen and shrinks back here without the stream changing surface.
                 GuideVideo(
                     channel = video,
-                    channelLine = video?.let { listOfNotNull(it.number?.toString(), ProviderTags.parse(it.name).name).joinToString(sep) },
-                    nowTitle = video?.let { ch -> shown.firstOrNull { it.channel.id == ch.id }?.guideTitle },
                     previewEngine = liveVm.previewEngine,
                     showVideo = video != null,
-                    modifier = Modifier.fillMaxWidth(),
+                    shellDrawsVideo = true,
+                    modifier = Modifier.fillMaxWidth().onGloballyPositioned {
+                        GuidePreviewSpot.rect = it.boundsInRoot().translate(-GuidePreviewSpot.shift(), 0f)
+                    },
                 )
                 Row(Modifier.fillMaxWidth().padding(top = 18.mpx), verticalAlignment = Alignment.CenterVertically) {
                     Text(

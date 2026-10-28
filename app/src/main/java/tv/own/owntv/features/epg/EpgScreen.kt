@@ -452,7 +452,7 @@ fun EpgScreen(
         if (timelinePx > 0 && pxAt(nowMs) !in scrollPx.toFloat()..(scrollPx + timelinePx).toFloat()) showTime(nowMs)
         GuidePreviewSpot.ready = true
     }
-    DisposableEffect(Unit) { onDispose { GuidePreviewSpot.ready = false } }
+    DisposableEffect(Unit) { onDispose { GuidePreviewSpot.ready = false; GuidePreviewSpot.rect = null } }
 
     // --- Overlays --------------------------------------------------------------------------------------
     var menuFor by remember { mutableStateOf<Pair<ChannelEntity, EpgProgrammeEntity>?>(null) }
