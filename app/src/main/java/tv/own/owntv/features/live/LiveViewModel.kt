@@ -178,53 +178,6 @@ class LiveViewModel(
         }
     }
 
-    /**
-     * Record this channel from now, whether or not it is the one on screen.
-     *
-     * The guide's Record needs a programme to record, so a channel the provider publishes no guide
-     * for cannot be recorded from there at all — and those are exactly the channels a user is most
-     * likely to want kept. This is the same recording by another door: long-press the channel in the
-     * list. With a programme on screen it ends when that programme does; with none it runs for
-     * [RecordingSchedule.NO_GUIDE_RUNTIME_MINUTES] and is stopped from Downloads → Live TV.
-     */
-    fun recordNow(channel: ChannelEntity) {
-        viewModelScope.launch {
-            val pid = currentProfileId() ?: return@launch
-            // The programme is only known for the channel the guide pane is showing; from the list
-            // this is a channel like any other, so its own now-programme is looked up here.
-            startRecordingNow(channel, pid, epgReader.nowNext(channel, custom.value, epgOffset.value)?.now)
-        }
-    }
-
-    /** Channels with a recording running right now, so their menu offers Stop instead of Record. */
-    val recordingChannelIds: StateFlow<Set<Long>> = recordings.observeRunning()
-        .map { rows -> rows.mapTo(HashSet()) { it.channelId } }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptySet())
-
-    /** Stop the running recording(s) of this channel, keeping what was captured. */
-    fun stopRecordingOn(channel: ChannelEntity) {
-        viewModelScope.launch {
-            recordings.observeRunning().first().filter { it.channelId == channel.id }.forEach { row ->
-                recordings.stop(row)
-                if (_playerRecording.value?.id == row.id) _playerRecording.value = null
-            }
-        }
-    }
-
-    /** What already claims this channel's playlist over the window — the clash the dialog warns about. */
-    suspend fun recordingClashes(channel: ChannelEntity, startMs: Long, stopMs: Long): List<tv.own.owntv.core.database.entity.RecordingEntity> {
-        val window = RecordingSchedule.manualWindow(startMs, stopMs, System.currentTimeMillis()) ?: return emptyList()
-        return recordings.clashesWith(channel.sourceId, window.first, window.last)
-    }
-
-    /** Record [channel] between two picked times (#2); [onScheduled] gets the start once it is saved. */
-    fun scheduleRecording(channel: ChannelEntity, startMs: Long, stopMs: Long, onScheduled: (Long) -> Unit) {
-        viewModelScope.launch {
-            val pid = currentProfileId() ?: return@launch
-            recordings.scheduleManual(pid, channel, startMs, stopMs)?.let { onScheduled(it.programmeStartMs) }
-        }
-    }
-
     private suspend fun startRecordingNow(
         channel: ChannelEntity,
         profileId: Long,
@@ -275,15 +228,6 @@ class LiveViewModel(
     /** List ordering for this section (Playlist order vs A–Z), persisted in DataStore. */
     val sortMode: StateFlow<SettingsRepository.SortMode> = settings.sortLive
         .stateIn(viewModelScope, SharingStarted.Eagerly, SettingsRepository.SortMode.PLAYLIST)
-
-    fun toggleSort() {
-        viewModelScope.launch {
-            settings.setSortLive(
-                if (sortMode.value == SettingsRepository.SortMode.PLAYLIST) SettingsRepository.SortMode.ALPHA
-                else SettingsRepository.SortMode.PLAYLIST,
-            )
-        }
-    }
 
     private val livePreviewAudio: StateFlow<Boolean> = settings.livePreviewAudio
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
@@ -671,14 +615,6 @@ class LiveViewModel(
         }
     }
 
-    /** Rename the channel for this profile (blank restores the provider's name). */
-    fun renameChannel(channel: ChannelEntity, newName: String?) {
-        viewModelScope.launch {
-            val pid = currentProfileId() ?: return@launch
-            customize.renameItem(pid, MediaType.LIVE, CustomizeKeys.channel(channel), newName)
-        }
-    }
-
     /** Manually map a channel to an EPG channel id (null clears the override → auto-match). */
     fun setEpgMatch(channel: ChannelEntity, epgChannelId: String?) {
         viewModelScope.launch {
@@ -786,9 +722,6 @@ class LiveViewModel(
 
     /** The global guide shift, shown as the per-channel dialog's "follow global" default. */
     fun globalEpgShift(): Int = epgOffset.value
-
-    /** The playlist's name, for the channel menu's "category · playlist" line. */
-    fun sourceNameOf(sourceId: Long): String? = sourceById[sourceId]?.name
 
     /** Distinct EPG channels for the "Match EPG" picker (across the profile's playlists + EPG feeds),
      *  ranked so guide channels resembling [channelName] come first instead of a plain A-Z list. */
@@ -997,13 +930,6 @@ class LiveViewModel(
     // fills it and the player that empties it are two different screens.
     private val _multiviewSelection = MutableStateFlow<List<ChannelEntity>>(emptyList())
     val multiviewSelection: StateFlow<List<ChannelEntity>> = _multiviewSelection.asStateFlow()
-
-    /** Keep [channel] for the grid, up to [limit] tiles. Adding one twice does nothing. */
-    fun addToMultiview(channel: ChannelEntity, limit: Int) {
-        val current = _multiviewSelection.value
-        if (current.any { it.id == channel.id } || current.size >= limit) return
-        _multiviewSelection.value = current + channel
-    }
 
     fun clearMultiviewSelection() {
         _multiviewSelection.value = emptyList()
@@ -1804,12 +1730,6 @@ class LiveViewModel(
     val timeshiftResumeAt: StateFlow<Long?> = live.localTimeshift.map { it?.resumeAtWallMs }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
-    fun resumeTimeshift() {
-        val at = timeshiftResumeAt.value ?: return
-        live.dismissResumeOffer()
-        live.seekTimeshift(at)
-    }
-
     fun dismissTimeshiftResume() = live.dismissResumeOffer()
 
     /** The wall-clock holes in the saved copy on screen, for the rewind bar. */
@@ -1852,19 +1772,6 @@ class LiveViewModel(
         if (!timeshift.canRewind(ch)) return
         _catchupActive.value = false // a live rewind, not a fixed programme: the HUD keeps its live chrome
         timeshift.beginAt(ch, offsetSec)
-    }
-
-    /** Open [ch] straight into its archive at [offsetSec] behind live, from the browse list — the
-     *  channel is not playing yet, so this also arms CH+/CH− and records the watch, exactly as tuning
-     *  it live would. Without that the channel-list overlay and zapping stay dead for the session. */
-    fun playCatchupAt(ch: ChannelEntity, offsetSec: Int) {
-        if (!ch.catchup) return
-        if (ch.categoryId != null && ch.categoryId in hiddenCategoryIds.value) return
-        zapList.armFor(ch)
-        _previewChannel.value = ch
-        _catchupActive.value = false
-        timeshift.beginAt(ch, offsetSec)
-        recordLiveHistory(ch, immediate = true)
     }
 
     /** Move [deltaSec] further back (+) or toward live (−) into the archive (also drives the timeline
@@ -2041,22 +1948,6 @@ class LiveViewModel(
         }
     }
 
-    /**
-     * Re-read [loaded] because the programmes have turned over.
-     *
-     * Called on the **minute boundary** by the screen, not 60 seconds after it opened: a programme
-     * changes on the minute, so a timer started from mount shows rows changing up to 59 seconds late
-     * and at different instants from one another.
-     */
-    fun refreshNowPlaying(loaded: List<ChannelEntity>) {
-        if (loaded.isEmpty()) return
-        nowPlayingJob?.cancel()
-        nowPlayingJob = viewModelScope.launch {
-            val found = runCatching { nowPlayingFor(loaded) }.getOrDefault(emptyMap())
-            publishNowPlaying(found + loaded.filter { it.id !in found }.associate { it.id to null })
-        }
-    }
-
     private suspend fun currentProfileId(): Long? {
         val preferred = settings.activeProfileId.first()
         return if (preferred >= 0) profileDao.resolveExistingProfileId(preferred) else null
@@ -2139,19 +2030,6 @@ class LiveViewModel(
         sortBeforeMove = null
         if (previous != SettingsRepository.SortMode.PLAYLIST) {
             viewModelScope.launch { settings.setSortLive(previous) }
-        }
-    }
-
-    /** Take [channel] out of the custom category [key] only. If it had been moved out of its provider
-     *  folder into here, it goes back there — the same as deleting the whole category does. */
-    fun removeFromCustomCategory(channel: ChannelEntity, key: LiveKey.Custom) {
-        viewModelScope.launch {
-            val pid = currentProfileId() ?: return@launch
-            userDataWriter.removeCustomCategoryMember(pid, MediaType.LIVE, key.id, channel.id)
-            val itemKey = CustomizeKeys.channel(channel)
-            custom.value.movedFromOrigin[itemKey]?.let { origin ->
-                customize.setItemMovedFromOrigin(pid, MediaType.LIVE, itemKey, origin, moved = false)
-            }
         }
     }
 

@@ -375,11 +375,6 @@ object FrameRateController {
         }.getOrNull()
     }
 
-    /** The refresh rate the display is on right now, or null if it can't be read. */
-    fun currentRefreshRate(activity: Activity): Float? = runCatching {
-        displayOf(activity)?.mode?.refreshRate
-    }.getOrNull()
-
     /**
      * The display this activity is showing on. `Activity.getDisplay()` is the supported call from
      * API 30 on; below that `WindowManager.getDefaultDisplay()` is the only way to ask, and on a TV

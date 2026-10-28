@@ -169,7 +169,6 @@ object StageColors {
     /** `.danger`: Clear watch history, Clear log. */
     val Danger: Color @Composable @ReadOnlyComposable get() = LocalStagePalette.current.danger
     val Body: Color @Composable @ReadOnlyComposable get() = LocalStagePalette.current.body
-    val NavText: Color @Composable @ReadOnlyComposable get() = LocalStagePalette.current.navText
     val FxText: Color @Composable @ReadOnlyComposable get() = LocalStagePalette.current.fxText
     val FxLine: Color @Composable @ReadOnlyComposable get() = LocalStagePalette.current.fxLine
     /** Flat surfaces: the dark theme's white, at the same alphas. */

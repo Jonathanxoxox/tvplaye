@@ -159,7 +159,7 @@ internal fun ProfileEditorDialog(
         tv.own.owntv.ui.stage.StagePopupLabel(stringResource(R.string.profiles_avatar).uppercase(), Modifier.padding(top = 18.mpx))
         val accent = stageAccent.accent
         LazyRow(horizontalArrangement = Arrangement.spacedBy(14.mpx), contentPadding = androidx.compose.foundation.layout.PaddingValues(6.mpx)) {
-            items((-1 until OwnTVAvatars.COUNT).toList()) { id -> // includes "no avatar" (-1)
+            items((-1 until OwnTVAvatars.COUNT).toList(), key = { it }) { id -> // includes "no avatar" (-1)
                 tv.own.owntv.ui.stage.StageSurface(
                     onClick = { avatarId = id },
                     radius = 44.mpx,

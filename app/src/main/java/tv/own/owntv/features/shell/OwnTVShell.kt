@@ -9,12 +9,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -29,7 +27,6 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
@@ -76,7 +73,6 @@ import tv.own.owntv.features.series.SeriesScreen
 import tv.own.owntv.features.series.SeriesViewModel
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutBindings
-import tv.own.owntv.player.MpvVideoSurface
 import tv.own.owntv.player.OwnTVPlayer
 import tv.own.owntv.player.PlayerHud
 import tv.own.owntv.features.shell.components.AvatarPickerDialog

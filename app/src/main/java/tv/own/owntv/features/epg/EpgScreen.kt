@@ -82,8 +82,6 @@ import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.OwnTVSpinner
 import tv.own.owntv.ui.stage.StageButton
 import tv.own.owntv.ui.stage.shownColor
-import tv.own.owntv.ui.stage.StageSearchField
-import tv.own.owntv.ui.stage.StageTool
 import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.stageAccent

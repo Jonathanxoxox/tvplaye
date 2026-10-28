@@ -149,8 +149,6 @@
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveViewModel.kt	zap: tune wait ${delayMs}ms — ${zapWaitReason(lastZapPressMs, now, singleConnection)}
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveZapList.kt	LiveZapList
 1	log	app/src/main/java/tv/own/owntv/features/live/LiveZapList.kt	direct tune: zap rebuild failed
-1	technical	app/src/main/java/tv/own/owntv/features/live/ScheduleRecordingDialog.kt	:
-1	technical	app/src/main/java/tv/own/owntv/features/live/ScheduleRecordingDialog.kt	EEEMMMd
 1	log	app/src/main/java/tv/own/owntv/features/live/ZapTuneDelay.kt	(single-connection)
 1	log	app/src/main/java/tv/own/owntv/features/live/ZapTuneDelay.kt	isolated$panel
 1	log	app/src/main/java/tv/own/owntv/features/live/ZapTuneDelay.kt	rapid (previous press ${nowMs - (lastPressMs ?: nowMs)}ms ago)$panel

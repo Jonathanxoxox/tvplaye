@@ -9,7 +9,6 @@ import android.graphics.Shader
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -122,34 +121,6 @@ fun DrawScope.drawEllipticalGlow(
             dstOffset = IntOffset(left, top),
             dstSize = IntSize(ceil(radiusX * 2f).toInt() + 1, ceil(radiusY * 2f).toInt() + 1),
         )
-    }
-}
-
-/**
- * Same pixels as `drawRect(Brush.verticalGradient(colors, startY, endY))` over this scope's bounds, with
- * the whole draw faded by [alpha]. The first colour must be fully transparent (nothing is drawn above
- * [startY]); below [endY] the last colour continues, as the brush's clamp does.
- */
-fun DrawScope.drawVerticalFade(colors: List<Color>, startY: Float, endY: Float, alpha: Float = 1f) {
-    if (endY <= startY || alpha <= 0f) return
-    val texture = GradientTextures.get(GradientTextures.Kind.VERTICAL, colors)
-    val top = floor(startY).toInt()
-    val bottom = ceil(endY).toInt()
-    clipRect {
-        drawImage(
-            image = texture,
-            dstOffset = IntOffset(0, top),
-            dstSize = IntSize(ceil(size.width).toInt(), bottom - top),
-            alpha = alpha.coerceAtMost(1f),
-        )
-        if (bottom < size.height) {
-            drawRect(
-                color = colors.last(),
-                topLeft = Offset(0f, bottom.toFloat()),
-                size = Size(size.width, size.height - bottom),
-                alpha = alpha.coerceAtMost(1f),
-            )
-        }
     }
 }
 
