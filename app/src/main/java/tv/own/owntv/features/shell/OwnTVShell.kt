@@ -949,7 +949,11 @@ fun OwnTVShell(
     // The preview runs on the ExoPlayer live engine, not mpv: stopping only mpv here (as when the preview
     // was mpv) left it decoding and holding a provider connection after a shortcut or deep link out.
     LaunchedEffect(selectedSection, playerMode) {
-        if (selectedSection != MainSection.LIVE_TV && selectedSection != MainSection.EPG && playerMode == PlayerMode.NONE) liveVm.stopPreview()
+        // Back from a channel played out of a match page: the page reopens next (SportsScreen) and carries the
+        // channel on in its preview, so it must not be stopped, and forgotten, here first.
+        val matchPageNext = selectedSection == MainSection.SPORTS &&
+            (sportsMatchRequests.returnToMatch != null || sportsMatchRequests.returnedFromPlayer)
+        if (selectedSection != MainSection.LIVE_TV && selectedSection != MainSection.EPG && playerMode == PlayerMode.NONE && !matchPageNext) liveVm.stopPreview()
         if (selectedSection != MainSection.HOME || playerMode != PlayerMode.NONE) homeVm.stopPreview()
     }
 

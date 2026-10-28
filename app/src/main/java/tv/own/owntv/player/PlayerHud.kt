@@ -322,7 +322,9 @@ fun PlayerHud(
     // A stream error brought the classic controls up over the list-first live player: a provider hiccup
     // looked like the old player appearing out of nowhere (Jonathan, 27 Oct 2026). There the error screen
     // with its Retry stands alone, and ▲▼ still zap away from a dead channel.
-    val forceShow = (error != null && !listFirst) || dialog != HudDialog.NONE
+    // Same for the dialogs (audio, subtitles…): opened from the list-first panel they draw on their own, and the
+    // classic bar appearing behind them looked like the old player coming back (Jonathan, 28 Oct 2026).
+    val forceShow = !listFirst && (error != null || dialog != HudDialog.NONE)
     // First Back hides the controls (instead of leaving the channel); with the controls already hidden
     // this handler is disabled, so Back falls through to the shell, which exits the player. Also disabled
     // while an error/dialog is up (a dialog handles its own Back; an error should exit).
@@ -529,9 +531,9 @@ fun PlayerHud(
     var shortcutPressedAt by remember { mutableStateOf(0L) }
     val dispatchPlayerShortcut: (RemoteShortcutAction) -> Unit = { action ->
         when (action) {
-            RemoteShortcutAction.OPEN_SUBTITLE_CONTROLS -> { controlsVisible = true; dialog = HudDialog.SUBS }
-            RemoteShortcutAction.OPEN_AUDIO_CONTROLS -> { controlsVisible = true; dialog = HudDialog.AUDIO }
-            RemoteShortcutAction.OPEN_ASPECT_CONTROLS -> { controlsVisible = true; dialog = HudDialog.ZOOM }
+            RemoteShortcutAction.OPEN_SUBTITLE_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.SUBS }
+            RemoteShortcutAction.OPEN_AUDIO_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.AUDIO }
+            RemoteShortcutAction.OPEN_ASPECT_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.ZOOM }
             RemoteShortcutAction.TOGGLE_PLAYBACK_INFO -> showInfo = !showInfo
             else -> remoteShortcuts.dispatch(action)
         }
