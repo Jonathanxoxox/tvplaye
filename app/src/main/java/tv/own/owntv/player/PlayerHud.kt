@@ -786,17 +786,26 @@ fun PlayerHud(
         }
 
         // List-first: the channel change shows the info bar along the bottom instead of the corner card.
-        if (listFirst && isLive && showPanel && zapInfo != null) {
-            HudControlPanel(
-                player, zapInfo(), remote, onOpenHistoryList, panelFocus, liveOptions,
-                onClose = { showPanel = false }, onActivity = { panelTick++ },
-                modifier = Modifier.align(Alignment.BottomCenter),
-            )
-        } else if (listFirst && isLive && showFlash && !controlsVisible && tuned == null && zapInfo != null) {
-            ZapInfoBar(player, zapInfo(), modifier = Modifier.align(Alignment.BottomCenter))
-        }
+        // The zap bar and OK's panel are one band: it rises from the bottom edge and sinks back, and OK on
+        // the zap bar only adds the tiles under it. The clock comes down from the top with it.
         val clockUp = listFirst && isLive && zapInfo != null && (showPanel || (showFlash && !controlsVisible && tuned == null))
-        if (clockUp) PanelClock(Modifier.align(Alignment.TopEnd))
+        // Whether the band held the tiles last, so it sinks away as it was. [zapInfo] is there for as long as
+        // the player is list-first, so the band can always draw it.
+        var bandTiles by remember { mutableStateOf(false) }
+        if (clockUp && bandTiles != showPanel) bandTiles = showPanel
+        tv.own.owntv.ui.theme.StageAppear(clockUp, Modifier.align(Alignment.BottomCenter), y = 1f, durationMs = 260) {
+            if (zapInfo != null && bandTiles) {
+                HudControlPanel(
+                    player, zapInfo(), remote, onOpenHistoryList, panelFocus, liveOptions,
+                    onClose = { showPanel = false }, onActivity = { panelTick++ },
+                )
+            } else if (zapInfo != null) {
+                ZapInfoBar(player, zapInfo())
+            }
+        }
+        tv.own.owntv.ui.theme.StageAppear(clockUp, Modifier.align(Alignment.TopEnd), y = -1f, durationMs = 260) {
+            PanelClock()
+        }
 
         // The REC badge, and it is deliberately OUTSIDE `if (controlsVisible)`.
         //

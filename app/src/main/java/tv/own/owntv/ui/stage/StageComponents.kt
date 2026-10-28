@@ -63,6 +63,7 @@ import tv.own.owntv.ui.theme.StageRadii
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.ui.theme.ownTvTween
 import tv.own.owntv.ui.theme.stageAccent
+import tv.own.owntv.ui.theme.stageEnter
 import tv.own.owntv.ui.theme.stageShadow
 
 import tv.own.owntv.ui.theme.stageText
@@ -566,6 +567,8 @@ fun StageRow(
 fun StageMenu(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Column(
         modifier
+            // Grows into place from the middle, quicker than a sheet: a menu is a short stop.
+            .stageEnter(scale = 0.94f, fade = true, durationMs = 180)
             .stageGlass(StageRadii.Menu, overContent = true)
             .padding(start = 16.mpx, end = 16.mpx, top = 22.mpx, bottom = 16.mpx),
         content = content,
