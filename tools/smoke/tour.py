@@ -494,6 +494,12 @@ def player_tour():
             break
 
     # Ein Sender ohne Signal: Fehlerbild mit „Erneut versuchen“, ▲▼ zappen weiter weg.
+    # Erst zurück in den Guide (◀ öffnete im Vollbild die Senderliste statt des Menüs).
+    for _ in range(3):
+        if in_fullscreen():
+            key("BACK", wait=2)
+            break
+        key("BACK", wait=1.5)
     to_rail()
     # Auch ohne Vollbild-Bestätigung weiter: das Fehlerbild hält den Fokus auf „Erneut versuchen“.
     start_fullscreen(r"^Kein Signal", group=r"^Dokumentationen")
