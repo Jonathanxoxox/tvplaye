@@ -97,11 +97,18 @@ jobs:
         run: |
           set -e
           work=$(mktemp -d)
-          unzip -p dist/MayoTV.apk assets/dexopt/baseline.prof > "$work/primary.prof"
-          unzip -p dist/MayoTV.apk assets/dexopt/baseline.profm > "$work/primary.profm" || rm -f "$work/primary.profm"
-          echo "primary.prof header:"; head -c 8 "$work/primary.prof" | xxd
-          ls -l "$work"
-          (cd "$work" && zip -q -X "$GITHUB_WORKSPACE/dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.dm" primary.prof $( [ -f primary.profm ] && echo primary.profm ))
+          unzip -p dist/MayoTV.apk assets/dexopt/baseline.prof > "$work/baseline.prof"
+          unzip -p dist/MayoTV.apk assets/dexopt/baseline.profm > "$work/baseline.profm" || rm -f "$work/baseline.profm"
+          echo "baseline.prof header:"; head -c 8 "$work/baseline.prof" | od -c | head -1
+          # The APK carries the profile in format 010; Android 12+ reads 015 only and ignores anything else.
+          # Convert it with the same transcoder the app's profile installer uses at runtime.
+          jar=$(find "$HOME/.gradle" -path '*profileinstaller*' -name classes.jar | head -n1)
+          echo "profileinstaller jar: $jar"
+          mkdir -p "$work/cls"
+          javac -nowarn -cp "$jar" -d "$work/cls" tools/dm/MakeDm.java
+          java -cp "$jar:$work/cls" androidx.profileinstaller.MakeDm "$work/baseline.prof" "$work/baseline.profm" base.apk "$work/primary.prof"
+          echo "primary.prof header:"; head -c 8 "$work/primary.prof" | od -c | head -1
+          (cd "$work" && zip -q -X "$GITHUB_WORKSPACE/dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.dm" primary.prof)
           unzip -l "dist/MayoTV-v1.0.${GITHUB_RUN_NUMBER}.dm"
 
       - uses: actions/upload-artifact@v7
