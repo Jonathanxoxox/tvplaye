@@ -1,0 +1,95 @@
+--------- beginning of main
+--------- beginning of system
+--------- beginning of kernel
+10-28 08:05:06.845 D/OwnTVPerf( 6932): process-begin @0ms
+10-28 08:05:06.975 D/OwnTVPerf( 6932): db-open(sqlite=3.50.1, journal=wal, heal=clean) @129ms
+10-28 08:05:07.021 D/OwnTVPerf( 6932): koin-started @176ms
+10-28 08:05:07.122 D/OwnTVPerf( 6932): db-probed @277ms
+10-28 08:05:07.243 D/OwnTVPerf( 6932): first-composition @397ms
+10-28 08:05:07.423 D/OwnTVPerf( 6932): profile-id-loaded @577ms
+10-28 08:05:07.435 D/OwnTVPerf( 6932): profiles-loaded @589ms
+10-28 08:05:07.435 D/OwnTVPerf( 6932): destination-ready @589ms
+10-28 08:05:10.613 I/MayoJank( 6932): screen=start frames=1 jank=1 worstMs=3178
+10-28 08:05:28.981 I/MayoJank( 6932): screen=start frames=1 jank=1 worstMs=46
+10-28 08:05:41.802 I/MayoJank( 6932): screen=start frames=6 jank=6 worstMs=352
+10-28 08:05:55.011 I/MayoJank( 6932): screen=start frames=6 jank=6 worstMs=65
+10-28 08:06:05.275 I/MayoJank( 6932): screen=start frames=8 jank=8 worstMs=759
+10-28 08:06:17.932 I/MayoJank( 6932): screen=start frames=27 jank=27 worstMs=248
+10-28 08:06:30.263 I/MayoJank( 6932): screen=start frames=11 jank=11 worstMs=144
+10-28 08:06:44.256 I/MayoJank( 6932): screen=start frames=8 jank=8 worstMs=349
+10-28 08:06:54.358 I/MayoJank( 6932): screen=start frames=19 jank=12 worstMs=69
+10-28 08:07:06.540 I/MayoJank( 6932): screen=start frames=16 jank=13 worstMs=133
+10-28 08:09:32.041 I/MayoJank( 6932): screen=start frames=14 jank=14 worstMs=190
+10-28 08:10:40.282 D/OwnTVPerf( 6932): shell-composed @333436ms
+10-28 08:10:40.537 I/MayoJank( 6932): screen=start frames=4 jank=4 worstMs=201
+10-28 08:10:40.538 I/MayoJank( 6932): screen=HOME:NONE frames=1 jank=1 worstMs=319
+10-28 08:10:40.596 D/OwnTVPerf( 6932): home-data @333750ms
+10-28 08:10:52.949 I/MayoJank( 6932): screen=HOME:NONE frames=34 jank=32 worstMs=313
+10-28 08:11:08.887 I/MayoJank( 6932): screen=HOME:NONE frames=3 jank=1 worstMs=37
+10-28 08:11:08.887 I/MayoJank( 6932): screen=MOVIES:NONE frames=30 jank=30 worstMs=875
+10-28 08:11:18.916 I/MayoJank( 6932): screen=MOVIES:NONE frames=20 jank=19 worstMs=900
+10-28 08:11:30.999 I/MayoJank( 6932): screen=MOVIES:NONE frames=8 jank=8 worstMs=182
+10-28 08:11:41.632 I/MayoJank( 6932): screen=MOVIES:NONE frames=12 jank=11 worstMs=81
+10-28 08:11:53.367 I/MayoJank( 6932): screen=MOVIES:NONE frames=5 jank=5 worstMs=54
+10-28 08:12:09.149 I/MayoJank( 6932): screen=MOVIES:NONE frames=3 jank=3 worstMs=52
+10-28 08:12:09.149 I/MayoJank( 6932): screen=SERIES:NONE frames=31 jank=31 worstMs=181
+10-28 08:12:19.205 I/MayoJank( 6932): screen=SERIES:NONE frames=24 jank=23 worstMs=187
+10-28 08:12:30.850 I/MayoJank( 6932): screen=SERIES:NONE frames=4 jank=4 worstMs=192
+10-28 08:12:41.396 I/MayoJank( 6932): screen=SERIES:NONE frames=12 jank=11 worstMs=74
+10-28 08:12:55.325 I/MayoJank( 6932): screen=SERIES:NONE frames=7 jank=5 worstMs=95
+10-28 08:13:06.005 I/MayoJank( 6932): screen=SERIES:NONE frames=4 jank=4 worstMs=43
+10-28 08:13:12.728 D/OwnTVPerf(11039): process-begin @0ms
+10-28 08:13:12.758 D/OwnTVPerf(11039): db-open(sqlite=3.50.1, journal=wal, heal=clean) @29ms
+10-28 08:13:12.813 D/OwnTVPerf(11039): koin-started @84ms
+10-28 08:13:12.881 D/OwnTVPerf(11039): db-probed @152ms
+10-28 08:13:12.915 D/OwnTVPerf(11039): first-composition @187ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): profile-id-loaded @345ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): profiles-loaded @345ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): destination-ready @345ms
+10-28 08:13:13.076 D/OwnTVPerf(11039): shell-composed @348ms
+10-28 08:13:14.658 I/MayoJank(11039): screen=HOME:NONE frames=1 jank=1 worstMs=1589
+10-28 08:13:14.678 D/OwnTVPerf(11039): home-data @1949ms
+10-28 08:13:24.847 D/OwnTVPerf(11126): process-begin @0ms
+10-28 08:13:24.943 D/OwnTVPerf(11126): koin-started @95ms
+10-28 08:13:24.979 D/OwnTVPerf(11126): db-open(sqlite=3.50.1, journal=wal, heal=clean) @132ms
+10-28 08:13:24.997 D/OwnTVPerf(11126): db-probed @150ms
+10-28 08:13:25.062 D/OwnTVPerf(11126): first-composition @214ms
+10-28 08:13:25.158 D/OwnTVPerf(11126): profile-id-loaded @310ms
+10-28 08:13:25.229 D/OwnTVPerf(11126): profiles-loaded @382ms
+10-28 08:13:25.229 D/OwnTVPerf(11126): destination-ready @382ms
+10-28 08:13:25.235 D/OwnTVPerf(11126): shell-composed @388ms
+10-28 08:13:27.118 I/MayoJank(11126): screen=HOME:NONE frames=1 jank=1 worstMs=1899
+10-28 08:13:27.163 D/OwnTVPerf(11126): home-data @2315ms
+10-28 08:13:37.293 D/OwnTVPerf(11206): process-begin @0ms
+10-28 08:13:37.366 D/OwnTVPerf(11206): db-open(sqlite=3.50.1, journal=wal, heal=clean) @74ms
+10-28 08:13:37.383 D/OwnTVPerf(11206): koin-started @90ms
+10-28 08:13:37.444 D/OwnTVPerf(11206): db-probed @151ms
+10-28 08:13:37.482 D/OwnTVPerf(11206): first-composition @189ms
+10-28 08:13:37.591 D/OwnTVPerf(11206): profile-id-loaded @298ms
+10-28 08:13:37.657 D/OwnTVPerf(11206): profiles-loaded @365ms
+10-28 08:13:37.658 D/OwnTVPerf(11206): destination-ready @365ms
+10-28 08:13:37.660 D/OwnTVPerf(11206): shell-composed @368ms
+10-28 08:13:39.207 I/MayoJank(11206): screen=HOME:NONE frames=1 jank=1 worstMs=1538
+10-28 08:13:39.245 D/OwnTVPerf(11206): home-data @1952ms
+10-28 08:13:49.417 D/OwnTVPerf(11290): process-begin @0ms
+10-28 08:13:49.476 D/OwnTVPerf(11290): db-open(sqlite=3.50.1, journal=wal, heal=clean) @59ms
+10-28 08:13:49.525 D/OwnTVPerf(11290): koin-started @109ms
+10-28 08:13:49.561 D/OwnTVPerf(11290): db-probed @144ms
+10-28 08:13:49.592 D/OwnTVPerf(11290): first-composition @176ms
+10-28 08:13:49.699 D/OwnTVPerf(11290): profile-id-loaded @282ms
+10-28 08:13:49.767 D/OwnTVPerf(11290): profiles-loaded @350ms
+10-28 08:13:49.767 D/OwnTVPerf(11290): destination-ready @350ms
+10-28 08:13:49.770 D/OwnTVPerf(11290): shell-composed @353ms
+10-28 08:13:51.857 I/MayoJank(11290): screen=HOME:NONE frames=1 jank=1 worstMs=2089
+10-28 08:13:51.907 D/OwnTVPerf(11290): home-data @2491ms
+10-28 08:14:01.986 D/OwnTVPerf(11380): process-begin @0ms
+10-28 08:14:02.021 D/OwnTVPerf(11380): koin-started @36ms
+10-28 08:14:02.064 D/OwnTVPerf(11380): db-open(sqlite=3.50.1, journal=wal, heal=clean) @79ms
+10-28 08:14:02.081 D/OwnTVPerf(11380): db-probed @95ms
+10-28 08:14:02.160 D/OwnTVPerf(11380): first-composition @174ms
+10-28 08:14:02.259 D/OwnTVPerf(11380): profile-id-loaded @273ms
+10-28 08:14:02.368 D/OwnTVPerf(11380): profiles-loaded @382ms
+10-28 08:14:02.368 D/OwnTVPerf(11380): destination-ready @382ms
+10-28 08:14:02.371 D/OwnTVPerf(11380): shell-composed @386ms
+10-28 08:14:04.095 I/MayoJank(11380): screen=HOME:NONE frames=1 jank=1 worstMs=1743
+10-28 08:14:04.133 D/OwnTVPerf(11380): home-data @2148ms

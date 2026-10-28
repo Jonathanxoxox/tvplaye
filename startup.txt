@@ -1,0 +1,5 @@
+TotalTime: 2022
+TotalTime: 2382
+TotalTime: 2000
+TotalTime: 2576
+TotalTime: 2171

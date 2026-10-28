@@ -1,0 +1,68 @@
+Kaltstart TotalTime ms: Median 2171 (alle: [2000, 2022, 2171, 2382, 2576])
+Bildschirm: Frames, ruckelnd (>1.5 Frames), Anteil, längster Frame ms
+start: 121, 111, 91.7 %, 3178
+SERIES:NONE: 82, 78, 95.1 %, 192
+MOVIES:NONE: 78, 76, 97.4 %, 900
+HOME:NONE: 43, 39, 90.7 %, 2089
+
+Start-Stempel (OwnTVPerf):
+10-28 08:05:06.845 D/OwnTVPerf( 6932): process-begin @0ms
+10-28 08:05:06.975 D/OwnTVPerf( 6932): db-open(sqlite=3.50.1, journal=wal, heal=clean) @129ms
+10-28 08:05:07.021 D/OwnTVPerf( 6932): koin-started @176ms
+10-28 08:05:07.122 D/OwnTVPerf( 6932): db-probed @277ms
+10-28 08:05:07.243 D/OwnTVPerf( 6932): first-composition @397ms
+10-28 08:05:07.423 D/OwnTVPerf( 6932): profile-id-loaded @577ms
+10-28 08:05:07.435 D/OwnTVPerf( 6932): profiles-loaded @589ms
+10-28 08:05:07.435 D/OwnTVPerf( 6932): destination-ready @589ms
+10-28 08:10:40.282 D/OwnTVPerf( 6932): shell-composed @333436ms
+10-28 08:10:40.596 D/OwnTVPerf( 6932): home-data @333750ms
+10-28 08:13:12.728 D/OwnTVPerf(11039): process-begin @0ms
+10-28 08:13:12.758 D/OwnTVPerf(11039): db-open(sqlite=3.50.1, journal=wal, heal=clean) @29ms
+10-28 08:13:12.813 D/OwnTVPerf(11039): koin-started @84ms
+10-28 08:13:12.881 D/OwnTVPerf(11039): db-probed @152ms
+10-28 08:13:12.915 D/OwnTVPerf(11039): first-composition @187ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): profile-id-loaded @345ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): profiles-loaded @345ms
+10-28 08:13:13.073 D/OwnTVPerf(11039): destination-ready @345ms
+10-28 08:13:13.076 D/OwnTVPerf(11039): shell-composed @348ms
+10-28 08:13:14.678 D/OwnTVPerf(11039): home-data @1949ms
+10-28 08:13:24.847 D/OwnTVPerf(11126): process-begin @0ms
+10-28 08:13:24.943 D/OwnTVPerf(11126): koin-started @95ms
+10-28 08:13:24.979 D/OwnTVPerf(11126): db-open(sqlite=3.50.1, journal=wal, heal=clean) @132ms
+10-28 08:13:24.997 D/OwnTVPerf(11126): db-probed @150ms
+10-28 08:13:25.062 D/OwnTVPerf(11126): first-composition @214ms
+10-28 08:13:25.158 D/OwnTVPerf(11126): profile-id-loaded @310ms
+10-28 08:13:25.229 D/OwnTVPerf(11126): profiles-loaded @382ms
+10-28 08:13:25.229 D/OwnTVPerf(11126): destination-ready @382ms
+10-28 08:13:25.235 D/OwnTVPerf(11126): shell-composed @388ms
+10-28 08:13:27.163 D/OwnTVPerf(11126): home-data @2315ms
+10-28 08:13:37.293 D/OwnTVPerf(11206): process-begin @0ms
+10-28 08:13:37.366 D/OwnTVPerf(11206): db-open(sqlite=3.50.1, journal=wal, heal=clean) @74ms
+10-28 08:13:37.383 D/OwnTVPerf(11206): koin-started @90ms
+10-28 08:13:37.444 D/OwnTVPerf(11206): db-probed @151ms
+10-28 08:13:37.482 D/OwnTVPerf(11206): first-composition @189ms
+10-28 08:13:37.591 D/OwnTVPerf(11206): profile-id-loaded @298ms
+10-28 08:13:37.657 D/OwnTVPerf(11206): profiles-loaded @365ms
+10-28 08:13:37.658 D/OwnTVPerf(11206): destination-ready @365ms
+10-28 08:13:37.660 D/OwnTVPerf(11206): shell-composed @368ms
+10-28 08:13:39.245 D/OwnTVPerf(11206): home-data @1952ms
+10-28 08:13:49.417 D/OwnTVPerf(11290): process-begin @0ms
+10-28 08:13:49.476 D/OwnTVPerf(11290): db-open(sqlite=3.50.1, journal=wal, heal=clean) @59ms
+10-28 08:13:49.525 D/OwnTVPerf(11290): koin-started @109ms
+10-28 08:13:49.561 D/OwnTVPerf(11290): db-probed @144ms
+10-28 08:13:49.592 D/OwnTVPerf(11290): first-composition @176ms
+10-28 08:13:49.699 D/OwnTVPerf(11290): profile-id-loaded @282ms
+10-28 08:13:49.767 D/OwnTVPerf(11290): profiles-loaded @350ms
+10-28 08:13:49.767 D/OwnTVPerf(11290): destination-ready @350ms
+10-28 08:13:49.770 D/OwnTVPerf(11290): shell-composed @353ms
+10-28 08:13:51.907 D/OwnTVPerf(11290): home-data @2491ms
+10-28 08:14:01.986 D/OwnTVPerf(11380): process-begin @0ms
+10-28 08:14:02.021 D/OwnTVPerf(11380): koin-started @36ms
+10-28 08:14:02.064 D/OwnTVPerf(11380): db-open(sqlite=3.50.1, journal=wal, heal=clean) @79ms
+10-28 08:14:02.081 D/OwnTVPerf(11380): db-probed @95ms
+10-28 08:14:02.160 D/OwnTVPerf(11380): first-composition @174ms
+10-28 08:14:02.259 D/OwnTVPerf(11380): profile-id-loaded @273ms
+10-28 08:14:02.368 D/OwnTVPerf(11380): profiles-loaded @382ms
+10-28 08:14:02.368 D/OwnTVPerf(11380): destination-ready @382ms
+10-28 08:14:02.371 D/OwnTVPerf(11380): shell-composed @386ms
+10-28 08:14:04.133 D/OwnTVPerf(11380): home-data @2148ms
