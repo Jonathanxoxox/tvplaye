@@ -43,6 +43,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Text
@@ -52,7 +53,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import tv.own.owntv.R
 import tv.own.owntv.core.i18n.HorizontalDirection
-import tv.own.owntv.core.live.EpgNowNext
 import tv.own.owntv.core.i18n.horizontalDirection
 import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutPress
@@ -213,7 +213,7 @@ fun PlayerHud(
     // switches the live player to the classic IPTV remote: OK shows the info bar with the control panel,
     // Left the channel list, Right the channel before, Up/Down change channel (held: history / search),
     // long OK or Menu the options panel, long Menu the guide.
-    zapInfo: (@Composable () -> EpgNowNext?)? = null,
+    zapInfo: (@Composable () -> ZapInfo?)? = null,
     // The classic remote's extra targets (guide, search, the control panel's channel tiles). Grouped in
     // one value: one more parameter each pushed this function past what the release build verifies.
     remote: LiveRemoteActions? = null,
@@ -545,7 +545,7 @@ fun PlayerHud(
             onToggleFavorite?.let { toggle ->
                 add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { close(); toggle() })
             }
-            onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.HISTORY) { close(); prev() }) }
+            onPreviousChannel?.let { prev -> add(LiveOption(stringResource(R.string.player_previous_channel), OwnTVIcon.SWAP) { close(); prev() }) }
             onOpenHistoryList?.let { history -> add(LiveOption(stringResource(R.string.content_category_recently_watched), OwnTVIcon.HISTORY) { close(); history() }) }
             if (onJumpBack != null) add(LiveOption(stringResource(R.string.player_tool_catchup), OwnTVIcon.CATCHUP) { open(HudDialog.JUMP_BACK) })
             add(LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { open(HudDialog.AUDIO) })
@@ -941,6 +941,17 @@ fun PlayerHud(
         // Status overlay (always shown).
         when {
             error != null -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                // Which channel failed: the list-first player shows no bar over a dead channel, so the error
+                // alone left "which one was that?" open while ▲▼ zap on from it.
+                val failedChannel = if (listFirst && isLive) zapInfo?.invoke()?.channel else null
+                failedChannel?.title?.takeIf { it.isNotBlank() }?.let { name ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                        val line = tv.own.owntv.ui.theme.stageText(28, 600)
+                        failedChannel?.subtitle?.takeIf { it.isNotBlank() }?.let { Text(it, style = line, color = Color.White.copy(alpha = 0.5f), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                        Text(name, style = line, color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                    Spacer(Modifier.height(10.dp))
+                }
                 Text(stringResource(R.string.player_playback_error), style = tv.own.owntv.ui.theme.stageText(40, 600), color = Color.White)
                 Spacer(Modifier.height(8.dp))
                 error?.let {
@@ -1152,7 +1163,7 @@ class LiveRemoteActions(
 @Composable
 private fun HudControlPanel(
     player: PlaybackEngine,
-    guide: EpgNowNext?,
+    info: ZapInfo?,
     remote: LiveRemoteActions?,
     onOpenHistoryList: (() -> Unit)?,
     focus: FocusRequester,
@@ -1175,12 +1186,13 @@ private fun HudControlPanel(
         recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { onClose(); ch.onClick() }) }
     }
     val u = rememberScreenUnits()
+    val guide = info?.guide
     // The panel opens on a moment; the seek line and minutes left are read from it, as in the zap bar.
     val nowMs = remember(guide) { System.currentTimeMillis() }
     // Proportions of the classic player at 1920×1080: the programme block from y 622, the seek line
     // at 790, tiles 236×172 from 820, the arrow at 1030 (Jonathan's photo, 27 Oct 2026).
     Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60))) {
-        PlayerZapInfoBlock(player, guide, nowMs)
+        PlayerZapInfoBlock(player, info, nowMs)
         Spacer(Modifier.height(u.dp(8)))
         ProgrammeSeekLine(guide, nowMs)
         Column {

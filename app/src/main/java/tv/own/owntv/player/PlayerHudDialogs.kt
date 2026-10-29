@@ -317,7 +317,8 @@ internal fun ZoomDialog(current: ZoomMode, onSelect: (ZoomMode) -> Unit, onDismi
     BackHandler { onDismiss() }
     // Land focus on the current mode (not always the first row) so re-opening starts on your selection.
     val selectedIndex = ZoomMode.entries.indexOf(current).coerceAtLeast(0)
-    DialogScaffold(title = stringResource(R.string.settings_player_zoom), onDismiss = onDismiss) {
+    // Named like the button that opens it ("Format"), not like the setting.
+    DialogScaffold(title = stringResource(R.string.player_tool_aspect), onDismiss = onDismiss) {
         items(ZoomMode.entries.size) { index ->
             val mode = ZoomMode.entries[index]
             OptionRow(label = stringResource(mode.labelRes), selected = mode == current, modifier = if (index == selectedIndex) Modifier.focusRequester(focus) else Modifier, onClick = { onSelect(mode) })
