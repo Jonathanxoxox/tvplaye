@@ -5,6 +5,7 @@ import android.graphics.drawable.Animatable2
 import android.graphics.drawable.AnimatedVectorDrawable
 import android.graphics.drawable.Drawable
 import android.os.SystemClock
+import android.provider.Settings
 import android.view.View
 import android.widget.ImageView
 import androidx.annotation.DrawableRes
@@ -20,8 +21,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.res.ResourcesCompat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
@@ -96,11 +99,20 @@ fun LandmarkLoader(
     color: Color = tv.own.owntv.ui.theme.stageAccent.accent,
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
+    // The box's animator scale, which the render thread plays every turn at (ValueAnimator only tells from API 33).
+    val animatorScale = remember(context) {
+        runCatching {
+            Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f)
+        }.getOrDefault(1f)
+    }
     var stillOnly by remember { mutableStateOf(false) }
-    val moving = !stillOnly && animationsOn && ValueAnimator.areAnimatorsEnabled()
+    val moving = !stillOnly && animationsOn && animatorScale > 0f && ValueAnimator.areAnimatorsEnabled()
     var landmark by remember { mutableStateOf(takeLandmark()) }
     // A copy of its own: two loaders showing the same landmark must not share one animation.
-    val picture = remember(landmark, moving) { context.getDrawable(landmark.res)!!.mutate() as AnimatedVectorDrawable }
+    val picture = remember(resources, landmark, moving) {
+        ResourcesCompat.getDrawable(resources, landmark.res, null)!!.mutate() as AnimatedVectorDrawable
+    }
     // When the render thread begins the turn, which is when the picture is first drawn, not when it is asked to.
     val started = remember(picture) { CompletableDeferred<Long>() }
     DisposableEffect(picture) {
@@ -120,8 +132,8 @@ fun LandmarkLoader(
     }
     LaunchedEffect(picture) {
         if (moving) {
-            // The render thread plays the turn at the box's animator scale, so the moment of nothing comes then too.
-            val turn = (TurnMs * ValueAnimator.getDurationScale()).toLong().coerceAtLeast(1L)
+            // The moment of nothing comes at the box's animator scale too.
+            val turn = (TurnMs * animatorScale).toLong().coerceAtLeast(1L)
             val from = withTimeoutOrNull(StartGraceMs) { started.await() }
             if (from == null) {
                 stillOnly = true
