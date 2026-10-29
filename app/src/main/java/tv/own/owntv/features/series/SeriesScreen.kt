@@ -144,7 +144,7 @@ import tv.own.owntv.ui.components.rememberInAppToast
 import tv.own.owntv.core.model.ContentMenu
 import tv.own.owntv.ui.components.MenuAction
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.ResumeDialog
 import tv.own.owntv.ui.components.SetTmdbNameDialog
 import tv.own.owntv.ui.components.TrailerPlayerScreen
@@ -1575,7 +1575,7 @@ private fun EpisodeView(
             )
         val openMenu: (EpisodeEntity) -> Unit = { ep -> contextEpisode = ep; contextEpisodeId = ep.id }
         when {
-            loading && episodes.isEmpty() -> Box(epArea, contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 48) }
+            loading && episodes.isEmpty() -> Box(epArea, contentAlignment = Alignment.Center) { LandmarkLoader(sizeDp = 64) }
             episodes.isEmpty() -> Box(epArea, contentAlignment = Alignment.Center) {
                 val failure = episodesFailure
                 Text(

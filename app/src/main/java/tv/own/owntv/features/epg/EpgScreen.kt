@@ -79,7 +79,7 @@ import tv.own.owntv.ui.components.MoveOrderOverlay
 import tv.own.owntv.features.live.liveCategoryEntries
 import tv.own.owntv.features.live.liveEpgShiftLabel
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.stage.StageButton
 import tv.own.owntv.ui.stage.shownColor
 import tv.own.owntv.ui.theme.StageColors
@@ -653,7 +653,7 @@ fun EpgScreen(
         // The grid: ruler at 518, rows from 566.
         Box(Modifier.fillMaxWidth().weight(1f).padding(top = 18.mpx)) {
             when {
-                state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 44) }
+                state.loading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { LandmarkLoader(sizeDp = 64) }
                 // Live TV lists every channel of the group, guide or not: an empty grid is an empty group.
                 liveMode && state.channels.isEmpty() && (state.message == null || state.message == EpgMessage.MismatchedIds) ->
                     GuideEmpty(

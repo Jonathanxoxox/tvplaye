@@ -38,7 +38,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.Key
 import tv.own.owntv.ui.components.trapAllFocusExit
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 
 /** Manual EPG matching: pick which guide channel this channel uses (search across all EPG feeds).
  *  Shared with the Guide screen (long-press a channel → Match EPG). */
@@ -94,7 +94,7 @@ internal fun EpgMatchDialog(
                 Spacer(Modifier.height(12.mpx))
                 val list = results
                 when {
-                    list == null -> androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(120.mpx), contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 24) }
+                    list == null -> androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(120.mpx), contentAlignment = Alignment.Center) { LandmarkLoader(sizeDp = 24) }
                     list.isEmpty() -> Text(
                         if (query.isBlank()) stringResource(R.string.content_no_epg_data) else stringResource(R.string.content_no_guide_channels, query),
                         style = tv.own.owntv.ui.theme.stageText(18, 500), color = tv.own.owntv.ui.theme.StageColors.Muted,

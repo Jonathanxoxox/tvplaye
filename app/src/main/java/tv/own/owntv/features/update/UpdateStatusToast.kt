@@ -30,7 +30,7 @@ import tv.own.owntv.ui.theme.StageColors
 import tv.own.owntv.ui.theme.stageText
 import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.core.update.UpdateManager
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 
 /**
  * Small semi-transparent status card (top-right corner) for the automatic startup update check:
@@ -66,7 +66,7 @@ fun UpdateStatusToast(onDone: () -> Unit, onViewChangelog: () -> Unit, modifier:
     ) {
         when (val s = state) {
             UpdateManager.State.Idle, UpdateManager.State.Checking -> Row(verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 18)
+                LandmarkLoader(sizeDp = 18)
                 Spacer(Modifier.width(14.mpx))
                 Text(stringResource(R.string.update_checking), style = stageText(17, 500), color = StageColors.Muted)
             }
@@ -95,7 +95,7 @@ fun UpdateStatusToast(onDone: () -> Unit, onViewChangelog: () -> Unit, modifier:
                 }
             }
             is UpdateManager.State.Downloading -> Row(verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 18)
+                LandmarkLoader(sizeDp = 18)
                 Spacer(Modifier.width(14.mpx))
                 Text(stringResource(R.string.update_downloading, s.percent), style = stageText(17, 500), color = StageColors.Muted)
             }

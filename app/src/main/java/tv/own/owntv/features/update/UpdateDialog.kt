@@ -33,7 +33,7 @@ import tv.own.owntv.ui.theme.mpxSp
 import tv.own.owntv.ui.theme.stageText
 import tv.own.owntv.core.update.UpdateManager
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -101,7 +101,7 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
         val body = stageText(18, 400).copy(lineHeight = (18 * 1.45f).mpxSp)
         when (val s = state) {
             UpdateManager.State.Idle, UpdateManager.State.Checking -> Row(verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 28)
+                LandmarkLoader(sizeDp = 28)
                 Spacer(Modifier.width(16.mpx))
                 Text(stringResource(R.string.update_checking), style = body, color = StageColors.Muted)
             }
@@ -128,7 +128,7 @@ fun UpdateDialog(onDismiss: () -> Unit, checkOnOpen: Boolean = false) {
             }
             is UpdateManager.State.Downloading -> {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    OwnTVSpinner(sizeDp = 28)
+                    LandmarkLoader(sizeDp = 28)
                     Spacer(Modifier.width(16.mpx))
                     Text(stringResource(R.string.update_downloading, s.percent), style = body, color = StageColors.Text)
                 }

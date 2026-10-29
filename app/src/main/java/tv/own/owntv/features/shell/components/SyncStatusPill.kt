@@ -37,7 +37,7 @@ import tv.own.owntv.core.sync.SyncResult
 import tv.own.owntv.core.util.classifySyncFailure
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.compactCount
 import tv.own.owntv.ui.components.displayText
 
@@ -168,7 +168,7 @@ fun SyncStatusPill(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                OwnTVSpinner(sizeDp = 14)
+                LandmarkLoader(sizeDp = 14)
                 Text(
                     line.text(),
                     style = stageText(16, 600),

@@ -88,7 +88,7 @@ internal fun ShellVideoLayer(
             if (inCorner) {
                 val cornerState by liveVm.previewEngine.state.collectAsStateWithLifecycle()
                 if (cornerState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) {
-                    tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 24, modifier = Modifier.align(Alignment.Center))
+                    tv.own.owntv.ui.components.LandmarkLoader(sizeDp = 24, modifier = Modifier.align(Alignment.Center))
                 }
             }
         } else {

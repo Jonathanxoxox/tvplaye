@@ -1,48 +1,81 @@
 package tv.own.owntv.ui.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
+import tv.own.owntv.R
+import tv.own.owntv.ui.theme.ownTvTween
 
-/** Lightweight indeterminate spinner drawn with Canvas (no Material dependency). */
+/** The pictures [LandmarkLoader] goes through, tall and wide by turns. All are 120 × 80 with the ground at the same line. */
+private val Landmarks = intArrayOf(
+    R.drawable.landmark_elbphilharmonie,
+    R.drawable.landmark_stadtmusikanten,
+    R.drawable.landmark_volksparkstadion,
+    R.drawable.landmark_michel,
+    R.drawable.landmark_koehlbrandbruecke,
+    R.drawable.landmark_roter_sand,
+    R.drawable.landmark_holstentor,
+    R.drawable.landmark_rickmer_rickmers,
+)
+
+/** How long one landmark stands before the next fades in, and how long that fade takes. */
+private const val LandmarkHoldMs = 1600L
+private const val LandmarkFadeMs = 450
+
+/**
+ * The next landmark any loader shows. Shared, so the tour goes on from one wait to the next: a channel that
+ * loads in a second shows a new picture each time instead of the Elbphilharmonie every time.
+ */
+private var nextLandmark = 0
+
+private fun takeLandmark(): Int = nextLandmark.also { nextLandmark = (it + 1) % Landmarks.size }
+
+/**
+ * What the app shows while it waits: the Elbphilharmonie, the Bremen Town Musicians, the Volksparkstadion
+ * and more landmarks of the north, one after the other, in the accent. [sizeDp] is its height; it is
+ * half as wide again, as the pictures are.
+ *
+ * It took the place of a spinning ring (29 Oct 2026, Jonathan), which stuttered whenever the box was busy —
+ * and loading is exactly when it is. A picture that stands still and fades to the next every 1.6 s has
+ * nothing to stutter between fades. With Animations off the pictures change without the fade.
+ */
 @Composable
-fun OwnTVSpinner(
+fun LandmarkLoader(
     modifier: Modifier = Modifier,
     sizeDp: Int = 44,
     color: Color = tv.own.owntv.ui.theme.stageAccent.accent,
 ) {
-    val transition = rememberInfiniteTransition(label = "spinner")
-    val angle by transition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing)),
-        label = "spinnerAngle",
-    )
-    Canvas(modifier = modifier.size(sizeDp.dp)) {
-        val d = size.minDimension
-        val stroke = d * 0.11f
-        drawArc(
-            color = color,
-            startAngle = angle,
-            sweepAngle = 270f,
-            useCenter = false,
-            topLeft = Offset(stroke / 2f, stroke / 2f),
-            size = Size(d - stroke, d - stroke),
-            style = Stroke(width = stroke, cap = StrokeCap.Round),
+    var shown by remember { mutableIntStateOf(takeLandmark()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(LandmarkHoldMs)
+            shown = takeLandmark()
+        }
+    }
+    Crossfade(
+        targetState = shown,
+        modifier = modifier.size(width = (sizeDp * 1.5f).dp, height = sizeDp.dp),
+        animationSpec = ownTvTween(LandmarkFadeMs),
+        label = "landmark",
+    ) { landmark ->
+        Image(
+            painterResource(Landmarks[landmark]),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            colorFilter = ColorFilter.tint(color),
         )
     }
 }
-

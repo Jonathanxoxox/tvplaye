@@ -36,7 +36,7 @@ import tv.own.owntv.core.settings.EpgRefresh
 import tv.own.owntv.core.settings.PlaylistRefresh
 import tv.own.owntv.ui.components.rememberDialogFocusRestore
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.trapAllFocusExit
 import tv.own.owntv.core.sync.work.EpgSyncState
 import tv.own.owntv.core.util.classifySyncFailure
@@ -485,7 +485,7 @@ private fun PlaylistEpgPicker(
         LaunchedEffect(options) { if (!options.isNullOrEmpty()) { kotlinx.coroutines.delay(60); runCatching { firstFocus.requestFocus() } } }
         val opts = options
         when {
-            opts == null -> Box(Modifier.fillMaxWidth().height(80.mpx), contentAlignment = Alignment.Center) { OwnTVSpinner(sizeDp = 28) }
+            opts == null -> Box(Modifier.fillMaxWidth().height(80.mpx), contentAlignment = Alignment.Center) { LandmarkLoader(sizeDp = 28) }
             opts.isEmpty() -> Text(stringResource(R.string.settings_epg_sources_none_playlist), style = tv.own.owntv.ui.theme.stageText(17, 500), color = tv.own.owntv.ui.theme.StageColors.Muted)
             else -> Column(Modifier.trapAllFocusExit().focusGroup()) {
                 opts.forEach { opt ->
