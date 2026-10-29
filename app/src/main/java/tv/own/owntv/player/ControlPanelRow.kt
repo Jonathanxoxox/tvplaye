@@ -16,10 +16,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +35,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -85,6 +88,9 @@ internal fun ControlPanelRow(
 @Composable
 private fun PanelTileView(tile: PanelTile, u: ScreenUnits, modifier: Modifier, onActivity: () -> Unit) {
     var focused by remember { mutableStateOf(false) }
+    // OK acts on its release, and only for a press that began on this tile: the press that brought the
+    // film's panel up lands its release here, and must not pause the film it just showed.
+    var pressed by remember { mutableStateOf(false) }
     val accent = stageAccent.accent
     Box(
         modifier
@@ -92,10 +98,12 @@ private fun PanelTileView(tile: PanelTile, u: ScreenUnits, modifier: Modifier, o
             .scale(if (focused) 1.08f else 1f)
             .clip(RoundedCornerShape(u.dp(8)))
             .background(accent.copy(alpha = if (focused) 0.62f else 0.3f))
-            .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
+            .onFocusChanged { focused = it.isFocused; if (!it.isFocused) pressed = false; if (it.isFocused) onActivity() }
             .onKeyEvent { e ->
                 val ok = e.key == Key.DirectionCenter || e.key == Key.Enter || e.key == Key.NumPadEnter
-                if (ok && e.type == KeyEventType.KeyUp) { tile.onClick(); true } else ok
+                if (ok && e.type == KeyEventType.KeyDown && e.nativeKeyEvent.repeatCount == 0) pressed = true
+                if (ok && e.type == KeyEventType.KeyUp) { if (pressed) tile.onClick(); pressed = false }
+                ok
             }
             .focusable(),
         contentAlignment = Alignment.Center,
@@ -128,6 +136,54 @@ private fun PanelTileView(tile: PanelTile, u: ScreenUnits, modifier: Modifier, o
                     overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
                 )
             }
+        }
+    }
+}
+
+/**
+ * The lower half of the player's control panel, the same for a channel and a film: the tile row and,
+ * on ▼, the settings under it; ▲ folds them away again. Until then the arrow says they are there.
+ */
+@Composable
+internal fun ControlPanelRows(
+    tiles: List<PanelTile>,
+    focus: FocusRequester,
+    settings: List<LiveOption>,
+    onActivity: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val u = rememberScreenUnits()
+    var settingsOpen by remember { mutableStateOf(false) }
+    val settingsFocus = remember { FocusRequester() }
+    LaunchedEffect(settingsOpen) {
+        if (settingsOpen) { withFrameNanos { }; runCatching { settingsFocus.requestFocus() } }
+    }
+    Column(modifier) {
+        if (tiles.isNotEmpty()) {
+            ControlPanelRow(
+                tiles, focus, onActivity = onActivity,
+                // ▼ from the tiles opens the settings under them.
+                modifier = Modifier.onPreviewKeyEvent { e ->
+                    if (e.key == Key.DirectionDown && settings.isNotEmpty()) {
+                        if (e.type == KeyEventType.KeyDown) { settingsOpen = true; onActivity() }
+                        true
+                    } else false
+                },
+            )
+        }
+        when {
+            settings.isEmpty() -> Spacer(Modifier.height(u.dp(60)))
+            settingsOpen -> SettingsPanelRow(
+                settings, settingsFocus, onActivity,
+                // ▲ back to the tiles; the settings fold away again.
+                modifier = Modifier.onPreviewKeyEvent { e ->
+                    if (e.key == Key.DirectionUp && tiles.isNotEmpty()) {
+                        if (e.type == KeyEventType.KeyDown) { settingsOpen = false; runCatching { focus.requestFocus() }; onActivity() }
+                        true
+                    } else false
+                },
+            )
+            else -> MoreBelowHint()
         }
     }
 }
