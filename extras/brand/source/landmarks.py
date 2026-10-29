@@ -1,22 +1,86 @@
-"""The landmarks the loading indicator shows (LandmarkLoader), drawn as path data.
+"""The landmarks the loading indicator shows (LandmarkLoader), drawn and animated as path data.
 
     python3 extras/brand/source/landmarks.py app/src/main/res/drawable [svg-preview-dir]
 
-writes one Android vector per landmark (landmark_<name>.xml) and, when asked, an SVG of each for a quick look
+writes one animated vector per landmark (landmark_<name>.xml) and, when asked, a still SVG of each for a quick look
 in the browser. Change a picture here and run it again rather than editing the vectors by hand.
 
-Every picture is 120 x 80 with the ground at y = 75, so tall and wide ones stand on the same line.
-A layer is (path data, alpha, even-odd?[, colour]) or a stroke ("stroke", path data, alpha, width). Layers are
-black unless they name a colour; a picture with colours of its own is shown as it is, not tinted. Path data may be a
-list of pieces, each its own <path>: solid parts that overlap must not share an even-odd path (the overlap
-would become a hole), and only opaque layers may be split, as translucent pieces would add up where they overlap.
+Every picture is 120 x 80 with the ground at y = 75, so tall and wide ones stand on the same line. A picture is a
+list of Fill, Stroke and Group, black unless a Fill names a colour; a picture with colours of its own is shown as it
+is, not tinted. Fill path data may be a list of pieces, each its own <path>: solid parts that overlap must not share
+an even-odd path (the overlap would become a hole), and only opaque fills may be split, as translucent pieces would
+add up where they overlap.
+
+The motion runs on the render thread (an AnimatedVectorDrawable does there), so it stays smooth while the app is
+busy loading. Only what the render thread can animate is used: a group's rotation, scale and translation, a path's
+alpha and trim, the whole picture's alpha. Every picture fades in, stands, fades out and leaves a moment of nothing
+in one CYCLE; the loader changes picture in that moment (LandmarkLoader's Swap* constants match ROOT_FADE).
+
+The render thread follows the box's animator duration scale, which nothing can override, so the durations are
+written for the 0.5x most boxes run at: a picture's turn is 2.5 s there and 5 s at 1x.
 """
 import math
 import os
 import sys
+from dataclasses import dataclass, field
 
 W, H = 120, 80
 GROUND = 75
+CYCLE = 5000
+
+
+@dataclass
+class Fill:
+    d: object  # path data, or a list of pieces
+    alpha: float = 1.0
+    even_odd: bool = False
+    colour: str = None
+    name: str = None
+
+
+@dataclass
+class Stroke:
+    d: str
+    alpha: float
+    width: float
+    name: str = None
+    trim_end: float = None
+
+
+@dataclass
+class Group:
+    children: list
+    name: str = None
+    pivot: tuple = (0, 0)
+    rotation: float = 0
+    scale_x: float = 1
+    translate_x: float = 0
+    clip: str = None
+
+
+@dataclass
+class Anim:
+    """One property of one named part. values is (from, to); keyframes is [(fraction, value, easing)]."""
+    target: str
+    prop: str
+    duration: int
+    values: tuple = None
+    keyframes: list = field(default_factory=list)
+    easing: str = "linear"
+    reverse: bool = False
+
+
+EASINGS = {
+    "linear": "@android:anim/linear_interpolator",
+    "in_out": "@android:anim/accelerate_decelerate_interpolator",
+    "in": "@android:anim/accelerate_interpolator",
+    "standard": "@android:interpolator/fast_out_slow_in",
+}
+
+# Fade in over the first tenth, stand, fade out to nothing by 0.94, then nothing until the turn ends.
+ROOT_FADE = Anim("landmark", "alpha", CYCLE, keyframes=[
+    (0, 0, "linear"), (0.1, 1, "standard"), (0.84, 1, "linear"), (0.94, 0, "standard"), (1, 0, "linear"),
+])
 
 
 def f(v):
@@ -59,11 +123,21 @@ def waves(y, x0=4, x1=116, step=8, amp=1.3):
 
 
 def ground():
-    return ("stroke", f"M6,{f(GROUND + 0.9)}H114", 0.32, 1.4)
+    return Stroke(f"M6,{f(GROUND + 0.9)}H114", 0.32, 1.4)
 
 
 def water(y=GROUND + 1.2):
-    return [("stroke", waves(y, amp=2), 0.38, 1.3), ("stroke", waves(y + 2.8, 16, 104, 8, 1.2), 0.2, 1.0)]
+    """Two rows of waves drifting apart, each one wavelength (8) per loop so the loop has no seam. Each row is
+    drawn a wavelength longer than it shows and clipped, so its ends stay put while it drifts."""
+    front = Group([Stroke(waves(y, 4, 124, amp=2), 0.38, 1.3)], name="waves_front")
+    back = Group([Stroke(waves(y + 2.8, 8, 104, 8, 1.2), 0.2, 1.0)], name="waves_back")
+    return [Group([front], clip=rect(4, y - 3, 116, y + 2)), Group([back], clip=rect(16, y + 1, 104, y + 5))]
+
+
+WATER_MOTION = [
+    Anim("waves_front", "translateX", 3200, (0, -8)),
+    Anim("waves_back", "translateX", 4800, (0, 8)),
+]
 
 
 # ---------------------------------------------------------------- Elbphilharmonie
@@ -91,7 +165,7 @@ def elbphilharmonie():
             glass += rect(x, y, min(x + 7, 106), y + 1)
             x += 9
     pillars = "".join(rect(x, 51.5, x + 1.6, 54) for x in (16, 34, 52, 70, 88, 104.4))
-    return [(glass, 0.62, True), (base, 1.0, True), (pillars, 1.0, False)] + water()
+    return [Fill(glass, 0.62, True), Fill(base, 1.0, True), Fill(pillars)] + water(), WATER_MOTION
 
 
 # ---------------------------------------------------------------- Bremer Stadtmusikanten
@@ -158,14 +232,20 @@ def stadtmusikanten():
         "M52.8,13.4C50.6,11.2 50,8 51.2,4.8C51.5,4.1 52.6,4.4 52.4,5.2"
         "C51.6,7.8 52.2,10.2 54,11.8Z"
     )
-    return [
-        (plinth, 0.5, False),
-        (donkey + ears + mane + tail, 1.0, False),
-        (dog + dog_ear + dog_tail, 0.62, False),
-        (cat + cat_tail, 1.0, False),
-        (rooster + comb + rooster_tail, 0.62, False),
+    picture = [
+        Fill(plinth, 0.5),
+        Fill(donkey + ears + mane + tail),
+        Fill(dog + dog_ear + dog_tail, 0.62),
+        Fill(cat + cat_tail),
+        Group([Fill(rooster + comb + rooster_tail, 0.62)], name="rooster", pivot=(56.8, 26.4)),
         ground(),
     ]
+    # Once a turn the rooster throws its head back and crows, then settles on its feet again.
+    crow = Anim("rooster", "rotation", CYCLE, keyframes=[
+        (0, 0, "linear"), (0.3, 0, "linear"), (0.38, -8, "standard"), (0.56, -8, "linear"), (0.66, 0, "standard"),
+        (1, 0, "linear"),
+    ])
+    return picture, [crow]
 
 
 # ---------------------------------------------------------------- Volksparkstadion
@@ -190,7 +270,34 @@ def volksparkstadion():
     pitch_pts = [(42, 35.4), (78, 35.4), (88, 45.5), (32, 45.5)]
     stands = ellipse(cx, cy, 42, 10.5) + poly(*pitch_pts)
     pitch = poly(*pitch_pts) + rect(59.5, 35.4, 60.5, 45.5)
-    return [(facade, 0.6, True), (stands, 0.38, True), (pitch, 0.16, True), (roof, 1.0, True), ground()]
+    # La Ola: a bright stretch of crowd running round the stands, between the pitch and the roof.
+    ola = Stroke(ellipse(cx, cy, 39, 8.6), 0.75, 2.4, name="ola", trim_end=0.14)
+    picture = [Fill(facade, 0.6, True), Fill(stands, 0.38, True), Fill(pitch, 0.16, True), ola, Fill(roof, 1.0, True), ground()]
+    return picture, [Anim("ola", "trimPathOffset", 4000, (0, 1))]
+
+
+# ---------------------------------------------------------------- HSV-Raute
+def hsv_raute():
+    """The crest, in its own colours: a blue diamond in a white band with a black edge."""
+    def diamond(half):
+        return poly((60, 40 - half), (60 + half, 40), (60, 40 + half), (60 - half, 40))
+
+    edge, band = 2.2, 4.4  # measured across the band, so the diagonal shrinks by each times the root of 2
+    outer = 34
+    white = outer - edge * math.sqrt(2)
+    blue = white - band * math.sqrt(2)
+    # Once a turn a soft shine passes over the blue, from off its left edge to off its right.
+    shine = Group([Fill(poly((56, 6), (64, 6), (68, 74), (60, 74)), 0.25, colour="#FFFFFF")], name="shine", translate_x=-40)
+    picture = [
+        Fill(diamond(outer), colour="#000000"),
+        Fill(diamond(white), colour="#FFFFFF"),
+        Fill(diamond(blue), colour="#0A5BA8"),
+        Group([shine], clip=diamond(blue)),
+    ]
+    sweep = Anim("shine", "translateX", CYCLE, keyframes=[
+        (0, -40, "linear"), (0.22, -40, "linear"), (0.5, 40, "standard"), (1, 40, "linear"),
+    ])
+    return picture, [sweep]
 
 
 # ---------------------------------------------------------------- Michel (St. Michaelis)
@@ -213,11 +320,12 @@ def michel():
     lantern = rect(43.6, 10.4, 48.4, 15.8) + rect(45.3, 11.8, 46.7, 14.6)
     cap = "M43,10.6C44.2,9 45.2,7.8 46,5.2C46.8,7.8 47.8,9 49,10.6Z"
     spire = rect(45.6, 1.2, 46.4, 5.6)
+    # The one that stands still: a church tower in the middle of the moving ones.
     return [
-        (nave, 0.58, True),
-        ([tower, cornice1 + stage + bell + cap, cornice2 + lantern, spire, circle(46, 3.4, 1.05)], 1.0, True),
+        Fill(nave, 0.58, True),
+        Fill([tower, cornice1 + stage + bell + cap, cornice2 + lantern, spire, circle(46, 3.4, 1.05)], 1.0, True),
         ground(),
-    ]
+    ], []
 
 
 # ---------------------------------------------------------------- Köhlbrandbrücke
@@ -240,11 +348,7 @@ def koehlbrandbruecke():
             for side in (-1, 1):
                 x = px + side * (7 + k * 4.6)
                 cables += f"M{f(px)},{f(top)}L{f(x)},{f(deck_y(x) + 0.3)}"
-    return [
-        ("stroke", cables, 0.72, 0.7),
-        (pylons + piers, 1.0, False),
-        (deck, 1.0, False),
-    ] + water()
+    return [Stroke(cables, 0.72, 0.7), Fill(pylons + piers), Fill(deck)] + water(), WATER_MOTION
 
 
 # ---------------------------------------------------------------- Leuchtturm Roter Sand
@@ -268,42 +372,18 @@ def roter_sand():
     lantern_glass = rect(56.4, 19.6, 63.6, 26.4) + rect(59.5, 20.6, 60.5, 25.6)
     dome = "M55.6,19.6A4.4,4.4 0 0,1 64.4,19.6Z"
     spike = rect(59.55, 11.6, 60.45, 15.6)
-    return [
-        (beams, 0.14, False),
-        ([caisson + dark + dome, erkers, gallery, spike, circle(60, 13.6, 1.1)], 1.0, True),
-        (light + lantern_glass, 0.55, True),
+    picture = [
+        Group([Fill(beams, 0.14)], name="beams", pivot=(60, 23.2)),
+        Fill([caisson + dark + dome, erkers, gallery, spike, circle(60, 13.6, 1.1)], 1.0, True),
+        Fill(light + lantern_glass, 0.55, True),
+        Fill(circle(60, 23, 6.5), 0, name="flash"),
     ] + water()
-
-
-# ---------------------------------------------------------------- Holstentor
-def holstentor():
-    def windows(x0, x1, rows, n, w=2, h=3.2):
-        d = ""
-        for y in rows:
-            for i in range(n):
-                cx = x0 + (x1 - x0) * (i + 1) / (n + 1)
-                d += arch(cx - w / 2, y, cx + w / 2, y + h)
-        return d
-
-    centre = (
-        "M42,75V35L60,16.5L78,35V75H67.4V62.4A7.4,7.4 0 0,0 52.6,62.4V75Z"
-        + windows(42, 78, (38.5, 45, 51.5), 4)
-        + rect(57.5, 27, 62.5, 29.4)
-    )
-    towers = ""
-    cones = ""
-    for x0, x1 in ((17.5, 42.5), (77.5, 102.5)):
-        cx = (x0 + x1) / 2
-        towers += f"M{f(x0)},75V31.6H{f(x1)}V75Z"
-        towers += windows(x0 + 2, x1 - 2, (36, 43, 50, 57, 64), 3)
-        towers += rect(x0 + 1.5, 69, x1 - 1.5, 70.2)
-        # The cone: a touch concave, as the real roofs are, with a short spike.
-        cones += (
-            f"M{f(x0 - 1)},32.2C{f(x0 + 6)},28 {f(cx - 2.5)},20 {f(cx - 0.6)},9.2"
-            f"L{f(cx - 0.4)},5.2H{f(cx + 0.4)}L{f(cx + 0.6)},9.2"
-            f"C{f(cx + 2.5)},20 {f(x1 - 6)},28 {f(x1 + 1)},32.2Z"
-        )
-    return [(centre, 0.66, True), ([towers, cones], 1.0, True), ground()]
+    # The lamp turns: seen from the side its two beams shorten to nothing as they swing towards and away from
+    # us and lengthen again, a cosine (accelerate-decelerate is exactly that), and the lantern flashes each time
+    # a beam points straight at us.
+    turn = Anim("beams", "scaleX", 2000, (1, -1), easing="in_out", reverse=True)
+    flash = Anim("flash", "fillAlpha", 1000, (0, 0.45), easing="in", reverse=True)
+    return picture, [turn, flash] + WATER_MOTION
 
 
 # ---------------------------------------------------------------- Rickmer Rickmers
@@ -332,27 +412,13 @@ def rickmer_rickmers():
     jibs = poly((85, 13), (116.8, 48.2), (98, 52.4)) + poly((85, 22), (108, 52.6), (95.6, 54.6))
     spanker = poly((19, 19.6), (33.2, 24), (33.2, 54.6), (13.8, 54.6)) + poly((33.2, 12.6), (33.2, 22.4), (21.4, 18.2))
     flag = "M60.6,6L66.6,7.6L60.6,9.2Z"
-    return [
-        (sails + jibs + spanker, 0.55, False),
-        ([hull, bowsprit + masts, flag], 1.0, True),
-    ] + water(GROUND - 4.6)
-
-
-# ---------------------------------------------------------------- HSV-Raute
-def hsv_raute():
-    """The crest, in its own colours: a blue diamond in a white band with a black edge."""
-    def diamond(half):
-        return poly((60, 40 - half), (60 + half, 40), (60, 40 + half), (60 - half, 40))
-
-    edge, band = 2.2, 4.4  # measured across the band, so the diagonal shrinks by each times the root of 2
-    outer = 34
-    white = outer - edge * math.sqrt(2)
-    blue = white - band * math.sqrt(2)
-    return [
-        (diamond(outer), 1.0, False, "#000000"),
-        (diamond(white), 1.0, False, "#FFFFFF"),
-        (diamond(blue), 1.0, False, "#0A5BA8"),
-    ]
+    ship = Group(
+        [Fill(sails + jibs + spanker, 0.55), Fill([hull, bowsprit + masts, flag], 1.0, True)],
+        name="ship", pivot=(60, 68.6),
+    )
+    # She rocks on the swell, a degree and a half each way about her waterline.
+    rock = Anim("ship", "rotation", 3200, (-1.4, 1.4), easing="in_out", reverse=True)
+    return [ship] + water(GROUND - 4.6), [rock] + WATER_MOTION
 
 
 LANDMARKS = [
@@ -363,34 +429,140 @@ LANDMARKS = [
     ("michel", "St. Michaelis (Michel), Hamburg", michel),
     ("koehlbrandbruecke", "Köhlbrandbrücke, Hamburg", koehlbrandbruecke),
     ("roter_sand", "Leuchtturm Roter Sand, Wesermündung", roter_sand),
-    ("holstentor", "Holstentor, Lübeck", holstentor),
     ("rickmer_rickmers", "Rickmer Rickmers, Hamburger Hafen", rickmer_rickmers),
 ]
 
 
-def svg(layers, color="#000"):
-    out = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">']
-    for layer in layers:
-        if layer[0] == "stroke":
-            _, d, a, w = layer
-            out.append(f'<path d="{d}" fill="none" stroke="{color}" stroke-opacity="{a}" stroke-width="{w}" stroke-linecap="round" stroke-linejoin="round"/>')
+def own_colours(picture):
+    for part in picture:
+        if isinstance(part, Group) and own_colours(part.children):
+            return True
+        if isinstance(part, Fill) and part.colour:
+            return True
+    return False
+
+
+# ---------------------------------------------------------------- SVG (a still, for a look in the browser)
+def svg(picture, colour="#000", state=None, ids="c"):
+    """state maps a part's name to properties to draw it with instead ({"landmark": {"alpha": 0.5}} for the
+    whole picture), so a preview can show any moment of the motion. ids prefixes the clip ids, which must not
+    repeat between SVGs on one page."""
+    state = state or {}
+    defs = []
+
+    def emit(parts):
+        out = []
+        for part in parts:
+            over = state.get(part.name, {}) if part.name else {}
+            if isinstance(part, Group):
+                px, py = part.pivot
+                tx = over.get("translateX", part.translate_x)
+                rot = over.get("rotation", part.rotation)
+                sx = over.get("scaleX", part.scale_x)
+                transform = f"translate({f(tx + px)},{f(py)}) rotate({f(rot)}) scale({sx:.4f},1) translate({f(-px)},{f(-py)})"
+                clip = ""
+                if part.clip:
+                    defs.append(f'<clipPath id="{ids}{len(defs)}"><path d="{part.clip}"/></clipPath>')
+                    clip = f' clip-path="url(#{ids}{len(defs) - 1})"'
+                out.append(f'<g transform="{transform}"><g{clip}>{"".join(emit(part.children))}</g></g>')
+            elif isinstance(part, Stroke):
+                dash = ""
+                if part.trim_end is not None:
+                    offset = over.get("trimPathOffset", 0)
+                    dash = f' pathLength="1" stroke-dasharray="{part.trim_end} {1 - part.trim_end}" stroke-dashoffset="{-offset:.4f}"'
+                out.append(
+                    f'<path d="{part.d}" fill="none" stroke="{colour}" stroke-opacity="{over.get("strokeAlpha", part.alpha)}" '
+                    f'stroke-width="{part.width}" stroke-linecap="round" stroke-linejoin="round"{dash}/>'
+                )
+            else:
+                alpha = over.get("fillAlpha", part.alpha)
+                rule = ' fill-rule="evenodd"' if part.even_odd else ""
+                for piece in part.d if isinstance(part.d, list) else [part.d]:
+                    out.append(f'<path d="{piece}" fill="{part.colour or colour}" fill-opacity="{alpha}"{rule}/>')
+        return out
+
+    body = "".join(emit(picture))
+    alpha = state.get("landmark", {}).get("alpha", 1)
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}"><defs>{"".join(defs)}</defs>'
+        f'<g opacity="{alpha:.3f}">{body}</g></svg>'
+    )
+
+
+# ---------------------------------------------------------------- Android animated vector
+def vector_parts(parts, indent):
+    pad = " " * indent
+    out = []
+    for part in parts:
+        if isinstance(part, Group):
+            attrs = []
+            if part.name:
+                attrs.append(f'android:name="{part.name}"')
+            if part.pivot != (0, 0):
+                attrs += [f'android:pivotX="{f(part.pivot[0])}"', f'android:pivotY="{f(part.pivot[1])}"']
+            if part.translate_x:
+                attrs.append(f'android:translateX="{f(part.translate_x)}"')
+            out.append(pad + "<group" + "".join("\n" + pad + "    " + a for a in attrs) + ">")
+            if part.clip:
+                out.append(f'{pad}    <clip-path android:pathData="{part.clip}" />')
+            out += vector_parts(part.children, indent + 4)
+            out.append(pad + "</group>")
+        elif isinstance(part, Stroke):
+            attrs = [
+                f'android:pathData="{part.d}"', 'android:strokeColor="#FF000000"', f'android:strokeAlpha="{part.alpha}"',
+                f'android:strokeWidth="{part.width}"', 'android:strokeLineCap="round"', 'android:strokeLineJoin="round"',
+            ]
+            if part.name:
+                attrs.insert(0, f'android:name="{part.name}"')
+            if part.trim_end is not None:
+                attrs.append(f'android:trimPathEnd="{part.trim_end}"')
+            out.append(pad + "<path" + "".join("\n" + pad + "    " + a for a in attrs) + " />")
         else:
-            d, a, eo = layer[:3]
-            fill = layer[3] if len(layer) > 3 else color
-            for piece in d if isinstance(d, list) else [d]:
-                out.append(f'<path d="{piece}" fill="{fill}" fill-opacity="{a}"{" fill-rule=\"evenodd\"" if eo else ""}/>')
-    out.append("</svg>")
-    return "\n".join(out)
+            pieces = part.d if isinstance(part.d, list) else [part.d]
+            assert part.alpha == 1.0 or len(pieces) == 1, "translucent pieces would add up where they overlap"
+            assert part.name is None or len(pieces) == 1, "a named part is one path"
+            colour = "#FF" + (part.colour[1:] if part.colour else "000000")
+            for piece in pieces:
+                attrs = [f'android:pathData="{piece}"', f'android:fillColor="{colour}"']
+                if part.name:
+                    attrs.insert(0, f'android:name="{part.name}"')
+                if part.alpha != 1.0:
+                    attrs.append(f'android:fillAlpha="{part.alpha}"')
+                if part.even_odd:
+                    attrs.append('android:fillType="evenOdd"')
+                out.append(pad + "<path" + "".join("\n" + pad + "    " + a for a in attrs) + " />")
+    return out
 
 
-def own_colours(layers):
-    return any(layer[0] != "stroke" and len(layer) > 3 for layer in layers)
+def animator(anim, indent):
+    pad = " " * indent
+    common = [
+        f'android:duration="{anim.duration}"',
+        'android:repeatCount="infinite"',
+        f'android:repeatMode="{"reverse" if anim.reverse else "restart"}"',
+    ]
+    if anim.values:
+        attrs = [
+            f'android:propertyName="{anim.prop}"', f'android:valueFrom="{f(anim.values[0])}"',
+            f'android:valueTo="{f(anim.values[1])}"', 'android:valueType="floatType"',
+        ] + common + [f'android:interpolator="{EASINGS[anim.easing]}"']
+        return [pad + "<objectAnimator" + "".join("\n" + pad + "    " + a for a in attrs) + " />"]
+    out = [pad + "<objectAnimator" + "".join("\n" + pad + "    " + a for a in common) + ">"]
+    out.append(f'{pad}    <propertyValuesHolder android:propertyName="{anim.prop}" android:valueType="floatType">')
+    for fraction, value, easing in anim.keyframes:
+        out.append(
+            f'{pad}        <keyframe android:fraction="{fraction}" android:value="{f(value)}"'
+            + (f' android:interpolator="{EASINGS[easing]}"' if fraction else "") + " />"
+        )
+    out.append(f"{pad}    </propertyValuesHolder>")
+    out.append(f"{pad}</objectAnimator>")
+    return out
 
 
-def vector(name, title, layers):
+def animated_vector(title, picture, motion):
     look = (
         "     In its own colours on 120 x 80; the loader shows it as it is."
-        if own_colours(layers)
+        if own_colours(picture)
         else "     Black on 120 x 80 with the ground at y 75; the loader tints it the accent."
     )
     out = [
@@ -398,36 +570,32 @@ def vector(name, title, layers):
         f"<!-- {title}: one of the landmarks the loading indicator shows (LandmarkLoader).",
         look,
         "     Generated by extras/brand/source/landmarks.py: change it there, not here. -->",
-        '<vector xmlns:android="http://schemas.android.com/apk/res/android"',
-        '    android:width="120dp"',
-        '    android:height="80dp"',
-        f'    android:viewportWidth="{W}"',
-        f'    android:viewportHeight="{H}">',
+        '<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"',
+        '    xmlns:aapt="http://schemas.android.com/aapt">',
+        '    <aapt:attr name="android:drawable">',
+        "        <vector",
+        '            android:name="landmark"',
+        '            android:width="120dp"',
+        '            android:height="80dp"',
+        f'            android:viewportWidth="{W}"',
+        f'            android:viewportHeight="{H}">',
     ]
-    for layer in layers:
-        if layer[0] == "stroke":
-            _, d, a, w = layer
-            out += [
-                "    <path",
-                f'        android:pathData="{d}"',
-                '        android:strokeColor="#FF000000"',
-                f'        android:strokeAlpha="{a}"',
-                f'        android:strokeWidth="{w}"',
-                '        android:strokeLineCap="round"',
-                '        android:strokeLineJoin="round" />',
-            ]
+    out += vector_parts(picture, 12)
+    out += ["        </vector>", "    </aapt:attr>"]
+    by_target = {}
+    for anim in [ROOT_FADE] + motion:
+        by_target.setdefault(anim.target, []).append(anim)
+    for target, anims in by_target.items():
+        out += [f'    <target android:name="{target}">', '        <aapt:attr name="android:animation">']
+        if len(anims) == 1:
+            out += animator(anims[0], 12)
         else:
-            d, a, eo = layer[:3]
-            colour = "#FF" + (layer[3][1:] if len(layer) > 3 else "000000")
-            assert a == 1.0 or not isinstance(d, list), "translucent pieces would add up where they overlap"
-            for piece in d if isinstance(d, list) else [d]:
-                attrs = [f'        android:pathData="{piece}"', f'        android:fillColor="{colour}"']
-                if a != 1.0:
-                    attrs.append(f'        android:fillAlpha="{a}"')
-                if eo:
-                    attrs.append('        android:fillType="evenOdd"')
-                out += ["    <path"] + attrs[:-1] + [attrs[-1] + " />"]
-    out.append("</vector>")
+            out.append("            <set>")
+            for anim in anims:
+                out += animator(anim, 16)
+            out.append("            </set>")
+        out += ["        </aapt:attr>", "    </target>"]
+    out.append("</animated-vector>")
     return "\n".join(out) + "\n"
 
 
@@ -437,9 +605,9 @@ if __name__ == "__main__":
     res = sys.argv[1]
     preview = sys.argv[2] if len(sys.argv) > 2 else None
     for name, title, fn in LANDMARKS:
-        layers = fn()
+        picture, motion = fn()
         with open(os.path.join(res, f"landmark_{name}.xml"), "w", encoding="utf-8") as fh:
-            fh.write(vector(name, title, layers))
+            fh.write(animated_vector(title, picture, motion))
         if preview:
             with open(os.path.join(preview, f"{name}.svg"), "w", encoding="utf-8") as fh:
-                fh.write(svg(layers))
+                fh.write(svg(picture))
