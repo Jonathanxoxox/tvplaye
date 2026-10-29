@@ -947,7 +947,7 @@ fun PlayerHud(
                 failedChannel?.title?.takeIf { it.isNotBlank() }?.let { name ->
                     Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         val line = tv.own.owntv.ui.theme.stageText(28, 600)
-                        failedChannel?.subtitle?.takeIf { it.isNotBlank() }?.let { Text(it, style = line, color = Color.White.copy(alpha = 0.5f), maxLines = 1) }
+                        failedChannel?.subtitle?.takeIf { it.isNotBlank() }?.let { Text(it, style = line, color = Color.White.copy(alpha = 0.5f), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                         Text(name, style = line, color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Spacer(Modifier.height(10.dp))
