@@ -30,7 +30,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.androidx.compose.koinViewModel
 import androidx.tv.material3.Text
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 
 /**
  * OpenSubtitles search overlay, opened from the player HUD's ADD SUBTITLES entry.
@@ -87,7 +87,7 @@ fun SubtitleSearchScreen(
                             primary = stringResource(tv.own.owntv.R.string.settings_close), onPrimary = onDismiss,
                         )
                         SubtitleSearchViewModel.UiState.Loading ->
-                            Centered { OwnTVSpinner(); Spacer(Modifier.height(12.mpx)); Text(stringResource(tv.own.owntv.R.string.player_subtitles_working), style = stageText(18, 400), color = StageColors.Muted) }
+                            Centered { LandmarkLoader(sizeDp = 64); Spacer(Modifier.height(12.mpx)); Text(stringResource(tv.own.owntv.R.string.player_subtitles_working), style = stageText(18, 400), color = StageColors.Muted) }
                         is SubtitleSearchViewModel.UiState.Empty -> Message(
                             if (s.showingAllLanguages) {
                                 stringResource(tv.own.owntv.R.string.player_subtitles_no_matches_all_languages)
@@ -173,7 +173,7 @@ private fun ResultsList(
                         if (tags.isNotEmpty()) {
                             Text(tags.joinToString(separator), style = stageText(15, 700), color = if (focused) StageColors.Text else stageAccent.accent, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
                         }
-                        if (applyingFileId == r.fileId) OwnTVSpinner()
+                        if (applyingFileId == r.fileId) LandmarkLoader()
                     },
                 )
             }

@@ -67,7 +67,7 @@ import tv.own.owntv.core.parser.XtEpgEntry
 import tv.own.owntv.features.home.timeLeftText
 import tv.own.owntv.ui.components.ChannelLogoTile
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.trapVerticalFocusExit
 import tv.own.owntv.ui.format.rememberSystemTimeFormatter
 import tv.own.owntv.ui.stage.shownColor
@@ -254,7 +254,7 @@ internal fun LiveStagePane(
                 ) { OwnTVIcon(OwnTVIcon.LIVE_TV, tint = StageColors.Dim, modifier = Modifier.size(56.mpx)) }
             }
             if (playing) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
-            if (loading) OwnTVSpinner(sizeDp = 28)
+            if (loading) LandmarkLoader(sizeDp = 28)
             // `.shade`: black 72% at the bottom, clear by 42% up — a video-sized gradient, one pass.
             Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
             Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), videoR.toPx()) })

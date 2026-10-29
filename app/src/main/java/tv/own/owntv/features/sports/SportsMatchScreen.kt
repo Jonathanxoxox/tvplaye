@@ -270,7 +270,7 @@ fun SportsMatchScreen(
                     )
                     // More channels are still coming in: the list grows below while the guides answer.
                     if ((state.search as? ChannelSearch.Found)?.searching == true) {
-                        tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 18, modifier = Modifier.padding(start = 12.mpx))
+                        tv.own.owntv.ui.components.LandmarkLoader(sizeDp = 18, modifier = Modifier.padding(start = 12.mpx))
                     }
                     Spacer(Modifier.weight(1f))
                     state.preferredLanguages.firstOrNull()?.let { lang ->
@@ -622,10 +622,10 @@ private fun FindChannels(busy: Boolean, searching: Boolean, onFind: () -> Unit) 
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.mpx)) {
         Text(stringResource(R.string.sports_watch_live), style = stageText(24, 800), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (busy && !searching) {
-            tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 18)
+            tv.own.owntv.ui.components.LandmarkLoader(sizeDp = 18)
         } else if (searching) {
             Row(horizontalArrangement = Arrangement.spacedBy(12.mpx), verticalAlignment = Alignment.CenterVertically) {
-                tv.own.owntv.ui.components.OwnTVSpinner(sizeDp = 18)
+                tv.own.owntv.ui.components.LandmarkLoader(sizeDp = 18)
                 Text(stringResource(R.string.sports_finding_channels), style = stageText(19, 600), color = StageColors.Body, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         } else {

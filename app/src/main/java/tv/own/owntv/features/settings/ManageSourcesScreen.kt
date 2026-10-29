@@ -60,7 +60,7 @@ import tv.own.owntv.features.setup.playlistAutoRefreshLabel
 import tv.own.owntv.features.setup.AddSourceChooserScreen
 import tv.own.owntv.features.setup.AddSourceScreen
 import tv.own.owntv.features.setup.RemoteSetupScreen
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 
 /** List / add / re-sync / delete the active profile's IPTV sources. */
 @Composable
@@ -224,7 +224,7 @@ fun ManageSourcesScreen(onBack: () -> Unit, modifier: Modifier = Modifier) {
                 }
                 SettingsViewModel.ImportState.Running -> CenterStatus {
                     val display = progress?.importProgressDisplay()
-                    OwnTVSpinner(sizeDp = 56)
+                    LandmarkLoader(sizeDp = 80)
                     Spacer(Modifier.height(24.mpx))
                     Text(
                         stringResource(R.string.settings_sources_importing),
@@ -622,13 +622,13 @@ internal fun SourceTestDialog(
         val line = tv.own.owntv.ui.theme.stageText(18, 500)
         when (state) {
             is SourceTestUi.Running -> Row(verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 22)
+                LandmarkLoader(sizeDp = 22)
                 Spacer(Modifier.width(16.mpx))
                 Text(stringResource(R.string.setup_testing), style = line, color = tv.own.owntv.ui.theme.StageColors.Muted)
             }
             // Slow by nature, so it says which stream it is on rather than looking like a hang.
             is SourceTestUi.Measuring -> Row(verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 22)
+                LandmarkLoader(sizeDp = 22)
                 Spacer(Modifier.width(16.mpx))
                 Text(stringResource(R.string.settings_sources_probe_running, state.progress.stream, state.progress.maxStreams), style = line, color = tv.own.owntv.ui.theme.StageColors.Muted)
             }

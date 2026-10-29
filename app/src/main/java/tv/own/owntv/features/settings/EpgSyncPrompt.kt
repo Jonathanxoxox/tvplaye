@@ -20,7 +20,7 @@ import tv.own.owntv.ui.theme.mpx
 import tv.own.owntv.core.util.FriendlySyncFailure
 import tv.own.owntv.ui.components.displayText
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.formatCount
 
 /** Semi-automatic EPG flow after a playlist import: ask → sync with a live programme count → done. */
@@ -89,7 +89,7 @@ fun EpgSyncDialog(
         },
     ) {
         if (state is EpgSyncUi.Syncing) Row(verticalAlignment = Alignment.CenterVertically) {
-            OwnTVSpinner(sizeDp = 36)
+            LandmarkLoader(sizeDp = 36)
             Spacer(Modifier.width(20.mpx))
             Text(
                 if (state.count > 0) formatCount(state.count) else stringResource(R.string.settings_connecting),
