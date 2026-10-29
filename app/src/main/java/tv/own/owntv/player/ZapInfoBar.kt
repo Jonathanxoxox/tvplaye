@@ -124,16 +124,7 @@ internal fun ZapInfoBlock(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(u.dp(74)),
     ) {
-        Box(
-            Modifier.size(width = u.dp(164), height = u.dp(152)).clip(RoundedCornerShape(u.dp(10))).background(Color.White),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (!logoUrl.isNullOrBlank()) {
-                AsyncImage(model = logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(u.dp(14)))
-            } else {
-                Text(title.orEmpty().take(3).uppercase(), style = u.text(34, 800).copy(shadow = null), color = Color(0xFF26363A), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
+        LogoPlate(logoUrl, title, u)
         Column(Modifier.weight(1f)) {
             val now = guide?.now
             Text(now?.title ?: title.orEmpty(), style = u.text(40, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -174,9 +165,24 @@ internal fun ZapInfoBlock(
     }
 }
 
+/** The logo on its white tile at the left of the info bar; the first letters of [title] without one. */
+@Composable
+internal fun LogoPlate(logoUrl: String?, title: String?, u: ScreenUnits) {
+    Box(
+        Modifier.size(width = u.dp(164), height = u.dp(152)).clip(RoundedCornerShape(u.dp(10))).background(Color.White),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (!logoUrl.isNullOrBlank()) {
+            AsyncImage(model = logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(u.dp(14)))
+        } else {
+            Text(title.orEmpty().take(3).uppercase(), style = u.text(34, 800).copy(shadow = null), color = Color(0xFF26363A), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
 /** FHD, 25 FPS, STEREO: the stream's facts as small outlined badges after the channel. */
 @Composable
-private fun StreamBadge(label: String, u: ScreenUnits) {
+internal fun StreamBadge(label: String, u: ScreenUnits) {
     Box(
         Modifier
             .border(u.dp(1.5f), Color.White.copy(alpha = 0.6f), RoundedCornerShape(u.dp(6)))
@@ -239,13 +245,15 @@ internal fun PlayerZapInfoBlock(player: PlaybackEngine, info: ZapInfo?, nowMs: L
         subtitle = meta.localizedSubtitle(),
         logoUrl = meta.logoUrl,
         guide = info?.guide,
-        // The aspect and the bitrate are the player's own business; the panel shows FHD, FPS and sound.
-        chips = if (engineCaughtUp) chips.filterNot { it.contains(':') || it.endsWith("Mbps") } else emptyList(),
+        chips = if (engineCaughtUp) panelChips(chips) else emptyList(),
         nowMs = nowMs,
         modifier = modifier,
         guidePending = info?.guidePending == true,
     )
 }
+
+/** The aspect and the bitrate are the player's own business; the info bar shows FHD, FPS and sound. */
+internal fun panelChips(chips: List<String>): List<String> = chips.filterNot { it.contains(':') || it.endsWith("Mbps") }
 
 /** Day, date and time at the top right while the info bar is up, as the classic player shows them. */
 @Composable
