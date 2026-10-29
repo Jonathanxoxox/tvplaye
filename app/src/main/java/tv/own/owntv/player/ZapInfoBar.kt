@@ -1,60 +1,31 @@
 package tv.own.owntv.player
 
-import android.text.format.DateFormat
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.tv.material3.Text
-import coil3.compose.AsyncImage
-import kotlinx.coroutines.delay
 import tv.own.owntv.R
 import tv.own.owntv.core.live.EpgNowNext
-import tv.own.owntv.ui.format.combinedDateTimeSkeleton
-import tv.own.owntv.ui.format.rememberBestDateFormatter
 import tv.own.owntv.ui.format.rememberSystemTimeFormatter
 import tv.own.owntv.ui.theme.LocalMainFontFamily
-import tv.own.owntv.ui.theme.stageAccent
 
 /**
  * Pixels of a 1920×1080 frame on this screen. The player's OK panel is measured off the classic IPTV
@@ -92,181 +63,65 @@ internal fun ScreenUnits.text(px: Number, weight: Int): TextStyle = TextStyle(
 @Immutable
 data class ZapInfo(val guide: EpgNowNext?, val channel: MediaMeta? = null, val guidePending: Boolean = false)
 
-/** The dark wash the panel and the zap bar sit on, rising from the bottom edge. */
-internal val PanelWash = Brush.verticalGradient(
-    0f to Color.Transparent,
-    0.22f to Color.Black.copy(alpha = 0.6f),
-    1f to Color.Black.copy(alpha = 0.88f),
-)
+/** The aspect and the bitrate are the player's own business; the card shows FHD, FPS and sound. */
+internal fun panelChips(chips: List<String>): List<String> = chips.filterNot { it.contains(':') || it.endsWith("Mbps") }
 
 /**
- * The programme block of the info bar: the logo on a white tile at the left, then the programme
- * large, its times, progress and minutes left with the channel and the stream's badges beside them,
- * and the next programme under it. Informational only; it never takes focus.
+ * The card's head and line for the channel on screen: the logo, the channel's number and name above the
+ * programme, its times, the stream's facts and what follows, and the minutes left at the right; under it
+ * the programme's progress from its start to its end. The engine's metadata as long as it is about that
+ * channel (it carries the rewind line); until the new stream is open, the picked channel's own name,
+ * number and logo, and no stream facts, since those still describe the stream before.
  */
 @Composable
-internal fun ZapInfoBlock(
-    title: String?,
-    subtitle: String?,
-    logoUrl: String?,
-    guide: EpgNowNext?,
-    chips: List<String>,
-    nowMs: Long,
-    modifier: Modifier = Modifier,
-    guidePending: Boolean = false,
-) {
-    val u = rememberScreenUnits()
-    val formatTime = rememberSystemTimeFormatter()
-    val row = u.text(26, 500)
-    val muted = Color.White.copy(alpha = 0.85f)
-    Row(
-        modifier.fillMaxWidth().padding(horizontal = u.dp(92)),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(u.dp(74)),
-    ) {
-        LogoPlate(logoUrl, title, u)
-        Column(Modifier.weight(1f)) {
-            val now = guide?.now
-            Text(now?.title ?: title.orEmpty(), style = u.text(40, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Spacer(Modifier.height(u.dp(12)))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(u.dp(22))) {
-                if (now != null) {
-                    Text(stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)), style = row, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    val span = (now.stopMs - now.startMs).toFloat()
-                    if (span > 0f) {
-                        val progress = ((nowMs - now.startMs) / span).coerceIn(0f, 1f)
-                        Box(Modifier.width(u.dp(78)).height(u.dp(5)).clip(RoundedCornerShape(u.dp(3))).background(Color.White.copy(alpha = 0.3f))) {
-                            Box(Modifier.fillMaxWidth(progress).height(u.dp(5)).background(Color.White))
-                        }
-                        val left = ((now.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000
-                        Text(stringResource(R.string.player_duration_minutes, left.toInt()), style = row, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                } else {
-                    // Kept in the layout while the programme is looked up, so the line does not jump when it arrives.
-                    Text(stringResource(R.string.tvplayer_no_guide), style = row, color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.alpha(if (guidePending) 0f else 1f))
-                }
-                subtitle?.takeIf { it.isNotBlank() }?.let {
-                    Text(it, style = u.text(26, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                }
-                // The channel's name takes what the times leave and ends in … rather than past the edge.
-                if (now != null) {
-                    Text(title.orEmpty(), style = u.text(26, 600), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-                }
-                chips.forEach { StreamBadge(it, u) }
-            }
-            guide?.next?.let { next ->
-                Spacer(Modifier.height(u.dp(6)))
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(u.dp(22))) {
-                    Text(stringResource(R.string.content_live_time_range, formatTime(next.startMs), formatTime(next.stopMs)), style = row, color = Color.White.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(next.title, style = row, color = muted, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
-                }
-            }
-        }
-    }
-}
-
-/** The logo on its white tile at the left of the info bar; the first letters of [title] without one. */
-@Composable
-internal fun LogoPlate(logoUrl: String?, title: String?, u: ScreenUnits) {
-    Box(
-        Modifier.size(width = u.dp(164), height = u.dp(152)).clip(RoundedCornerShape(u.dp(10))).background(Color.White),
-        contentAlignment = Alignment.Center,
-    ) {
-        if (!logoUrl.isNullOrBlank()) {
-            AsyncImage(model = logoUrl, contentDescription = null, modifier = Modifier.fillMaxSize().padding(u.dp(14)))
-        } else {
-            Text(title.orEmpty().take(3).uppercase(), style = u.text(34, 800).copy(shadow = null), color = Color(0xFF26363A), maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
-}
-
-/** FHD, 25 FPS, STEREO: the stream's facts as small outlined badges after the channel. */
-@Composable
-internal fun StreamBadge(label: String, u: ScreenUnits) {
-    Box(
-        Modifier
-            .border(u.dp(1.5f), Color.White.copy(alpha = 0.6f), RoundedCornerShape(u.dp(6)))
-            .padding(horizontal = u.dp(8), vertical = u.dp(2)),
-    ) {
-        Text(label, style = u.text(16, 700), color = Color.White.copy(alpha = 0.9f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-}
-
-/**
- * The seek line across the picture under the programme block: the accent up to now with a round
- * thumb on it, the rest light grey. Without a programme the room stays, so the tiles do not jump.
- */
-@Composable
-internal fun ProgrammeSeekLine(guide: EpgNowNext?, nowMs: Long, modifier: Modifier = Modifier) {
-    val u = rememberScreenUnits()
-    val accent = stageAccent.accent
-    val now = guide?.now
-    val span = now?.let { (it.stopMs - it.startMs).toFloat() } ?: 0f
-    Canvas(modifier.fillMaxWidth().padding(horizontal = u.dp(56)).height(u.dp(16))) {
-        if (now == null || span <= 0f) return@Canvas
-        val progress = ((nowMs - now.startMs) / span).coerceIn(0f, 1f)
-        val line = u.toPx(5)
-        val top = (size.height - line) / 2
-        val radius = CornerRadius(line / 2)
-        drawRoundRect(Color.White.copy(alpha = 0.4f), Offset(0f, top), Size(size.width, line), radius)
-        drawRoundRect(accent, Offset(0f, top), Size(size.width * progress, line), radius)
-        drawCircle(accent, radius = size.height / 2, center = Offset(size.width * progress, size.height / 2))
-    }
-}
-
-/** The info bar along the bottom of the picture after a channel change: the programme block and its seek line. */
-@Composable
-internal fun ZapInfoBar(player: PlaybackEngine, info: ZapInfo?, modifier: Modifier = Modifier) {
-    val u = rememberScreenUnits()
-    val guide = info?.guide
-    // The bar is up for a few seconds, so the moment it opened is precise enough.
-    val nowMs = remember(guide) { System.currentTimeMillis() }
-    Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60), bottom = u.dp(56))) {
-        PlayerZapInfoBlock(player, info, nowMs)
-        Spacer(Modifier.height(u.dp(8)))
-        ProgrammeSeekLine(guide, nowMs)
-    }
-}
-
-/**
- * [ZapInfoBlock] for the channel on screen. The engine's metadata as long as it is about that channel
- * (it carries the rewind line); until the new stream is open, the picked channel's own name, number
- * and logo, and no badges, since those still describe the stream before.
- */
-@Composable
-internal fun PlayerZapInfoBlock(player: PlaybackEngine, info: ZapInfo?, nowMs: Long, modifier: Modifier = Modifier) {
+internal fun LiveCardBody(player: PlaybackEngine, info: ZapInfo?, nowMs: Long) {
     val engineMeta by player.currentMeta.collectAsStateWithLifecycle()
     val chips by player.streamChips.collectAsStateWithLifecycle()
     val picked = info?.channel
     val engineCaughtUp = picked == null || engineMeta.title == picked.title
     val meta = if (engineCaughtUp || picked == null) engineMeta else picked
-    ZapInfoBlock(
-        title = meta.title?.takeIf { it.isNotBlank() },
-        subtitle = meta.localizedSubtitle(),
-        logoUrl = meta.logoUrl,
-        guide = info?.guide,
-        chips = if (engineCaughtUp) panelChips(chips) else emptyList(),
-        nowMs = nowMs,
-        modifier = modifier,
-        guidePending = info?.guidePending == true,
+    val name = meta.title?.takeIf { it.isNotBlank() }
+    val guide = info?.guide
+    val now = guide?.now
+    val formatTime = rememberSystemTimeFormatter()
+    val separator = stringResource(R.string.content_metadata_separator)
+    val facts = panelChips(chips).joinToString(separator).takeIf { engineCaughtUp }.orEmpty()
+    val details = buildList {
+        if (now != null) {
+            add(stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)))
+        } else if (info?.guidePending != true) {
+            add(stringResource(R.string.tvplayer_no_guide))
+        }
+        if (facts.isNotBlank()) add(facts)
+        guide?.next?.let { add(stringResource(R.string.tvplayer_next_at, formatTime(it.startMs)) + separator + it.title) }
+    }
+    val left = now?.let { ((it.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000 }
+    CardHeader(
+        title = now?.title ?: name.orEmpty(),
+        details = details,
+        artwork = CardArtwork.Logo(meta.logoUrl, name),
+        lead = meta.localizedSubtitle()?.takeIf { it.isNotBlank() },
+        context = name.takeIf { now != null },
+        asideLabel = left?.let { stringResource(R.string.tvplayer_card_left) },
+        asideValue = left?.let { stringResource(R.string.player_duration_minutes, it.toInt()) },
     )
+    // Without a programme the room stays, so the card does not change height when the guide arrives.
+    val span = now?.let { (it.stopMs - it.startMs).toFloat() } ?: 0f
+    Column {
+        CardLine(progress = { if (now == null || span <= 0f) 0f else (nowMs - now.startMs) / span }, modifier = Modifier.alpha(if (now == null) 0f else 1f))
+        Spacer(Modifier.height(rememberScreenUnits().dp(12)))
+        CardTimes(
+            start = now?.let { formatTime(it.startMs) }.orEmpty(),
+            end = now?.let { formatTime(it.stopMs) }.orEmpty(),
+            startIsNow = false,
+        )
+    }
 }
 
-/** The aspect and the bitrate are the player's own business; the info bar shows FHD, FPS and sound. */
-internal fun panelChips(chips: List<String>): List<String> = chips.filterNot { it.contains(':') || it.endsWith("Mbps") }
-
-/** Day, date and time at the top right while the info bar is up, as the classic player shows them. */
+/** The card along the bottom after a channel change: the programme and its line, nothing to choose. */
 @Composable
-internal fun PanelClock(modifier: Modifier = Modifier) {
-    val u = rememberScreenUnits()
-    val context = LocalContext.current
-    val format = rememberBestDateFormatter(combinedDateTimeSkeleton("EEEdMMM", DateFormat.is24HourFormat(context)))
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) { delay(60_000 - System.currentTimeMillis() % 60_000); now = System.currentTimeMillis() }
-    }
-    Text(
-        format(now), style = u.text(36, 500), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis,
-        modifier = modifier.padding(top = u.dp(20), end = u.dp(44)),
-    )
+internal fun ZapInfoBar(player: PlaybackEngine, info: ZapInfo?, modifier: Modifier = Modifier) {
+    // The card is up for a few seconds, so the moment it opened is precise enough.
+    val nowMs = remember(info?.guide) { System.currentTimeMillis() }
+    PlayerCard(modifier) { LiveCardBody(player, info, nowMs) }
 }
