@@ -314,6 +314,10 @@ fun EpgScreen(
     var anchorId by remember { mutableStateOf<Long?>(null) }
     // The category the cursor is on in the groups column (applied a moment later, or at once by ▶).
     var browsedGroup by remember { mutableStateOf<Int?>(null) }
+    // The group just applied, until its list is in (see the effect beside applyGroup), and whether the grid
+    // takes the focus then (OK, or ▶ before the list was in).
+    var openingGroup by remember { mutableStateOf<LiveKey?>(null) }
+    var focusOnOpen by remember { mutableStateOf(false) }
     // A channel's number is its place in the list on screen: each category counts from 1, as in TiviMate
     // (Jonathan, 27 Oct 2026: the provider's 1351 in a category of twenty read like the whole list).
     fun listNumber(ch: ChannelEntity): Int? = state.channels.indexOfFirst { it.id == ch.id }.takeIf { it >= 0 }?.plus(1)
@@ -800,10 +804,32 @@ fun EpgScreen(
             val key = railItems.getOrNull(idx)?.key
             if (key != null && key != (categoryKey ?: LiveKey.All)) {
                 if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key)
-                focusedRow = 0
                 anchorId = null
-                scope.launch { runCatching { rowListState.scrollToItem(0) } }
+                openingGroup = key
+                focusOnOpen = false
             }
+        }
+        // The group's list is read off the main thread and arrives a moment after the pick; until then the grid
+        // still shows the old one. OK used to focus row 0 of that old list at once: the new list then replaced the
+        // row and the focus went with it, so the groups slid out and straight back in (or the menu came), and the
+        // old list jumped to its top first. The grid now goes to the top, and takes the focus, once the new list is in.
+        LaunchedEffect(openingGroup, state) {
+            val key = openingGroup ?: return@LaunchedEffect
+            if (state.loading || state.category != key.takeUnless { it == LiveKey.All }) return@LaunchedEffect
+            focusedRow = 0
+            runCatching { rowListState.scrollToItem(0) }
+            // Only while the focus is still on the groups: ◀ to the menu meanwhile is not to be undone.
+            if (focusOnOpen && groupsFocused) focusGrid(0)
+            openingGroup = null
+            focusOnOpen = false
+        }
+        // A pick whose list never comes (a pinned Live TV ignores it) does not hold the focus in the groups.
+        LaunchedEffect(openingGroup) {
+            if (openingGroup == null) return@LaunchedEffect
+            delay(4_000)
+            if (focusOnOpen && groupsFocused) focusGrid()
+            openingGroup = null
+            focusOnOpen = false
         }
         LaunchedEffect(browsedGroup) {
             val idx = browsedGroup ?: return@LaunchedEffect
@@ -847,11 +873,19 @@ fun EpgScreen(
                 listState = groupsListState,
                 onSelect = { idx ->
                     browsedGroup = null
-                    railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
-                    focusedRow = 0
-                    anchorId = null
-                    scope.launch { runCatching { rowListState.scrollToItem(0) } }
-                    focusGrid(0)
+                    val key = railItems.getOrNull(idx)?.key
+                    if (key != null && key != (categoryKey ?: LiveKey.All)) {
+                        applyGroup(idx)
+                        focusOnOpen = true
+                    } else if (openingGroup != null) {
+                        // Applied by the rest a moment ago, its list not in yet.
+                        focusOnOpen = true
+                    } else {
+                        focusedRow = 0
+                        anchorId = null
+                        scope.launch { runCatching { rowListState.scrollToItem(0) } }
+                        focusGrid(0)
+                    }
                 },
                 onLongSelect = { idx ->
                     val key = railItems.getOrNull(idx)?.key
@@ -869,10 +903,12 @@ fun EpgScreen(
                 onNavigateRight = {
                     browsedGroup?.let(applyGroup)
                     browsedGroup = null
-                    focusGrid()
+                    if (openingGroup != null) focusOnOpen = true else focusGrid()
                 },
                 onRowFocus = { idx ->
                     browsedGroup = idx
+                    // Moved on before the list came: it opens without taking the focus from here.
+                    if (railItems.getOrNull(idx)?.key != openingGroup) focusOnOpen = false
                 },
                 focusRequester = groupsFocus,
                 focusRowIndex = groupsFocusIndex
