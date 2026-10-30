@@ -1,0 +1,400 @@
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.i.az.a(SourceFile:29)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.dy.a(SourceFile:128)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.android.libraries.mdi.download.cu.a(Unknown Source:1)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.common.v.a.f.a(SourceFile:3)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.common.v.a.h.run(SourceFile:21)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.common.v.a.co.run(SourceFile:1)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.common.v.a.dc.run(SourceFile:5)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.aq.run(SourceFile:1)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at com.google.apps.tiktok.concurrent.f.run(Unknown Source:3)
+10-30 16:15:48.769  4250  8239 E com.google.common.v.a.d: 	at java.lang.Thread.run(Thread.java:923)
+10-30 16:15:49.160  3528  4339 E NewCardInfo: retrieving bitmap uri=https://www.gstatic.com/weather/conditions/v1/png/cloudy_light_192dp.png gsaRes=
+10-30 16:15:49.167  3306  3306 E NewCardInfo: retrieving bitmap uri=https://www.gstatic.com/weather/conditions/v1/png/cloudy_light_192dp.png gsaRes=
+10-30 16:15:52.721  4250  4456 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-30 16:15:52.721  4250  4456 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-30 16:15:53.841  4250  4459 E ModelDnldProcssHelpr: pending download info for pending_hotword_model_download_info is null
+10-30 16:15:53.842  4250  4459 E ModelDnldProcssHelpr: pending download info for pending_xgoogle_hotword_model_download_info is null
+10-30 16:15:55.616  3865  4483 E native  : android-decoder-jni.cc:521 Failed to load dynamic LM from /data/user/0/com.google.android.inputmethod.latin/files/personal/blacklist.de.list
+10-30 16:15:55.624  3865  4483 E native  : dynamic-lm.cc:754 Cannot load dynamic lm from /data/user/0/com.google.android.inputmethod.latin/files/personal/userhistory/UserHistory.de.dict, openBuffer failed.
+10-30 16:15:55.642  3124  3124 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:16:00.395  3865  3865 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 5 ms, mainThreadForSure=true.
+10-30 16:16:30.693  5062  5083 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-30 16:16:30.693  5062  5083 E libc    : Access denied finding property "service.adb.tls.port"
+10-30 16:16:40.408  3124  3124 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:16:40.561  3865  6369 E NwpModelManager: AbstractModelManager.openPack():257 openPack(): no `null` pack found, did you set the correct label?
+10-30 16:16:45.360  3865  4483 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 10 ms, mainThreadForSure=false.
+10-30 16:16:46.058  3865  3865 E InputContextLock: InputContextLock.maybeTrackAcquireLockTime():29 Acquire InputContextLock takes 6 ms, mainThreadForSure=true.
+10-30 16:16:47.617  3865  3865 E SessionManager: SessionManager.beginSession():60 Try to begin a session [IME_SESSION] whose parent [INPUT_VIEW_SESSION] hasn't begun.
+10-30 16:16:47.755  3865  3865 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#34b12b1 mMissingMethods=}
+10-30 16:16:47.756  3865  3865 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#34b12b1 mMissingMethods=}
+10-30 16:16:47.759  3865  3865 E InputMethodService: Unexpected null in startExtractingText : mExtractedText = null, input connection = InputConnectionWrapper{idHash=#34b12b1 mMissingMethods=}
+10-30 16:17:02.933  7696  9165 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:17:02.933  7696  9165 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:18:30.482  3774  4785 E NetworkScheduler.ATC: Called cancelTask for already completed task com.google.android.gms/.phenotype.service.sync.PhenotypeConfigurator{u=0 tag="PhenotypeSyncImmediately" trigger=window{start=1s,end=2s,earliest=-236s,latest=-235s} requirements=[NET_CONNECTED] attributes=[PERSISTED] scheduled=-237s last_run=-227s jid=N/A status=ACTIVE retries=0 client_lib=GMS_TASK_SCHEDULER-201817000} :2
+10-30 16:18:31.343  5062  7129 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-30 16:18:31.343  5062  7129 E libc    : Access denied finding property "service.adb.tls.port"
+10-30 16:18:31.415  3865  4126 E PhenotypeModule: PhenotypeModule.handlePhenotypeConfigurationUpdates():246 Get empty configurations.
+10-30 16:20:31.925  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:20:31.951  7696 10215 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:20:31.951  7696 10215 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:00.295  3219  3233 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:21:00.382  7696 10556 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:21:00.382   440   475 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:21:00.382   440   475 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:21:00.382   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:21:00.383   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:21:00.567   440   473 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:21:00.735  7696 10560 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.735  7696 10560 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.738   442   959 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.738   442   959 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.739  7696 10560 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:21:00.741  7696 10560 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.742   442   998 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.821   442 10564 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:00.822  7696 10557 E FMQ     : grantorIdx must be less than 3
+10-30 16:21:01.749   440   473 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:21:07.600 10573 10573 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:21:09.305 10592 10592 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:21:10.224  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:11.442  3774  7324 E WakeLock: GCM_HB_ALARM release without a matched acquire!
+10-30 16:21:10.225  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:15.435  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:15.438  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:18.543  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:21:21.958 10683 10683 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:21:27.179 10706 10706 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:21:33.084  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:33.084  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:41.677  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:41.683  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:52.884  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:52.884  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:59.396  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:21:59.397  7696 10242 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:09.906  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:09.906  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:20.393  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:20.394  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:35.126  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:35.126  7696 10238 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:22:52.504  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:22:54.336  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:23:06.751 11244 11244 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:12.659 11279 11279 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:14.744 11298 11298 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:14.969  5062  5083 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-30 16:23:14.970  5062  5083 E libc    : Access denied finding property "service.adb.tls.port"
+10-30 16:23:16.948  5062  5083 E libc    : Access denied finding property "persist.adb.tls_server.enable"
+10-30 16:23:16.948  5062  5083 E libc    : Access denied finding property "service.adb.tls.port"
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: Exception during register request.
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: ciau: UNAUTHENTICATED: Request is missing required authentication credential. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at ciat.c(:com.google.android.gms@201817023@20.18.17 (040800-311416286):3)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at sdn.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):48)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at afgm.a(:com.google.android.gms@201817023@20.18.17 (040800-311416286):12)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at com.google.android.libraries.matchstick.net.SilentRegisterIntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):207)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at com.google.android.chimera.IntentOperation.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):2)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at qgf.onHandleIntent(:com.google.android.gms@201817023@20.18.17 (040800-311416286):4)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at cui.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):5)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at cuh.run(:com.google.android.gms@201817023@20.18.17 (040800-311416286):9)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-30 16:23:18.255  4193 11314 E MS_RegisterService: 	at java.lang.Thread.run(Thread.java:923)
+10-30 16:23:21.330  7696 10223 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:23:21.330  7696 10223 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:23:28.891 11423 11423 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:30.849 11442 11442 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:31.728  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:23:40.790 11516 11516 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:42.671 11535 11535 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:23:43.688  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:23:59.154  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:23:59.284  7696 11666 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:23:59.284   440   440 E OMXNodeInstance: getParameter(0xea581040:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:23:59.284   440   440 E OMXNodeInstance: setConfig(0xea581040:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:23:59.284   440   440 E OMXNodeInstance: getConfig(0xea581040:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:23:59.284   440   440 E OMXNodeInstance: getConfig(0xea581040:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:23:59.614  7696 11669 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.614  7696 11669 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.615   440   473 E OMXNodeInstance: getConfig(0xea581040:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:23:59.625   442   442 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.626   442   442 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.627  7696 11669 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.627   442   442 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.753   442 11670 E FMQ     : grantorIdx must be less than 3
+10-30 16:23:59.754  7696 10557 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:00.825   440   440 E OMXNodeInstance: setConfig(0xea581040:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:24:04.971  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:24:17.806  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:24:17.925  7696 11791 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:24:17.925   440   475 E OMXNodeInstance: getParameter(0xea5810b0:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:24:17.985   440   475 E OMXNodeInstance: setConfig(0xea5810b0:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:24:17.987   440   475 E OMXNodeInstance: getConfig(0xea5810b0:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:24:17.988   440   475 E OMXNodeInstance: getConfig(0xea5810b0:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:24:18.123   440   440 E OMXNodeInstance: getConfig(0xea5810b0:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:24:18.128  7696 11794 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.128  7696 11794 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.128   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.128   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.129  7696 11794 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.129   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.235   442 11795 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.236  7696 10557 E FMQ     : grantorIdx must be less than 3
+10-30 16:24:18.420  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:24:19.294   440   440 E OMXNodeInstance: setConfig(0xea5810b0:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:24:29.732 11864 11864 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:30.426  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:24:33.705 11896 11896 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:35.471 11914 11914 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:37.274 11933 11933 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:40.357 11964 11964 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:42.151 11983 11983 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:51.890 12041 12041 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:54.965 12073 12073 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:24:57.953 12105 12105 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:01.411 12137 12137 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:04.564 12169 12169 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:10.068 12201 12201 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:10.765  7696 10220 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:10.775  7696 10220 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:15.749  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:15.749  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:21.568 12269 12269 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:22.304  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:25:25.627 12301 12301 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:27.512 12320 12320 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:29.313 12338 12338 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:32.442 12370 12370 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:34.298 12389 12389 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:43.939 12448 12448 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:25:49.716  7696 10223 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:49.716  7696 10223 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:25:57.348  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:26:08.791 12604 12604 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:26:09.915  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:26:15.726  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:26:19.436 12686 12686 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:22.532 12718 12718 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:24.292 12741 12741 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:27.213 12774 12774 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:28.916 12792 12792 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:30.699 12811 12811 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:38.384 12857 12857 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:41.444 12889 12889 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:44.341 12921 12921 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:47.201 12953 12953 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:52.061 12985 12985 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:54.999 13017 13017 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:26:57.878 13049 13049 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:00.977 13081 13081 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:03.873 13113 13113 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal: Playback error
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:   rx1: Source error
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at py1.s(Unknown Source:16)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at py1.handleMessage(Unknown Source:500)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at android.os.Handler.dispatchMessage(Handler.java:102)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at android.os.Looper.loop(Looper.java:223)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at android.os.HandlerThread.run(HandlerThread.java:67)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:   Caused by: gv2: Response code: 404
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at np4.i(Unknown Source:385)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at hg7.i(Unknown Source:10)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at h45.c(Unknown Source:19)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at kq3.run(Unknown Source:34)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-30 16:27:08.400  7696 11782 E ExoPlayerImplInternal:       at java.lang.Thread.run(Thread.java:923)
+10-30 16:27:09.154 13146 13146 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:09.723  7696 12478 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal: Playback error
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:   rx1: Source error
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at py1.s(Unknown Source:16)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at py1.handleMessage(Unknown Source:500)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at android.os.Handler.dispatchMessage(Handler.java:102)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at android.os.Looper.loop(Looper.java:223)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at android.os.HandlerThread.run(HandlerThread.java:67)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:   Caused by: gv2: Response code: 404
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at np4.i(Unknown Source:385)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at hg7.i(Unknown Source:10)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at h45.c(Unknown Source:19)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at kq3.run(Unknown Source:34)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-30 16:27:12.820  7696 11782 E ExoPlayerImplInternal:       at java.lang.Thread.run(Thread.java:923)
+10-30 16:27:14.187 13182 13182 E AccessibilityInteractionClient: Duplicate node.
+10-30 16:27:09.723  7696 12478 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:14.750  7696 12478 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal: Playback error
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:   rx1: Source error
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at py1.s(Unknown Source:16)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at py1.handleMessage(Unknown Source:500)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at android.os.Handler.dispatchMessage(Handler.java:102)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at android.os.Looper.loop(Looper.java:223)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at android.os.HandlerThread.run(HandlerThread.java:67)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:   Caused by: gv2: Response code: 404
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at np4.i(Unknown Source:385)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at hg7.i(Unknown Source:10)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at xm5.c(Unknown Source:27)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at kq3.run(Unknown Source:34)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1167)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:641)
+10-30 16:27:15.845  7696 11782 E ExoPlayerImplInternal:       at java.lang.Thread.run(Thread.java:923)
+10-30 16:27:14.750  7696 12478 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:33.124  7696 13278 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.124  7696 13278 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.125   442  3078 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.125   442  3078 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.126  7696 13278 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.126   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.145   442 13279 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.146  7696 10557 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:33.362  7696 13283 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:27:33.362   440   440 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:33.363   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:33.363   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:33.363   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:27:33.552   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:27:38.068  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:38.068  7696 10222 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:27:44.667  3124  3142 E RemoteAugmentedAutofillService: Bad service name for flags 1048704: com.google.android.as/com.google.android.apps.miphone.aiai.app.AiAiAugmentedAutofillService
+10-30 16:27:49.198 13352 13352 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:52.154 13375 13375 E AccessibilityInteractionClient: 2 Disconnected nodes.
+10-30 16:27:52.835  3084  3109 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-30 16:27:52.835  3084  3109 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-30 16:27:52.837   440   440 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-30 16:27:53.189 13402 13402 E OverlaySController: Calling with an invalid UID, the interface will not work
+10-30 16:27:53.617  4034  4034 E HwDetectorWithState: a: 3
+10-30 16:27:53.901 13402 13428 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-30 16:27:57.931  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:27:58.260 13488 13561 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.260 13488 13561 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.261   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.261   442   491 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.261 13488 13561 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:27:58.303 13488 13561 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.303   442  3078 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.360   442 13567 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.360 13488 13566 E FMQ     : grantorIdx must be less than 3
+10-30 16:27:58.448 13488 13569 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:27:58.448   440   475 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:58.448   440   475 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:58.448   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:27:58.449   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:27:58.673   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:27:59.856   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-30 16:27:59.879   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:01.190 13488 13530 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:01.190 13488 13530 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:02.640 13488 13517 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:02.641 13488 13517 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:05.592  3084  5928 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-30 16:28:05.592  3084  5928 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-30 16:28:05.600   442 13567 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:05.612   442 13567 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:05.619   440   475 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-30 16:28:05.630   442 13567 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:05.714 13402 13432 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-30 16:28:10.478   425   648 E IPCThreadState: binder thread pool (1 threads) starved for 115 ms
+10-30 16:28:11.249  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:28:11.355 13598 13679 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.355 13598 13679 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.356   442   928 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.356   442   928 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.357 13598 13679 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:28:11.376 13598 13679 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.376   442  3078 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.396   442 13684 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.396 13598 13683 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:11.457 13598 13686 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:28:11.463   440   475 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:11.463   440   475 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:11.463   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:11.463   440   475 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:11.552   440   473 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:12.534   440   475 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:12.595   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-30 16:28:13.275 13598 13620 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:13.275 13598 13620 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:16.210 13598 13622 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:16.214 13598 13622 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:18.502   440   475 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-30 16:28:18.528  3124  5940 E AppOps  : Operation not started: uid=10167 pkg=io.github.jonathanxoxox.tvplayer(null) op=WAKE_LOCK
+10-30 16:28:18.532  3084  5928 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-30 16:28:18.532  3084  5928 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-30 16:28:18.637 13402 13434 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-30 16:28:23.982  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:28:24.051 13712 13791 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.051 13712 13791 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.052   442  1004 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.052   442  1004 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.053 13712 13791 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:28:24.087 13712 13791 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.088   442  1001 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.145   442 13796 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.146 13712 13795 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:24.217 13712 13798 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:28:24.217   440   440 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:24.218   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:24.218   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:24.218   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:24.322   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:25.465   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:25.520   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-30 16:28:25.957 13712 13733 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:28.959 13712 13733 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:31.069   442 13796 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:31.083   442 13796 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:31.094   442 13796 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:31.102   442 13796 E Codec2-Component@1.1: Component::Listener::onWorkDone_nb -- transaction failed.
+10-30 16:28:31.139   440   473 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-30 16:28:31.144  3084  5928 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-30 16:28:31.144  3084  5928 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-30 16:28:31.184 13402 13433 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-30 16:28:36.421  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:28:36.453 13822 13902 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.453 13822 13902 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.453   442   962 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.453   442   962 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.454 13822 13902 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:28:36.469 13822 13902 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.469   442   962 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.549   442 13907 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.549 13822 13906 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:36.595 13822 13909 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:28:36.597   440   440 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:36.599   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:36.599   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:36.599   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:36.831   440   473 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:37.705   440   473 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:38.130   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-30 16:28:39.088 13822 13849 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:39.089 13822 13849 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:41.409 13822 13864 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:41.410 13822 13864 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:43.661   440   473 E OMXNodeInstance: !!! Observer died. Quickly, do something, ... anything...
+10-30 16:28:43.668  3084  5928 E mediaserver: unlinkToDeath: removed reference to death recipient but unlink failed.
+10-30 16:28:43.668  3084  5928 E IPCThreadState: attemptIncStrongHandle(2): Not supported
+10-30 16:28:43.809 13402 13434 E MDD     : DownloadProgressMonitor: Can't find file group for uri: android://com.google.android.googlequicksearchbox/files/sharedminusonemodule/shared/SharedMinusOneData.pb.tmp
+10-30 16:28:49.035  3219  3219 E android.hardware.audio.service.ranchu: device/generic/goldfish/audio/primary_device.cpp:getParameters:234 failure: Result::NOT_SUPPORTED
+10-30 16:28:49.102 13933 14014 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.102 13933 14014 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.102   442   930 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.102   442   930 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.103 13933 14014 E ion     : ioctl c0044901 failed with code -1: Inappropriate ioctl for device
+10-30 16:28:49.130 13933 14014 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.131   442   930 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.202   442 14019 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.202 13933 14018 E FMQ     : grantorIdx must be less than 3
+10-30 16:28:49.276 13933 14021 E ACodec  : [OMX.android.goldfish.h264.decoder] setPortMode on output to DynamicANWBuffer failed w/ err -1010
+10-30 16:28:49.277   440   473 E OMXNodeInstance: getParameter(0xea580160:android.goldfish.h264.decoder, ??(0x6f600011)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:49.280   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigPriority(0x6f800002)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:49.280   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ConfigAndroidVendorExtension(0x6f100004)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:49.281   440   440 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:49.520   440 13912 E OMXNodeInstance: getConfig(0xea580160:android.goldfish.h264.decoder, ??(0x7f000003)) ERROR: UnsupportedSetting(0x80001019)
+10-30 16:28:50.378   440   440 E OMXNodeInstance: setConfig(0xea580160:android.goldfish.h264.decoder, ConfigOperatingRate(0x6f800003)) ERROR: UnsupportedIndex(0x8000101a)
+10-30 16:28:50.673   417   417 E libc    : The property "ro.build.fingerprint" has a value with length 92 that is too large for __system_property_get()/__system_property_read(); use __system_property_read_callback() instead.
+10-30 16:28:50.963 13933 13974 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:50.963 13933 13974 E ActivityThread: Failed to find provider info for android.media.tv
+10-30 16:28:54.013 13933 13996 E ActivityThread: Failed to find provider info for android.media.tv
