@@ -16,6 +16,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import tv.own.owntv.R
@@ -77,7 +78,8 @@ private fun VodCardHeader(player: PlaybackEngine, position: () -> Long, duration
             // Read each second, as the position ticks: when it ends if it plays on from here, and what is left.
             val left = (duration - position()).coerceAtLeast(0)
             add(stringResource(R.string.tvplayer_card_ends_at, clock(System.currentTimeMillis() + left)))
-            add(stringResource(R.string.tvplayer_card_left, ((left + 59_999) / 60_000).toInt()))
+            val minutes = ((left + 59_999) / 60_000).toInt()
+            add(pluralStringResource(R.plurals.tvplayer_card_left, minutes, minutes))
         }
     }
     CardHeader(

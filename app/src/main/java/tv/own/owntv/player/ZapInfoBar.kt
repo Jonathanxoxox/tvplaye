@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -85,7 +86,8 @@ internal fun LiveCardBody(player: PlaybackEngine, info: ZapInfo?, nowMs: Long) {
     val facts = buildList {
         if (now != null) {
             add(stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)))
-            add(stringResource(R.string.tvplayer_card_left, (((now.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000).toInt()))
+            val left = (((now.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000).toInt()
+            add(pluralStringResource(R.plurals.tvplayer_card_left, left, left))
         } else if (info?.guidePending != true) {
             add(stringResource(R.string.tvplayer_no_guide))
         }

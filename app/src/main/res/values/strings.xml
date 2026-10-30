@@ -31,7 +31,10 @@
     <string name="tvplayer_vod_previous" translatable="false">Vorherige Folge</string>
     <string name="tvplayer_vod_next" translatable="false">Nächste Folge</string>
     <string name="tvplayer_card_ends_at" translatable="false">Ende %1$s</string>
-    <string name="tvplayer_card_left" translatable="false">noch %1$d Min.</string>
+    <plurals name="tvplayer_card_left" translatable="false">
+        <item quantity="one">noch %1$d Min.</item>
+        <item quantity="other">noch %1$d Min.</item>
+    </plurals>
     <string name="tvplayer_card_settings" translatable="false">Einstellungen</string>
     <string name="tvplayer_card_next" translatable="false">Danach</string>
     <string name="tvplayer_font_manrope" translatable="false">Manrope</string>
