@@ -229,7 +229,7 @@ internal fun GuideProgrammeBlock(
         }
         if (title != null) {
             Text(
-                title, style = stageText(40, 800, (-1).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                title, style = stageText(38, 600, (-0.6).mpxSp), color = StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.padding(top = 6.mpx, bottom = 4.mpx, end = topEndClear),
             )
         }
@@ -244,8 +244,8 @@ internal fun GuideProgrammeBlock(
 }
 
 /**
- * The ruler above the grid: a time every half hour (17/700 muted, tabular), none within 12 minutes of
- * now, and the accent chip on the now-line ("19:07"). Drawn from the shared scroll position.
+ * The ruler above the grid: a time every half hour (15/500, quiet, tabular), none within 12 minutes of
+ * now, and the accent chip on the now-line ("19:07"), over a hairline. Drawn from the shared scroll position.
  */
 @Composable
 internal fun GuideRuler(
@@ -263,15 +263,19 @@ internal fun GuideRuler(
     val times = generateSequence(first) { it + slotMs }.takeWhile { it < windowEnd }
         .filter { kotlin.math.abs(it - now) > 12 * 60_000L }.toList()
     val nowIn = now in windowStart..windowEnd
+    val hairline = StageColors.Ink.copy(alpha = 0.07f)
     Layout(
-        modifier = modifier,
+        modifier = modifier.drawBehind {
+            val w = 1.mpx.toPx()
+            drawRect(hairline, topLeft = androidx.compose.ui.geometry.Offset(0f, size.height - w), size = androidx.compose.ui.geometry.Size(size.width, w))
+        },
         content = {
             times.forEach { t ->
-                Text(formatTime(t), style = stageText(17, 700).copy(fontFeatureSettings = Tabular), color = StageColors.Muted, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(formatTime(t), style = stageText(15, 500).copy(fontFeatureSettings = Tabular), color = StageColors.Text.copy(alpha = 0.55f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             if (nowIn) {
                 Text(
-                    formatTime(now), style = stageText(15, 800).copy(fontFeatureSettings = Tabular), color = a.onAccent, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                    formatTime(now), style = stageText(14, 700).copy(fontFeatureSettings = Tabular), color = a.onAccent, maxLines = 1, overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.background(a.accent, RoundedCornerShape(8.mpx)).padding(horizontal = 9.mpx, vertical = 3.mpx),
                 )
             }
@@ -316,14 +320,13 @@ internal fun GuideChannelLabel(channel: ChannelEntity, number: Int, name: String
         )
         // [logo] false: the plate stays (same size) but loads nothing, while the guide is only laid out behind the picture.
         LivePlate(if (logo) channel.displayLogoUrl else null, 58.mpx, 40.mpx, radius = 10.mpx)
-        Text(name, style = stageText(tv.own.owntv.ui.theme.StageListText, 600), color = if (selected) a.accent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+        Text(name, style = stageText(tv.own.owntv.ui.theme.StageListText, 500), color = if (selected) a.accent else StageColors.Text, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
     }
 }
 
-/** The 3 px accent now-line with its glow, over the rows. */
+/** The 2 px accent now-line over the rows, without a glow (30 Oct 2026). */
 internal fun Modifier.guideNowLine(accent: Color): Modifier = drawBehind {
-    val w = 3.mpx.toPx()
-    drawBoxShadow(accent, 14.mpx.toPx(), w / 2f)
+    val w = 2.mpx.toPx()
     drawRoundRect(accent, cornerRadius = androidx.compose.ui.geometry.CornerRadius(w / 2f))
 }
 

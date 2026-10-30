@@ -620,6 +620,11 @@ fun EpgScreen(
         }
         val groupsW = fx(400)
         LaunchedEffect(showGroups) { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = showGroups }
+        // Menu and groups begin on the first channel row, so the three columns start on one line (30 Oct 2026).
+        DisposableEffect(Unit) {
+            tv.own.owntv.features.shell.components.StageRailOpen.itemsTop = GuideRowsTop
+            onDispose { tv.own.owntv.features.shell.components.StageRailOpen.itemsTop = null }
+        }
         DisposableEffect(Unit) { onDispose { tv.own.owntv.features.shell.components.StageRailOpen.guideGroups = false; tv.own.owntv.features.shell.components.StageRailOpen.guideFocused = false } }
         val groupsShift = androidx.compose.animation.core.animateDpAsState(if (showGroups) groupsW else 0.mpx, tv.own.owntv.ui.theme.stageSlide())
         val groupsTarget = if (showGroups) groupsW else 0.mpx
@@ -832,8 +837,8 @@ fun EpgScreen(
                     .graphicsLayer { translationX = (groupsShift.value - groupsW).toPx() }
                     .background(palette.glassTint)
                     .drawBehind {
-                        val line = 2.mpx.toPx()
-                        drawRect(palette.ink.copy(alpha = 0.12f), Offset(size.width - line, 0f), Size(line, size.height))
+                        val line = 1.mpx.toPx()
+                        drawRect(palette.ink.copy(alpha = 0.07f), Offset(size.width - line, 0f), Size(line, size.height))
                     },
             )
             LiveCategories(
@@ -878,7 +883,8 @@ fun EpgScreen(
                 focusRowIndex = groupsFocusIndex
                     ?: if (groupsEnter) railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0) else null,
                 modifier = Modifier
-                    .padding(start = fx(24), end = fx(16), top = 44.mpx, bottom = 24.mpx)
+                    // The search field on the ruler's line, the groups from the first channel row (see [GuideRowsTop]).
+                    .padding(start = fx(24), end = fx(16), top = GuideRowsTop - GuideRulerToRows, bottom = 24.mpx)
                     .width(groupsW - fx(40))
                     .fillMaxHeight()
                     .graphicsLayer {
@@ -1244,7 +1250,8 @@ private fun GuideTopArea(
             if (topChannel != null) {
                 val chName = ProviderTags.parse(topChannel.name).name
                 GuideProgrammeBlock(
-                    eyebrow = shown?.let { programmeEyebrow(it, chName, now()) },
+                    // No time line over the title (30 Oct 2026): the grid below says when, the title what.
+                    eyebrow = null,
                     title = shown?.title ?: chName,
                     details = if (shown == null) stringResource(R.string.content_epg_no_programme) else programmeDetailsLine(shown),
                     synopsis = shown?.description,
@@ -1283,3 +1290,12 @@ private fun GuideEmpty(
 
 /** Rows a page key (CH±, RW/FF) moves the guide by. */
 private const val GUIDE_PAGE_ROWS = 7
+
+/**
+ * Where the guide's first channel row begins: the top area (40 + 240), the grid's gap (18), the ruler and
+ * the rows' gap below it (48). Menu and groups start here too, so the three columns begin on one line.
+ */
+internal val GuideRowsTop = (40 + 240 + 18 + 48).mpx
+
+/** The ruler's line above the rows, where the groups' search field stands. */
+private val GuideRulerToRows = 48.mpx

@@ -192,7 +192,10 @@ fun StageRail(
             verticalArrangement = Arrangement.spacedBy(8.mpx),
         ) {
             MenuLogo(drawnOpen)
-            Spacer(Modifier.weight(0.55f))
+            // Beside the guide the items start on its first channel row, so menu, groups and guide begin on
+            // one line (30 Oct 2026); elsewhere they sit a little above the middle as before. The logo stays on top.
+            val itemsTop = StageRailOpen.itemsTop
+            if (itemsTop != null) Spacer(Modifier.height((itemsTop - RailItemsOffset).coerceAtLeast(0.mpx))) else Spacer(Modifier.weight(0.55f))
             items.forEach { section ->
                 RailItem(
                     icon = section.stageIcon,
@@ -225,6 +228,9 @@ private val StripPanel = Color(0xFF0E4950)
 private val MenuWidth = 440.mpx
 private val StripWidth = 110.mpx
 
+/** Where the first item would start without a spacer: the menu's top padding, the logo (56 + 4 around) and two gaps. */
+private val RailItemsOffset = (40 + 64 + 8 + 8).mpx
+
 /** What every screen leaves free at its left edge for the resting icon strip. */
 val StageRailStripWidth = StripWidth
 
@@ -239,6 +245,8 @@ object StageRailOpen {
     var fullPage by mutableStateOf(false)
     /** That page holds focus: the strip steps aside as for the guide. ◀ brings it back. */
     var fullPageFocused by mutableStateOf(false)
+    /** Where a page wants the menu's items to begin (the guide: its first channel row); null = the menu's own place. */
+    var itemsTop by mutableStateOf<androidx.compose.ui.unit.Dp?>(null)
 }
 
 /**
