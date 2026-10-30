@@ -10,7 +10,7 @@ import tv.own.owntv.R
 import tv.own.owntv.core.theme.AppFontFamily
 
 @OptIn(androidx.compose.ui.text.ExperimentalTextApi::class)
-private fun variableFont(resourceId: Int, weight: FontWeight, style: FontStyle = FontStyle.Normal) =
+internal fun variableFont(resourceId: Int, weight: FontWeight, style: FontStyle = FontStyle.Normal) =
     Font(
         resourceId,
         weight = weight,

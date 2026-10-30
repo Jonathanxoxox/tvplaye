@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import tv.own.owntv.R
@@ -15,6 +16,8 @@ import tv.own.owntv.core.theme.FontCustomization
 import tv.own.owntv.core.theme.PopupFontScale
 import tv.own.owntv.core.theme.UiFontScale
 import tv.own.owntv.ui.components.OwnTVIcon
+import tv.own.owntv.ui.theme.MayoFont
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 
@@ -43,9 +46,13 @@ fun FontSettingsScreen(
         onBack = onBack,
         modifier = modifier,
     ) {
-        val families = AppFontFamily.entries.map { it.name to familyLabel(it) }
+        // Core's families, and Manrope, Mayo TV's own addition (MayoFont), which stands in for them while chosen.
+        val context = LocalContext.current
+        val manrope by remember(context) { MayoFont.flow(context) }.collectAsStateWithLifecycle()
+        val manropeLabel = stringResource(R.string.tvplayer_font_manrope)
+        val families = AppFontFamily.entries.map { it.name to familyLabel(it) } + (MayoFont.KEY to manropeLabel)
         val fontTitle = stringResource(R.string.settings_main_interface_font)
-        val fontValue = SettingValue.Choice(familyLabel(current.mainFamily))
+        val fontValue = SettingValue.Choice(if (manrope) manropeLabel else familyLabel(current.mainFamily))
         StageSettingRow(
             icon = OwnTVIcon.TEXT_SIZE,
             title = fontTitle,
@@ -86,7 +93,7 @@ fun FontSettingsScreen(
             desc = null,
             value = null,
             // Popup size has its own row in Appearance; Reset leaves it alone.
-            onClick = { onSet(FontCustomization(popupSizePercent = current.popupSizePercent)) },
+            onClick = { MayoFont.set(context, false); onSet(FontCustomization(popupSizePercent = current.popupSizePercent)) },
             help = SettingHelp(reset, stringResource(R.string.settings_font_customization_description), hints = settingHints(null, pinnable = false)),
         )
 
@@ -94,9 +101,17 @@ fun FontSettingsScreen(
             FontEdit.FONT -> PickerDialog(
                 title = fontTitle,
                 options = families,
-                selected = current.mainFamily.name,
+                selected = if (manrope) MayoFont.KEY else current.mainFamily.name,
                 // One family for the interface and its popups: popups follow the main font.
-                onSelect = { name -> AppFontFamily.valueOf(name).let { onSet(current.copy(mainFamily = it, popupFamily = it)) }; editing = null },
+                onSelect = { name ->
+                    if (name == MayoFont.KEY) {
+                        MayoFont.set(context, true)
+                    } else {
+                        MayoFont.set(context, false)
+                        AppFontFamily.valueOf(name).let { onSet(current.copy(mainFamily = it, popupFamily = it)) }
+                    }
+                    editing = null
+                },
                 onDismiss = { editing = null },
             )
             FontEdit.SIZE -> panelEditor({ editing = null }) {
