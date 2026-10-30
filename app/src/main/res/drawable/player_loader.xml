@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The player's wait (PlayerLoader): a dot that breathes, with a ring running out from it. White on 64 x 64;
+     the loader tints it the accent. Only group scales and path alphas move, which the render thread plays. -->
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt">
+    <aapt:attr name="android:drawable">
+        <vector
+            android:width="64dp"
+            android:height="64dp"
+            android:viewportWidth="64"
+            android:viewportHeight="64">
+            <group
+                android:name="ring"
+                android:pivotX="32"
+                android:pivotY="32">
+                <path
+                    android:name="ringStroke"
+                    android:pathData="M25,32A7,7 0 1,0 39,32A7,7 0 1,0 25,32Z"
+                    android:strokeColor="#FFFFFFFF"
+                    android:strokeWidth="1.2"
+                    android:strokeAlpha="0.6" />
+            </group>
+            <group
+                android:name="dot"
+                android:pivotX="32"
+                android:pivotY="32"
+                android:scaleX="0.8"
+                android:scaleY="0.8">
+                <path
+                    android:name="dotFill"
+                    android:pathData="M25,32A7,7 0 1,0 39,32A7,7 0 1,0 25,32Z"
+                    android:fillColor="#FFFFFFFF"
+                    android:fillAlpha="0.7" />
+            </group>
+        </vector>
+    </aapt:attr>
+    <target android:name="ring">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:valueFrom="1"
+                    android:valueTo="4.2"
+                    android:valueType="floatType"
+                    android:duration="1600"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
+                    android:interpolator="@android:interpolator/linear_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:valueFrom="1"
+                    android:valueTo="4.2"
+                    android:valueType="floatType"
+                    android:duration="1600"
+                    android:repeatCount="infinite"
+                    android:repeatMode="restart"
+                    android:interpolator="@android:interpolator/linear_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="ringStroke">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="strokeAlpha"
+                android:valueFrom="0.6"
+                android:valueTo="0"
+                android:valueType="floatType"
+                android:duration="1600"
+                android:repeatCount="infinite"
+                android:repeatMode="restart"
+                android:interpolator="@android:interpolator/linear_out_slow_in" />
+        </aapt:attr>
+    </target>
+    <target android:name="dot">
+        <aapt:attr name="android:animation">
+            <set>
+                <objectAnimator
+                    android:propertyName="scaleX"
+                    android:valueFrom="0.8"
+                    android:valueTo="1.15"
+                    android:valueType="floatType"
+                    android:duration="800"
+                    android:repeatCount="infinite"
+                    android:repeatMode="reverse"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+                <objectAnimator
+                    android:propertyName="scaleY"
+                    android:valueFrom="0.8"
+                    android:valueTo="1.15"
+                    android:valueType="floatType"
+                    android:duration="800"
+                    android:repeatCount="infinite"
+                    android:repeatMode="reverse"
+                    android:interpolator="@android:interpolator/fast_out_slow_in" />
+            </set>
+        </aapt:attr>
+    </target>
+    <target android:name="dotFill">
+        <aapt:attr name="android:animation">
+            <objectAnimator
+                android:propertyName="fillAlpha"
+                android:valueFrom="0.7"
+                android:valueTo="1"
+                android:valueType="floatType"
+                android:duration="800"
+                android:repeatCount="infinite"
+                android:repeatMode="reverse"
+                android:interpolator="@android:interpolator/fast_out_slow_in" />
+        </aapt:attr>
+    </target>
+</animated-vector>
