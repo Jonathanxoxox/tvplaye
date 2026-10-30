@@ -481,7 +481,6 @@ fun SearchScreen(
             when {
                 activeCh != null -> LiveStagePane(
                     channel = activeCh,
-                    channelName = ProviderTags.parse(activeCh.name).name,
                     nowNext = nowNext,
                     previewEngine = liveVm.previewEngine,
                     showVideo = previewOn,

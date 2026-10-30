@@ -37,7 +37,6 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
@@ -72,13 +71,11 @@ import tv.own.owntv.ui.format.rememberSystemTimeFormatter
 import tv.own.owntv.ui.stage.shownColor
 import tv.own.owntv.ui.stage.PlaylistMark
 import tv.own.owntv.ui.stage.StageGroupLabel
-import tv.own.owntv.ui.stage.StageLiveBadge
 import tv.own.owntv.ui.stage.StagePlaylistMark
 import tv.own.owntv.ui.stage.StageProgress
 import tv.own.owntv.ui.stage.StageRow
 import tv.own.owntv.ui.stage.StageSearchField
 import tv.own.owntv.ui.stage.StageSheetItem
-import tv.own.owntv.ui.stage.StageSpecChip
 import tv.own.owntv.ui.stage.StageSurface
 import tv.own.owntv.ui.stage.StageTag
 import tv.own.owntv.ui.stage.drawBoxShadow
@@ -208,15 +205,13 @@ private fun detailsLine(now: XtEpgEntry, details: EpgDetails?): String {
 }
 
 /**
- * The stage (`cLiveStage`): the preview video (16:9, radius 28) with the LIVE badge, the stream facts
- * and the channel in the lower corner; below it the programme title 42/800, the details line, the
+ * The stage (`cLiveStage`): the preview video (16:9, radius 28), the picture alone; below it the programme title 42/800, the details line, the
  * progress and time left, the synopsis, and what is on next (accent time) and later. ▶ from the list
  * enters next / later ([scheduleFocus]); OK on one opens it through [onOpenProgramme].
  */
 @Composable
 internal fun LiveStagePane(
     channel: ChannelEntity?,
-    channelName: String?,
     nowNext: EpgNowNext?,
     previewEngine: tv.own.owntv.player.LivePreviewEngine,
     showVideo: Boolean,
@@ -227,7 +222,6 @@ internal fun LiveStagePane(
     modifier: Modifier = Modifier,
 ) {
     val previewState by previewEngine.state.collectAsStateWithLifecycle()
-    val streamChips by previewEngine.streamChips.collectAsStateWithLifecycle()
     val playing = showVideo && previewState != tv.own.owntv.player.LivePreviewEngine.State.ERROR &&
         previewState != tv.own.owntv.player.LivePreviewEngine.State.IDLE
     val loading = showVideo && previewState == tv.own.owntv.player.LivePreviewEngine.State.LOADING
@@ -245,7 +239,9 @@ internal fun LiveStagePane(
                 .background(Color.Black),
             contentAlignment = Alignment.Center,
         ) {
-            if (channel != null) {
+            // The picture alone, as in the guide's corner (Jonathan, 30 Oct 2026): no LIVE badge, number, name or
+            // stream facts over it; the channel's logo stands in only until its picture runs.
+            if (channel != null && !playing) {
                 ChannelLogoTile(
                     logoUrl = channel.displayLogoUrl,
                     modifier = Modifier.size(288.mpx),
@@ -254,30 +250,7 @@ internal fun LiveStagePane(
             }
             if (playing) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
             if (loading) tv.own.owntv.player.PlayerLoader(sizeDp = 48)
-            // `.shade`: black 72% at the bottom, clear by 42% up — a video-sized gradient, one pass.
-            Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
             Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), videoR.toPx()) })
-            if (channel != null) {
-                Box(Modifier.align(Alignment.TopStart).padding(start = 24.mpx, top = 22.mpx)) { StageLiveBadge(stringResource(R.string.player_live)) }
-                if (playing && streamChips.isNotEmpty()) {
-                    Row(Modifier.align(Alignment.TopEnd).padding(end = 22.mpx, top = 22.mpx), horizontalArrangement = Arrangement.spacedBy(6.mpx)) {
-                        // Three facts — quality, frame rate, sound: the
-                        // engine's aspect ratio ("16:9") and declared bitrate ("4.2 Mbps") are left out.
-                        streamChips.filterNot { it.contains(':') || it.endsWith("Mbps") }.forEach { StageSpecChip(it) }
-                    }
-                }
-                Row(
-                    Modifier.align(Alignment.BottomStart).padding(start = 26.mpx, bottom = 22.mpx),
-                    horizontalArrangement = Arrangement.spacedBy(14.mpx),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    LivePlate(channel.displayLogoUrl, 64.mpx, 46.mpx)
-                    Column {
-                        channel.number?.let { Text(it.toString(), style = stageText(15, 600), color = Color(0xFFCFD8D4), maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                        Text(channelName.orEmpty(), style = stageText(22, 700), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                }
-            }
             if (singleSessionBlocked && !playing) {
                 Text(
                     stringResource(R.string.content_preview_single_stream),
