@@ -25,6 +25,15 @@
     <string name="tvplayer_option_unfavorite" translatable="false">Aus Favoriten entfernen</string>
     <string name="tvplayer_option_controls" translatable="false">Bedienleiste anzeigen</string>
     <string name="tvplayer_options_title" translatable="false">Optionen</string>
+    <string name="tvplayer_vod_play" translatable="false">Abspielen</string>
+    <string name="tvplayer_vod_pause" translatable="false">Pause</string>
+    <string name="tvplayer_vod_restart" translatable="false">Von vorn</string>
+    <string name="tvplayer_vod_previous" translatable="false">Vorherige Folge</string>
+    <string name="tvplayer_vod_next" translatable="false">Nächste Folge</string>
+    <string name="tvplayer_card_ends_at" translatable="false">endet um</string>
+    <string name="tvplayer_card_left" translatable="false">noch</string>
+    <string name="tvplayer_card_more" translatable="false">Mehr</string>
+    <string name="tvplayer_vod_up_next" translatable="false">Danach: %1$s</string>
     <string name="content_search_channels">Search channels\u2026</string>
     <string name="content_search_movies">Search movies…</string>
     <string name="content_search_series">Search series…</string>

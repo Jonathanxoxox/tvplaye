@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -58,7 +59,7 @@ import tv.own.owntv.core.settings.RemoteShortcutAction
 import tv.own.owntv.core.settings.RemoteShortcutPress
 import tv.own.owntv.ui.components.LocalRemoteShortcuts
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.displayLabel
 import tv.own.owntv.ui.components.displayText // PlayerFailureReason.displayText, for the error overlay
 import tv.own.owntv.ui.theme.gradientWash
 
@@ -122,6 +123,9 @@ private const val TRACK_POLL_TRIES = 20
  *  spinner says the stream is reconnecting by itself, so a long outage doesn't look like a hung app.
  *  Counted from the stall, which itself only starts once the buffer (~10s) has run dry. */
 private const val RECONNECT_NOTICE_AFTER_MS = 10_000L
+
+/** A wait shorter than this shows no loader at all, so a quick channel change is just the new picture. */
+private const val LOADER_DELAY_MS = 600L
 
 internal enum class HudDialog { NONE, AUDIO, SUBS, SPEED, ZOOM, QUALITY, VOLUME, JUMP_BACK, SLEEP_TIMER }
 
@@ -193,6 +197,8 @@ fun PlayerHud(
     // one engine exposes, or to try the other engine on a problem file). null = not a VOD;
     // true = currently playing on ExoPlayer.
     vodOnExo: Boolean? = null,
+    // Movie/episode only: the film's or series' poster for the card. Null draws the card without one.
+    artworkUrl: String? = null,
     onToggleVodEngine: (() -> Unit)? = null,
     // Movie/episode only: open the OpenSubtitles search from the Subtitles dialog.
     // Null for Live TV and when there's no current-item context, which hides the ADD SUBTITLES row.
@@ -299,6 +305,11 @@ fun PlayerHud(
     // waiting for it showed the classic controls for a moment first (Jonathan, 27 Oct 2026). ◀ simply
     // does nothing until the list is there.
     val listFirst = zapInfo != null
+    // Films and episodes wear the live player's band too (see [VodControlPanel]): the info block, the seek
+    // line, the tiles and the settings under them, instead of the classic top strip, transport and dock,
+    // so a channel, a film and a series read as one player. A catch-up programme keeps the classic
+    // controls along with its guide cards.
+    val vodPanel = !listFirst && !isLive && onScrubLive == null && liveEpgCard == null
     var controlsVisible by remember { mutableStateOf(!listFirst) }
     LaunchedEffect(listFirst) { if (listFirst) controlsVisible = false }
     var showOptions by remember { mutableStateOf(false) }
@@ -321,7 +332,8 @@ fun PlayerHud(
     // with its Retry stands alone, and ▲▼ still zap away from a dead channel.
     // Same for the dialogs (audio, subtitles…): opened from the list-first panel they draw on their own, and the
     // classic bar appearing behind them looked like the old player coming back (Jonathan, 28 Oct 2026).
-    val forceShow = !listFirst && (error != null || dialog != HudDialog.NONE)
+    // The film's band steps aside for a dialog, as the live panel does, rather than sitting behind it.
+    val forceShow = !listFirst && (error != null || (dialog != HudDialog.NONE && !vodPanel))
     // First Back hides the controls (instead of leaving the channel); with the controls already hidden
     // this handler is disabled, so Back falls through to the shell, which exits the player. Also disabled
     // while an error/dialog is up (a dialog handles its own Back; an error should exit).
@@ -489,6 +501,31 @@ fun PlayerHud(
 
     // Only for the "report this stream" button, whose readout is now gathered off the main thread.
     val hudScope = androidx.compose.runtime.rememberCoroutineScope()
+    val reportDuration = duration.takeIf { it > 0 }?.let { formatTime(it) }
+    val reportSavedMessage = stringResource(R.string.player_report_saved)
+    val reportStream: () -> Unit = {
+        val meta = player.currentMeta.value
+        // The readout is gathered on the player's own thread now, so the report is
+        // written from a coroutine. The confirmation still flashes immediately — the user
+        // pressed a button and must see it acknowledged.
+        // Read at the press, not per tick.
+        val reportPosition = tv.own.owntv.ui.components.formatTimestamp(reportContext.resources, position.value)
+        hudScope.launch {
+            val snapshot = buildString {
+                appendLine(player.streamInfo().joinToString("\n") { (k, v) -> "  $k: $v" })
+                appendLine("  position: $reportPosition${reportDuration?.let { " / $it" }.orEmpty()}")
+            }
+            PlaybackErrorLog.report(
+                context = reportContext,
+                engine = engineChip ?: "?",
+                live = isLive,
+                title = meta.title,
+                snapshot = snapshot,
+            )
+        }
+        engineMsg = reportSavedMessage
+        engineFlash++
+    }
 
     LaunchedEffect(forceShow) { if (forceShow) controlsVisible = true }
     LaunchedEffect(controlsVisible, player) { if (controlsVisible) player.refreshStreamChips() }
@@ -499,7 +536,8 @@ fun PlayerHud(
     }
     LaunchedEffect(controlsVisible, wakeTick, forceShow, inert) {
         // Don't auto-hide under an overlay — hiding is what triggers the catch-all focus grab below.
-        if (controlsVisible && !forceShow && !inert) { delay(4500); controlsVisible = false }
+        // The film's card holds as long as the live panel: it has choices to walk along.
+        if (controlsVisible && !forceShow && !inert) { delay(if (vodPanel) 8000 else 4500); controlsVisible = false }
     }
     LaunchedEffect(controlsVisible, error, dialog, inert, showNextCard, showOptions, showPanel) {
         // Never steal focus while a dialog is open (its rows own it) or while a shell overlay is up
@@ -510,6 +548,8 @@ fun PlayerHud(
         if (controlsVisible) {
             val toSeek = focusSeekOnShow
             focusSeekOnShow = false
+            // The film's card is laid out a frame after it appears; focus can only land on it then.
+            if (vodPanel && error == null) withFrameNanos { }
             when {
                 error != null -> runCatching { retryFocus.requestFocus() }
                 // Falls back to Play when no timeline is drawn after all (no duration yet, say).
@@ -528,16 +568,15 @@ fun PlayerHud(
     var shortcutPressedAt by remember { mutableStateOf(0L) }
     val dispatchPlayerShortcut: (RemoteShortcutAction) -> Unit = { action ->
         when (action) {
-            RemoteShortcutAction.OPEN_SUBTITLE_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.SUBS }
-            RemoteShortcutAction.OPEN_AUDIO_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.AUDIO }
-            RemoteShortcutAction.OPEN_ASPECT_CONTROLS -> { if (!listFirst) controlsVisible = true; dialog = HudDialog.ZOOM }
+            RemoteShortcutAction.OPEN_SUBTITLE_CONTROLS -> { if (!listFirst && !vodPanel) controlsVisible = true; dialog = HudDialog.SUBS }
+            RemoteShortcutAction.OPEN_AUDIO_CONTROLS -> { if (!listFirst && !vodPanel) controlsVisible = true; dialog = HudDialog.AUDIO }
+            RemoteShortcutAction.OPEN_ASPECT_CONTROLS -> { if (!listFirst && !vodPanel) controlsVisible = true; dialog = HudDialog.ZOOM }
             RemoteShortcutAction.TOGGLE_PLAYBACK_INFO -> showInfo = !showInfo
             else -> remoteShortcuts.dispatch(action)
         }
     }
-    // The live player's settings: down the right edge on long OK, and under the tile row on ▼ (see
-    // HudControlPanel). Built only while one of the two is up.
-    val liveOptions: List<LiveOption> = if (showOptions || (showPanel && listFirst)) {
+    // The live player's settings down the right edge: long OK, Menu, or More on the card. Built only while up.
+    val liveOptions: List<LiveOption> = if (!vodPanel && showOptions) {
         val close = { showOptions = false; showPanel = false }
         val open: (HudDialog) -> Unit = { d -> showOptions = false; showPanel = false; dialog = d }
         val qualities by player.videoQualities.collectAsStateWithLifecycle()
@@ -566,6 +605,62 @@ fun PlayerHud(
             add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { close(); showInfo = !showInfo })
             add(LiveOption(stringResource(R.string.tvplayer_option_controls), OwnTVIcon.LIST) { close(); controlsVisible = true })
         }
+    } else emptyList()
+    // The film's band: up with the controls, never over an error, whose Retry stands alone as in the live player.
+    val vodBandUp = vodPanel && controlsVisible && error == null
+    val closeVod = { showOptions = false; controlsVisible = false }
+    val openVod: (HudDialog) -> Unit = { d -> showOptions = false; controlsVisible = false; dialog = d }
+    // The tracks in use, named on the card's Audio and Subtitles. Read as the card comes up: choosing
+    // another closes it, so the next time it opens it names the new one.
+    val cardUp = vodBandUp || showPanel
+    val audioNow = if (cardUp) remember(audioCount, controlsVisible, showPanel) { player.audioTracks().firstOrNull { it.selected } }?.displayLabel() else null
+    val subtitleNow = if (vodBandUp) {
+        remember(subCount, controlsVisible) { player.textTracks().firstOrNull { it.selected } }?.displayLabel()
+            ?: stringResource(R.string.common_off)
+    } else null
+    val moreLabel = stringResource(R.string.tvplayer_card_more)
+    // The film's card: Pause and the episode's neighbours on the left, the tracks and More on the right.
+    // Built for as long as the player shows a film, so the card still holds them while it sinks away.
+    val vodStart: List<CardItem> = if (vodPanel) buildList {
+        add(CardItem("play", stringResource(if (isPlaying) R.string.tvplayer_vod_pause else R.string.tvplayer_vod_play), icon = if (isPlaying) OwnTVIcon.PAUSE else OwnTVIcon.PLAY) { player.togglePlayPause() })
+        add(CardItem("restart", stringResource(R.string.tvplayer_vod_restart)) { player.seekBy(-position.value) })
+        if (nav.hasPrev) add(CardItem("previous", stringResource(R.string.tvplayer_vod_previous)) { player.previous() })
+        if (nav.hasNext) add(CardItem("next", stringResource(R.string.tvplayer_vod_next)) { player.next() })
+    } else emptyList()
+    val vodEnd: List<CardItem> = if (vodPanel) listOf(
+        CardItem("audio", stringResource(R.string.player_tool_audio), audioNow) { openVod(HudDialog.AUDIO) },
+        CardItem("subtitles", stringResource(R.string.player_tool_subtitles), subtitleNow) { openVod(HudDialog.SUBS) },
+        CardItem("more", moreLabel, icon = OwnTVIcon.MORE, iconOnly = true) { controlsVisible = false; showOptions = true },
+    ) else emptyList()
+    // The film's settings, behind More: the rest of the old dock.
+    val vodSettings: List<LiveOption> = if (vodPanel) {
+        val qualities by player.videoQualities.collectAsStateWithLifecycle()
+        buildList {
+            onToggleFavorite?.let { toggle ->
+                add(LiveOption(stringResource(if (favorite) R.string.tvplayer_option_unfavorite else R.string.tvplayer_option_favorite), OwnTVIcon.FAVORITE) { closeVod(); toggle() })
+            }
+            add(LiveOption(stringResource(R.string.player_tool_aspect), OwnTVIcon.ASPECT) { openVod(HudDialog.ZOOM) })
+            add(LiveOption(stringResource(R.string.player_tool_speed), OwnTVIcon.FORWARD, formatSpeed(speed)) { openVod(HudDialog.SPEED) })
+            if (qualities.isNotEmpty()) add(LiveOption(stringResource(R.string.player_tool_quality), OwnTVIcon.VIDEO) { openVod(HudDialog.QUALITY) })
+            add(LiveOption(stringResource(R.string.player_tool_volume), volumeIcon(volume)) { openVod(HudDialog.VOLUME) })
+            toggleVod?.let { toggle ->
+                add(LiveOption(
+                    stringResource(R.string.player_tool_engine), OwnTVIcon.SWAP,
+                    stringResource(if (vodOnExo == true) R.string.player_engine_exo else R.string.player_engine_mpv),
+                ) { closeVod(); toggle() })
+            }
+            add(LiveOption(stringResource(R.string.player_sleep_timer), OwnTVIcon.BEDTIME) { openVod(HudDialog.SLEEP_TIMER) })
+            add(LiveOption(stringResource(R.string.player_tool_info), OwnTVIcon.INFO) { closeVod(); showInfo = !showInfo })
+            // Only while the readout is open, as on the dock: there is nothing to report otherwise.
+            if (showInfo) add(LiveOption(stringResource(R.string.player_tool_report), OwnTVIcon.SHARE) { closeVod(); reportStream() })
+        }
+    } else emptyList()
+    // Menu's panel for a film: the tracks first, as in the live player's, then the settings.
+    val vodOptions: List<LiveOption> = if (vodPanel && showOptions) {
+        listOf(
+            LiveOption(stringResource(R.string.player_tool_audio), OwnTVIcon.AUDIO, audioCount.takeIf { it > 1 }?.toString()) { openVod(HudDialog.AUDIO) },
+            LiveOption(stringResource(R.string.player_tool_subtitles), OwnTVIcon.SUBTITLE, subCount.takeIf { it > 0 }?.toString()) { openVod(HudDialog.SUBS) },
+        ) + vodSettings
     } else emptyList()
     Box(
         modifier = modifier.fillMaxSize()
@@ -661,6 +756,11 @@ fun PlayerHud(
                         }
                     }
                 }
+            }
+            // Films: Menu opens the options down the right edge, as it does in the live player.
+            if (vodPanel && !inert && dialog == HudDialog.NONE && !showOptions && !digitsActive && e.key == Key.Menu) {
+                if (e.type == KeyEventType.KeyDown && e.nativeKeyEvent.repeatCount == 0) { controlsVisible = false; showOptions = true }
+                return@onPreviewKeyEvent true
             }
             // ---- List-first keys: OK, Menu, the arrows, as set in Settings › Remote control ----
             val scrubsLeftRight = error == null && (if (onScrubLive != null) liveLeftRightRewinds else !isLive && duration > 0L)
@@ -796,14 +896,27 @@ fun PlayerHud(
         tv.own.owntv.ui.theme.StageAppear(clockUp, Modifier.align(Alignment.BottomCenter), y = 1f, durationMs = 260) {
             if (zapInfo != null && bandTiles) {
                 HudControlPanel(
-                    player, zapInfo(), remote, onOpenHistoryList, panelFocus, liveOptions,
+                    player, zapInfo(), remote, onOpenHistoryList, panelFocus,
+                    audioNow = audioNow,
+                    onAudio = { showPanel = false; dialog = HudDialog.AUDIO },
+                    onMore = { showPanel = false; showOptions = true },
                     onClose = { showPanel = false }, onActivity = { panelTick++ },
                 )
             } else if (zapInfo != null) {
                 ZapInfoBar(player, zapInfo())
             }
         }
-        tv.own.owntv.ui.theme.StageAppear(clockUp, Modifier.align(Alignment.TopEnd), y = -1f, durationMs = 260) {
+        // The film's band rises like the channel's, with the same clock coming down at the top.
+        tv.own.owntv.ui.theme.StageAppear(vodBandUp, Modifier.align(Alignment.BottomCenter), y = 1f, durationMs = 260) {
+            VodControlPanel(
+                player, { position.value }, duration,
+                artworkUrl = artworkUrl,
+                upNext = nextUpTitle?.takeIf { nav.hasNext && !stopsAtItemEnd },
+                seekFocus = seekFocus, start = vodStart, end = vodEnd, menuFocus = playFocus,
+                onActivity = { wakeTick++ },
+            )
+        }
+        tv.own.owntv.ui.theme.StageAppear(clockUp || vodBandUp, Modifier.align(Alignment.TopEnd), y = -1f, durationMs = 260) {
             PanelClock()
         }
 
@@ -814,9 +927,9 @@ fun PlayerHud(
         // must not happen. It is drawn whenever anything is recording, HUD up or down, and it is not
         // focusable and not interactive: stopping a recording is the Recordings screen's job, and a
         // stop button one stray D-pad press from the middle of a programme is not a kindness.
-        RecordingBadge(modifier = Modifier.align(Alignment.TopEnd).padding(top = if (clockUp) 40.dp else 0.dp))
+        RecordingBadge(modifier = Modifier.align(Alignment.TopEnd).padding(top = if (clockUp || vodBandUp) 40.dp else 0.dp))
 
-        if (controlsVisible) {
+        if (controlsVisible && !vodPanel) {
             // Scrims: a FLAT semi-transparent panel behind the controls, feathered to transparent only at
             // the inner edge. A pure gradient faded out exactly where the chips and the Now/Next text sit,
             // so those washed out on bright scenes; a hard-edged band would instead draw a visible seam
@@ -857,9 +970,6 @@ fun PlayerHud(
             if (error == null) {
                 CenterControls(player, nav, isPlaying, isLive, onRewindLive, onForwardLive, timeshiftOffset, playFocus, modifier = Modifier.align(Alignment.Center))
 
-                val reportDuration = duration.takeIf { it > 0 }?.let { formatTime(it) }
-                val reportSavedMessage = stringResource(R.string.player_report_saved)
-
                 BottomBar(
                     seekFocus = seekFocus,
                     player = player, isLive = isLive, position = { position.value }, duration = duration,
@@ -874,29 +984,7 @@ fun PlayerHud(
                     compatMode = compatMode, onToggleCompatMode = toggleCompat,
                     vodOnExo = vodOnExo, onToggleVodEngine = toggleVod,
                     onInfo = { showInfo = !showInfo }, infoOn = showInfo,
-                    onReport = {
-                        val meta = player.currentMeta.value
-                        // The readout is gathered on the player's own thread now, so the report is
-                        // written from a coroutine. The confirmation still flashes immediately — the user
-                        // pressed a button and must see it acknowledged.
-                        // Read at the press, not per tick.
-                        val reportPosition = tv.own.owntv.ui.components.formatTimestamp(reportContext.resources, position.value)
-                        hudScope.launch {
-                            val snapshot = buildString {
-                                appendLine(player.streamInfo().joinToString("\n") { (k, v) -> "  $k: $v" })
-                                appendLine("  position: $reportPosition${reportDuration?.let { " / $it" }.orEmpty()}")
-                            }
-                            PlaybackErrorLog.report(
-                                context = reportContext,
-                                engine = engineChip ?: "?",
-                                live = isLive,
-                                title = meta.title,
-                                snapshot = snapshot,
-                            )
-                        }
-                        engineMsg = reportSavedMessage
-                        engineFlash++
-                    },
+                    onReport = reportStream,
                     favorite = favorite, onToggleFavorite = onToggleFavorite,
                     onOpenDialog = { dialog = it },
                     onMultiview = onMultiview, onRecordThis = onRecordThis, recordingThis = recordingThis, onBack = onBack,
@@ -914,7 +1002,12 @@ fun PlayerHud(
                 playFocus = nextFocus,
                 onPlayNow = { autoNextDismissed = true; player.next() },
                 onCancel = { autoNextDismissed = true; player.cancelAutoNext() },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(end = 28.dp, bottom = 120.dp),
+                // Above the film's band while it is up, under the clock; otherwise where it always sat.
+                modifier = if (vodBandUp) {
+                    Modifier.align(Alignment.TopEnd).padding(end = 28.dp, top = 96.dp)
+                } else {
+                    Modifier.align(Alignment.BottomEnd).padding(end = 28.dp, bottom = 120.dp)
+                },
             )
         }
 
@@ -1009,10 +1102,12 @@ fun PlayerHud(
                 }
             }
             // A provider wait looks like loading, because that is what it is: the channel is queued behind
-            // the panel's own countdown and the engine re-asks by itself. The line under the spinner says
+            // the panel's own countdown and the engine re-asks by itself. The line under the loader says
             // why nothing is happening yet, so nobody reaches for Retry (or thinks the channel is dead).
             buffering -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                OwnTVSpinner(sizeDp = 56)
+                // Most channel changes are quicker than this: then nothing shows but the new picture.
+                val loaderDue by produceState(false) { delay(LOADER_DELAY_MS); value = true }
+                Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) { if (loaderDue) PlayerLoader(sizeDp = 72) }
                 val stalledSince = stalledSinceMs
                 if (providerBackOff == null && stalledSince != null) {
                     val showNotice by produceState(false, stalledSince) {
@@ -1053,7 +1148,7 @@ fun PlayerHud(
         val meta by player.currentMeta.collectAsStateWithLifecycle()
         LiveOptionsPanel(
             title = meta.title?.takeIf { it.isNotBlank() } ?: stringResource(R.string.tvplayer_options_title),
-            options = liveOptions,
+            options = if (vodPanel) vodOptions else liveOptions,
             ignoreOkUntilReleased = optionsOpenedByOk,
             onDismiss = { showOptions = false },
         )
@@ -1159,7 +1254,10 @@ class LiveRemoteActions(
     val panelChannels: (@Composable () -> List<PanelTile>)?,
 )
 
-/** The info bar with the tile row under it: Guide and History first, then the channels watched last. */
+/**
+ * The channel's card with its choices (OK in the live player): the guide and the history, then the
+ * channels watched last with what is on them; at the right the audio track and More, the options.
+ */
 @Composable
 private fun HudControlPanel(
     player: PlaybackEngine,
@@ -1167,61 +1265,27 @@ private fun HudControlPanel(
     remote: LiveRemoteActions?,
     onOpenHistoryList: (() -> Unit)?,
     focus: FocusRequester,
-    settings: List<LiveOption>,
+    audioNow: String?,
+    onAudio: () -> Unit,
+    onMore: () -> Unit,
     onClose: () -> Unit,
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var settingsOpen by remember { mutableStateOf(false) }
-    val settingsFocus = remember { FocusRequester() }
-    LaunchedEffect(settingsOpen) {
-        if (settingsOpen) { withFrameNanos { }; runCatching { settingsFocus.requestFocus() } }
-    }
     val recent = remote?.panelChannels?.invoke().orEmpty()
-    val guideLabel = stringResource(R.string.tvplayer_panel_guide)
-    val historyLabel = stringResource(R.string.tvplayer_panel_history)
-    val tiles = buildList {
-        remote?.onOpenGuide?.let { add(PanelTile("guide", guideLabel, OwnTVIcon.EPG) { onClose(); it() }) }
-        onOpenHistoryList?.let { add(PanelTile("history", historyLabel, OwnTVIcon.HISTORY) { onClose(); it() }) }
-        recent.forEach { ch -> add(PanelTile(ch.key, ch.label, logoUrl = ch.logoUrl, caption = ch.caption) { onClose(); ch.onClick() }) }
+    val tools = buildList {
+        remote?.onOpenGuide?.let { add(CardItem("guide", stringResource(R.string.tvplayer_panel_guide), icon = OwnTVIcon.EPG) { onClose(); it() }) }
+        onOpenHistoryList?.let { add(CardItem("history", stringResource(R.string.tvplayer_panel_history)) { onClose(); it() }) }
     }
-    val u = rememberScreenUnits()
-    val guide = info?.guide
-    // The panel opens on a moment; the seek line and minutes left are read from it, as in the zap bar.
-    val nowMs = remember(guide) { System.currentTimeMillis() }
-    // Proportions of the classic player at 1920×1080: the programme block from y 622, the seek line
-    // at 790, tiles 236×172 from 820, the arrow at 1030 (Jonathan's photo, 27 Oct 2026).
-    Column(modifier.fillMaxWidth().background(PanelWash).padding(top = u.dp(60))) {
-        PlayerZapInfoBlock(player, info, nowMs)
-        Spacer(Modifier.height(u.dp(8)))
-        ProgrammeSeekLine(guide, nowMs)
-        Column {
-            if (tiles.isNotEmpty()) {
-                ControlPanelRow(
-                    tiles, focus, onActivity = onActivity,
-                    // ▼ from the tiles opens the settings under them.
-                    modifier = Modifier.onPreviewKeyEvent { e ->
-                        if (e.key == Key.DirectionDown && settings.isNotEmpty()) {
-                            if (e.type == KeyEventType.KeyDown) { settingsOpen = true; onActivity() }
-                            true
-                        } else false
-                    },
-                )
-            }
-            when {
-                settings.isEmpty() -> Spacer(Modifier.height(u.dp(60)))
-                settingsOpen -> SettingsPanelRow(
-                    settings, settingsFocus, onActivity,
-                    // ▲ back to the tiles; the settings fold away again.
-                    modifier = Modifier.onPreviewKeyEvent { e ->
-                        if (e.key == Key.DirectionUp && tiles.isNotEmpty()) {
-                            if (e.type == KeyEventType.KeyDown) { settingsOpen = false; runCatching { focus.requestFocus() }; onActivity() }
-                            true
-                        } else false
-                    },
-                )
-                else -> MoreBelowHint()
-            }
-        }
+    val start = tools + recent.map { ch -> CardItem(ch.key, ch.label, ch.caption?.takeIf { it.isNotBlank() }) { onClose(); ch.onClick() } }
+    val end = listOf(
+        CardItem("audio", stringResource(R.string.player_tool_audio), audioNow, onClick = onAudio),
+        CardItem("more", stringResource(R.string.tvplayer_card_more), icon = OwnTVIcon.MORE, iconOnly = true, onClick = onMore),
+    )
+    // The card opens on a moment; the line and the minutes left are read from it, as on the zap card.
+    val nowMs = remember(info?.guide) { System.currentTimeMillis() }
+    PlayerCard(modifier) {
+        LiveCardBody(player, info, nowMs)
+        CardMenu(start, end, focus, onActivity, divider = tools.size)
     }
 }

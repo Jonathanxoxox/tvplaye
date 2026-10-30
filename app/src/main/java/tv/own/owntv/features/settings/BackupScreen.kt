@@ -38,7 +38,7 @@ import tv.own.owntv.R
 import tv.own.owntv.core.backup.BackupManager
 import tv.own.owntv.ui.components.BrowseMode
 import tv.own.owntv.ui.components.OwnTVIcon
-import tv.own.owntv.ui.components.OwnTVSpinner
+import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.StorageBrowser
 import java.io.File
 import androidx.compose.foundation.border
@@ -288,7 +288,7 @@ fun BackupScreen(
         val status = @Composable { text: String, color: Color -> Text(text, style = stageText(17, 500), color = color, modifier = Modifier.padding(top = 20.mpx)) }
         when (val s = state) {
             BackupViewModel.State.Working -> Row(Modifier.padding(top = 20.mpx), verticalAlignment = Alignment.CenterVertically) {
-                OwnTVSpinner(sizeDp = 22)
+                LandmarkLoader(sizeDp = 22)
                 Spacer(Modifier.width(12.mpx))
                 Text(stringResource(R.string.settings_backup_working), style = stageText(17, 500), color = StageColors.Muted)
             }

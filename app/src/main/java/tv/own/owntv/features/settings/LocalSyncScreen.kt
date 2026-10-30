@@ -1,13 +1,6 @@
 package tv.own.owntv.features.settings
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,12 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -63,7 +52,6 @@ import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.rememberDialogFocusRestore
 import tv.own.owntv.ui.components.restoreAfterDialogClose
 import tv.own.owntv.ui.components.trapVerticalFocusExit
-import tv.own.owntv.ui.theme.animationsOn
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.runtime.DisposableEffect
@@ -378,7 +366,7 @@ private fun StepPopup(onDismiss: () -> Unit, content: @Composable ColumnScope.()
     }
 }
 
-/** "Working…", with a spinner, in the shape of a row — not a bare grey line under the list. */
+/** "Working…", with the loading landmarks, in the shape of a row — not a bare grey line under the list. */
 @Composable
 private fun BusyRow() {
     Row(
@@ -391,46 +379,11 @@ private fun BusyRow() {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        BusySpinner(Modifier.size(18.dp), tv.own.owntv.ui.theme.stageAccent.accent)
+        tv.own.owntv.ui.components.LandmarkLoader(sizeDp = 18)
         Text(
             stringResource(R.string.local_sync_working),
             style = tv.own.owntv.ui.theme.stageText(25, 400),
             color = tv.own.owntv.ui.theme.StageColors.Muted,
-        )
-    }
-}
-
-/**
- * An indeterminate ring. Compose Material3 is not a dependency of this app, so the one spinner this
- * screen needs is drawn rather than dragged in.
- *
- * Gated on [animationsOn], and the repeat uses a plain fixed `tween` — `ownTvTween` collapses to 0 ms
- * when the user turns Animations off, and a 0 ms iteration inside `infiniteRepeatable` is a
- * divide-by-zero on the main thread. See the warning on `ownTvTween`.
- */
-@Composable
-private fun BusySpinner(modifier: Modifier, color: Color) {
-    val angle = if (animationsOn) {
-        rememberInfiniteTransition(label = "localSyncBusy").animateFloat(
-            initialValue = 0f,
-            targetValue = 360f,
-            animationSpec = infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart),
-            label = "localSyncBusyAngle",
-        ).value
-    } else {
-        0f
-    }
-    Canvas(modifier) {
-        val stroke = size.minDimension * 0.14f
-        val d = size.minDimension - stroke
-        drawArc(
-            color = color,
-            startAngle = angle - 90f,
-            sweepAngle = 270f,
-            useCenter = false,
-            topLeft = Offset((size.width - d) / 2f, (size.height - d) / 2f),
-            size = Size(d, d),
-            style = Stroke(stroke, cap = StrokeCap.Round),
         )
     }
 }

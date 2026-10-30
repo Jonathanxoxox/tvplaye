@@ -523,7 +523,7 @@ internal fun BottomBar(
     }
 }
 
-private fun volumeIcon(volume: Int): OwnTVIcon = when {
+internal fun volumeIcon(volume: Int): OwnTVIcon = when {
     volume == 0 -> OwnTVIcon.VOLUME_MUTE
     volume < 50 -> OwnTVIcon.VOLUME_LOW
     else -> OwnTVIcon.VOLUME_HIGH
