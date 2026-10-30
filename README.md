@@ -128,15 +128,33 @@ Zurück im Player führt zur Senderliste, Zurück gedrückt halten aus jedem Men
 
 <table>
   <tr>
-    <td align="center"><img src="docs/screenshots/senderliste.jpg" alt="Senderliste im Vollbild"><br><sub>Senderliste im Vollbild, Gruppe Fußball</sub></td>
-    <td align="center"><img src="docs/screenshots/tv-guide.jpg" alt="TV-Guide mit Menü"><br><sub>TV-Guide mit aufgeklapptem Menü</sub></td>
+    <td align="center" width="50%"><img src="docs/screenshots/info-karte.jpg" alt="Info-Karte im Player"><br><sub>Info-Karte aus Glas mit Programm und Auswahlzeile</sub></td>
+    <td align="center" width="50%"><img src="docs/screenshots/senderliste.jpg" alt="Senderliste im Vollbild"><br><sub>Senderliste im Vollbild, Gruppe Fußball</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="docs/screenshots/tasten.jpg" alt="Tastenbelegung" width="50%"><br><sub>Fernbedienungs-Kurzbefehle</sub></td>
+    <td align="center"><img src="docs/screenshots/tv-guide.jpg" alt="TV-Guide mit Menü"><br><sub>TV-Guide mit aufgeklapptem Menü</sub></td>
+    <td align="center"><img src="docs/screenshots/optionen.jpg" alt="Optionen im Player"><br><sub>Optionen, OK gedrückt halten</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/sport.jpg" alt="Sport-Seite"><br><sub>Sport-Seite: Sport auf deinen Sendern, heute und morgen</sub></td>
+    <td align="center"><img src="docs/screenshots/spielseite.jpg" alt="Spielseite"><br><sub>Spielseite vor dem Anpfiff</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/filme.jpg" alt="Filme"><br><sub>Filme mit Kategorien-Spalte</sub></td>
+    <td align="center"><img src="docs/screenshots/serien.jpg" alt="Serien"><br><sub>Serien</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/suche-schauspieler.jpg" alt="Suche nach Schauspieler"><br><sub>Suche nach Schauspieler</sub></td>
+    <td align="center"><img src="docs/screenshots/suche-beschreibung.jpg" alt="Suche nach Beschreibung"><br><sub>Suche nach Beschreibung</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/screenshots/farbthema-flutlicht.jpg" alt="Farbthema Flutlicht"><br><sub>Farbthema Flutlicht</sub></td>
+    <td align="center"><img src="docs/screenshots/tasten.jpg" alt="Tastenbelegung"><br><sub>Fernbedienungs-Kurzbefehle</sub></td>
   </tr>
 </table>
 
-<sub>Aufgenommen im Emulator mit Test-Playlist, daher das Testbild.</sub>
+<sub>Aufgenommen im Emulator mit Test-Playlist, daher das Testbild, die schwarze Vorschau und die
+Platzhalter statt Postern.</sub>
 
 ## Bauen
 
