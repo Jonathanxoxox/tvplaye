@@ -128,7 +128,6 @@
 1	technical	app/src/main/java/tv/own/owntv/features/live/LiveDialogs.kt	+
 1	technical	app/src/main/java/tv/own/owntv/features/live/LiveDialogs.kt	−
 4	empty	app/src/main/java/tv/own/owntv/features/live/LiveStage.kt	\0
-1	technical	app/src/main/java/tv/own/owntv/features/live/LiveStage.kt	Mbps
 1	technical	app/src/main/java/tv/own/owntv/features/live/LiveStage.kt	__groups__
 1	technical	app/src/main/java/tv/own/owntv/features/live/LiveStage.kt	__heading_${index}__
 1	technical	app/src/main/java/tv/own/owntv/features/live/LiveStage.kt	__search__
@@ -1418,7 +1417,6 @@
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR: video ${fps}fps matches no mode -> display default
 1	compiler	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	DEPRECATION
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	FrameRate
-1	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	/
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	EEEdMMM
 2	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	tnum
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerClock.kt	EEEdMMM
@@ -1426,17 +1424,16 @@
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	$k: $v
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	/ $it
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	?
-2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	audio
+1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	audio
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	exoplayer
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	guide
-1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	history
-2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	more
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	mpv
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	next
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	play
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	position: $reportPosition${reportDuration?.let { " / $it" }.orEmpty()}
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	previous
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	restart
+2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	settings
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	subtitles
 3	empty	app/src/main/java/tv/own/owntv/player/PlayerHudChrome.kt	\0
 2	technical	app/src/main/java/tv/own/owntv/player/PlayerHudChrome.kt	?
@@ -1496,6 +1493,9 @@
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StageComponents.kt	−
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StagePopup.kt	$value ›
 1	technical	app/src/main/java/tv/own/owntv/ui/theme/Glass.kt	glassPosition
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	MAYO_MANROPE
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	font_manrope
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	tvplayer
 1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	flutlicht_scenes
 1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	scene
 2	empty	app/src/main/java/tv/own/owntv/ui/theme/OwnTVColors.kt	\0

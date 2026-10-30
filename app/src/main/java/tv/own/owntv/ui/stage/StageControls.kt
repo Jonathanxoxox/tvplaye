@@ -230,13 +230,20 @@ fun StageSearchField(
     }
 }
 
+/** Whether the pages show their remote-key hints ([StageKeyHints]). */
+private const val ShowKeyHints = false
+
 /**
  * `.keys`: remote-key hints, 17 px muted, 26 apart; each key a `.kc` cap (14/800 on white 8%). In a
  * narrow column they wrap onto a second line rather than being cut.
+ *
+ * Mayo TV shows them nowhere since 30 Oct 2026 (Jonathan: "die benötige ich nicht"): the pages are
+ * cleaner without, and the remote's keys do what they always did. [ShowKeyHints] brings them back.
  */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun StageKeyHints(hints: List<Pair<String, String>>, modifier: Modifier = Modifier, textSize: Int = 17) {
+    if (!ShowKeyHints) return
     androidx.compose.foundation.layout.FlowRow(
         modifier,
         horizontalArrangement = Arrangement.spacedBy(26.mpx),

@@ -5,6 +5,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ColorScheme
@@ -107,6 +108,10 @@ fun OwnTVTheme(
         ThemeMode.SYSTEM -> systemInDarkTheme
     }
 
+    // Manrope, Mayo TV's own font choice, stands in for the core family while it is picked (MayoFont).
+    val fontContext = androidx.compose.ui.platform.LocalContext.current
+    val manrope by remember(fontContext) { MayoFont.flow(fontContext) }.collectAsStateWithLifecycle()
+
     // Mayo TV's worlds tint the dark panels to their scene (Glass & background › Szene).
     val scene by rememberNightSceneSettings().scene.collectAsStateWithLifecycle()
 
@@ -123,8 +128,8 @@ fun OwnTVTheme(
         LocalThemeMode provides themeMode,
         LocalFocusBorderWidth provides focusBorderWidthDp.dp,
         LocalAnimationLevel provides animationLevel,
-        LocalMainFontFamily provides mainFontFamily.asComposeFamily(),
-        LocalPopupFontFamily provides popupFontFamily.asComposeFamily(),
+        LocalMainFontFamily provides if (manrope) ManropeFamily else mainFontFamily.asComposeFamily(),
+        LocalPopupFontFamily provides if (manrope) ManropeFamily else popupFontFamily.asComposeFamily(),
         LocalPopupFontScaleFactor provides PopupFontScale.factor(popupFontSizePercent),
         LocalPopupSizeScaleFactor provides PopupSizeScale.factor(popupSizePercent),
     ) {

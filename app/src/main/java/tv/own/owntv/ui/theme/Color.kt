@@ -21,18 +21,19 @@ val AccentCyan = Color(OwnTVPalette.AccentCyan)
 
 // ---------------- DARK ----------------
 // TV Player: petrol surfaces like the classic IPTV player's "Cyan Blau" theme; the accent roles
-// still come from core.
-val DarkBackground = Color(0xFF0B5257)
-val DarkSurface = Color(0xFF0D5C61)
-val DarkSurfaceContainerLowest = Color(0xFF094A4F)
-val DarkSurfaceContainerLow = Color(0xFF10666A)
-val DarkSurfaceContainer = Color(0xFF137074)
-val DarkSurfaceContainerHigh = Color(0xFF187B7F)
-val DarkSurfaceContainerHighest = Color(0xFF1E878B)
+// still come from core. A calmer petrol since 30 Oct 2026 (Jonathan): a step deeper and quieter, the tiers
+// only a little apart, so page, menu and panels read as one surface parted by hairlines.
+val DarkBackground = Color(0xFF0C4247)
+val DarkSurface = Color(0xFF0D4549)
+val DarkSurfaceContainerLowest = Color(0xFF0A3A3F)
+val DarkSurfaceContainerLow = Color(0xFF0E494E)
+val DarkSurfaceContainer = Color(0xFF0F4D52)
+val DarkSurfaceContainerHigh = Color(0xFF115257)
+val DarkSurfaceContainerHighest = Color(0xFF13585D)
 val DarkOnSurface = Color(0xFFF4FAFA)
 val DarkOnSurfaceVariant = Color(0xFFB3D4D6)
-val DarkOutline = Color(0xFF5E9EA1)
-val DarkOutlineVariant = Color(0xFF2A7F83)
+val DarkOutline = Color(0xFF4E8287)
+val DarkOutlineVariant = Color(0xFF1F6266)
 val DarkSecondary = Color(OwnTVPalette.DarkSecondary)
 val DarkOnSecondary = Color(OwnTVPalette.DarkOnSecondary)
 val DarkSecondaryContainer = Color(OwnTVPalette.DarkSecondaryContainer)

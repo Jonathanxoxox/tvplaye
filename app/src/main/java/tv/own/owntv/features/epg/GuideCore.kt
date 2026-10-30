@@ -76,8 +76,8 @@ internal fun ProgrammeStripCanvas(
     val px = with(density) { 1.mpx.toPx() }
     val pxPerMin = with(density) { GuideGridDefaults.PxPerMin.toPx() }
     val titleStyle = tv.own.owntv.ui.theme.stageText(tv.own.owntv.ui.theme.StageListText, 600).copy(textDirection = TextDirection.Content)
-    // "No programme" at the list size too, quieter in weight.
-    val emptyStyle = tv.own.owntv.ui.theme.stageText(tv.own.owntv.ui.theme.StageListText, 400).copy(textDirection = TextDirection.Content)
+    // "No programme" exactly as a programme's title, only in a quieter colour (30 Oct 2026).
+    val emptyStyle = titleStyle
     val timeStyle = tv.own.owntv.ui.theme.stageText(14, 400).copy(fontFeatureSettings = "tnum", textDirection = TextDirection.Content)
     val formatTime = rememberSystemTimeFormatter()
     val rangeTemplate = stringResource(R.string.content_live_time_range_plain)
@@ -109,8 +109,8 @@ internal fun ProgrammeStripCanvas(
         }
         val viewW = size.width
         val h = size.height
-        // TV Player: flat cells with small corners and narrow gaps, like the classic IPTV player's grid.
-        val r = CornerRadius(5 * px)
+        // TV Player: flat, faint cells with soft corners and narrow gaps (calmer since 30 Oct 2026).
+        val r = CornerRadius(10 * px)
         // Feeds sometimes carry two programmes for the same time. Each one is drawn from where the one
         // before it ends, so they never sit on top of each other; one hidden completely is left out.
         var shownUntil = windowStart
@@ -128,7 +128,6 @@ internal fun ProgrammeStripCanvas(
                     drawRoundRect(a.accent, Offset(gx0, 0f), Size(gx1 - gx0, h), r)
                     focusRing(gx0, gx1 - gx0, h, r)
                 } else {
-                    drawBoxShadow(Color.Black.copy(alpha = 0.25f), 14 * px, r.x, dy = 4 * px, bounds = box)
                     drawRoundRect(tv.own.owntv.ui.theme.StageFocusFill, Offset(gx0, 0f), Size(gx1 - gx0, h), r)
                 }
                 val label = measurer.measure(emptyText, emptyStyle.copy(color = a.onAccent), overflow = TextOverflow.Ellipsis, maxLines = 1, softWrap = false, constraints = Constraints(maxWidth = (gx1 - gx0 - 28 * px).toInt().coerceAtLeast(1)))
@@ -147,17 +146,17 @@ internal fun ProgrammeStripCanvas(
             drawnAny = true
             val focused = focusTime != null && focusTime in p.startMs until p.stopMs
             val isNow = now in p.startMs until p.stopMs
-            val fade = if (!focused && p.stopMs <= now) 0.5f else 1f
+            val fade = if (!focused && p.stopMs <= now) 0.45f else 1f
             val box = androidx.compose.ui.geometry.Rect(x, 0f, x + w, h)
             if (focused && palette.isLight) {
                 drawBoxShadow(a.accent.copy(alpha = 0.4f), 34 * px, r.x, dy = 12 * px, bounds = box)
                 drawRoundRect(a.accent, Offset(x, 0f), Size(w, h), r)
                 focusRing(x, w, h, r)
             } else if (focused) {
-                drawBoxShadow(Color.Black.copy(alpha = 0.25f), 14 * px, r.x, dy = 4 * px, bounds = box)
+                // Plain white, no shadow or ring: the same focus as everywhere else.
                 drawRoundRect(tv.own.owntv.ui.theme.StageFocusFill, Offset(x, 0f), Size(w, h), r)
             } else {
-                drawRoundRect(ink.copy(alpha = (if (isNow) 0.16f else 0.10f) * fade), Offset(x, 0f), Size(w, h), r)
+                drawRoundRect(ink.copy(alpha = (if (isNow) 0.11f else 0.06f) * fade), Offset(x, 0f), Size(w, h), r)
             }
             // Text starts at the visible part of a cell that began before the timeline's left edge.
             val tx = maxOf(x, 0f)
@@ -202,31 +201,3 @@ internal fun ProgrammeStripCanvas(
     } }
 }
 
-/** The "Always ask" chooser: which player takes this catch-up archive. Deliberately tiny — it sits on
- *  top of the programme dialog, so it only asks the one question and gets out of the way. */
-@Composable
-internal fun CatchupPlayerChooser(
-    onInternal: () -> Unit,
-    onExternal: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val fr = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { fr.requestFocus() } }
-    tv.own.owntv.ui.stage.StagePopup(
-        onDismiss = onDismiss,
-        title = stringResource(R.string.settings_catchup_player),
-        body = stringResource(R.string.content_epg_player_choice_description),
-        width = 700.mpx,
-        buttons = { tv.own.owntv.ui.stage.StagePopupButton(stringResource(R.string.common_cancel), onClick = onDismiss, primary = false) },
-    ) {
-        BackHandler { onDismiss() }
-        tv.own.owntv.ui.stage.StagePopupOption(
-            title = stringResource(R.string.content_epg_own_player), onClick = onInternal,
-            modifier = Modifier.focusRequester(fr), leading = { tv.own.owntv.ui.stage.StagePopupIcon(OwnTVIcon.PLAY) },
-        )
-        tv.own.owntv.ui.stage.StagePopupOption(
-            title = stringResource(R.string.content_epg_external_player), onClick = onExternal,
-            leading = { tv.own.owntv.ui.stage.StagePopupIcon(OwnTVIcon.EXTERNAL) },
-        )
-    }
-}
