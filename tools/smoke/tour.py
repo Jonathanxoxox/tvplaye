@@ -862,6 +862,14 @@ def longpress_tour():
             probe(f"{s}-titel-{i}")
             record(f"{s}-lang-ok-{i}", "HOLD_OK", seconds=6, wait=1.5)
             probe(f"{s}-lang-ok-zurueck-{i}", "BACK")
+    # Ein frischer Druck im Menü muss sofort wirken (kein „zweimal drücken“): OK auf „Zu Favoriten hinzufügen“
+    # schließt das Menü; beim nächsten Halten heißt die Zeile „Aus Favoriten entfernen“. Dann zurückstellen.
+    if open_section("Filme"):
+        key("DPAD_RIGHT", n=2, wait=1.5)
+        record("Filme-halten-dann-ok", "HOLD_OK", seconds=4, wait=1.5)
+        probe("Filme-frisches-ok", "DPAD_CENTER", wait=1.5)
+        record("Filme-halten-erneut", "HOLD_OK", seconds=4, wait=1.5)
+        probe("Filme-frisches-ok-zurueck", "DPAD_CENTER", wait=1.5)
     # Im Guide: lang OK auf einem Sender öffnet sein Menü.
     if open_section("Live-TV"):
         key("DPAD_RIGHT", n=2, wait=1.5)
