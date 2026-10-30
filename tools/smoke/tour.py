@@ -784,6 +784,76 @@ def nav_tour():
         dismiss_exit(dump())
 
 
+def record(name, *keys_, seconds=5, wait=0.4):
+    """Bildschirmvideo um Tastendrücke herum. Ein Flackern von ein, zwei Frames zeigt kein Foto; der
+    Workflow zerlegt die Videos in Kontaktbögen (jedes geänderte Bild einmal, zeilenweise in Reihenfolge)."""
+    remote = f"/sdcard/rec-{slug(name)}.mp4"
+    sh(f"rm -f {remote}")
+    rec = subprocess.Popen(["adb", "shell", "screenrecord", "--size", "960x540", "--bit-rate", "6000000",
+                            "--time-limit", str(seconds), remote])
+    time.sleep(1.2)  # screenrecord braucht einen Moment, bis das erste Bild läuft
+    for k in keys_:
+        key(k, wait=wait)
+    try:
+        rec.wait(timeout=seconds + 20)
+    except subprocess.TimeoutExpired:
+        rec.kill()
+    time.sleep(1.5)
+    counter[0] += 1
+    adb("pull", remote, os.path.join(OUT, f"{counter[0]:03d}-rec-{slug(name)}.mp4"), timeout=120)
+    return probe(f"rec-{name}")
+
+
+def open_settings_card(card):
+    """Mehr › Einstellungen › [card]: die Seite der Gruppe, Fokus auf ihrer ersten Zeile."""
+    if not open_section("Mehr"):
+        return False
+    key("DPAD_RIGHT", wait=0.8)
+    if not goto(r"^Einstellungen$"):
+        return False
+    time.sleep(2)
+    key("DPAD_RIGHT", wait=0.8)
+    key("DPAD_DOWN", wait=0.8)
+    if not goto("^" + re.escape(card) + "$", xmin=600):
+        return False
+    time.sleep(2)
+    return True
+
+
+def flicker_tour():
+    """Die Wege zurück aus den Einstellungen, gefilmt, mit Animationen wie auf dem Fernseher (Skala 1)."""
+    for k in ["window_animation_scale", "transition_animation_scale", "animator_duration_scale"]:
+        sh(f"settings put global {k} 1")
+    time.sleep(1)
+    try:
+        for i in range(3):
+            # Einstellungsseite › Zurück › Mehr › Zurück › Menü
+            if open_settings_card("Profil"):
+                record(f"einst-zurueck-mehr-{i}", "BACK")
+                record(f"mehr-zurueck-menue-{i}", "BACK")
+                dismiss_exit(dump())
+            # Unterseite (Fernbedienungs-Kurzbefehle) › Zurück › Einstellungsseite › Zurück › Mehr
+            if open_settings_card("Layout") and goto(r"^Fernbedienungs-Kurzbefehle"):
+                time.sleep(2)
+                record(f"unterseite-zurueck-{i}", "BACK")
+                record(f"layout-zurueck-mehr-{i}", "BACK")
+            # Einstellungsseite › ◀ ins Menü › Live-TV (der Guide mit seinen Gruppen neben dem Menü)
+            if open_settings_card("Profil"):
+                record(f"einst-links-menue-{i}", "DPAD_LEFT", "DPAD_LEFT")
+                if goto(r"^Live-TV$", press=False, xmax=RAIL_XMAX):
+                    record(f"menue-ok-livetv-{i}", "DPAD_CENTER", seconds=6)
+                    record(f"livetv-rechts-gruppen-{i}", "DPAD_RIGHT")
+            # Mehr › Zurück › Menü › Filme
+            if open_section("Mehr"):
+                record(f"mehr-zurueck-{i}", "BACK")
+                dismiss_exit(dump())
+                if goto(r"^Filme$", press=False, xmax=RAIL_XMAX):
+                    record(f"menue-ok-filme-{i}", "DPAD_CENTER", seconds=6)
+    finally:
+        for k in ["window_animation_scale", "transition_animation_scale", "animator_duration_scale"]:
+            sh(f"settings put global {k} 0")
+
+
 def to_match_card(downs=8):
     """Fokus auf die erste Spielkarte (hohe Karte, keine Chip- oder Senderzeile) im Sport-Bereich."""
     for _ in range(downs):
@@ -855,7 +925,8 @@ def main():
         ("guide", "guide", guide_tour), ("player", "player", player_tour),
         ("settings", "einstellungen-tour", settings_tour), ("scenes", "szenen", scenes_tour),
         ("nav", "navigation", nav_tour), ("sports", "sport", sports_tour),
-    ]:
+        # Nur auf Anfrage (TOUR_PARTS=flicker): Videos statt Fotos, für kurze Sprünge.
+    ] + ([("flicker", "flackern", flicker_tour)] if "flicker" in parts else []):
         if "all" in parts or part in parts:
             step(name, fn)
     with open(os.path.join(OUT, "steps.json"), "w", encoding="utf-8") as f:
