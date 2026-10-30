@@ -1417,7 +1417,6 @@
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	AFR: video ${fps}fps matches no mode -> display default
 1	compiler	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	DEPRECATION
 1	log	app/src/main/java/tv/own/owntv/player/FrameRateController.kt	FrameRate
-1	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	/
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	EEEdMMM
 2	technical	app/src/main/java/tv/own/owntv/player/PlayerCard.kt	tnum
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerClock.kt	EEEdMMM
@@ -1425,17 +1424,17 @@
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	$k: $v
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	/ $it
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	?
-2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	audio
+1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	audio
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	exoplayer
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	guide
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	history
-2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	more
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	mpv
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	next
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	play
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	position: $reportPosition${reportDuration?.let { " / $it" }.orEmpty()}
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	previous
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	restart
+2	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	settings
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	subtitles
 3	empty	app/src/main/java/tv/own/owntv/player/PlayerHudChrome.kt	\0
 2	technical	app/src/main/java/tv/own/owntv/player/PlayerHudChrome.kt	?

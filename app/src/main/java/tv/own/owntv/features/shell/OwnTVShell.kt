@@ -1754,12 +1754,6 @@ fun OwnTVShell(
                     // engine handling above): flip the current item between mpv and ExoPlayer.
                     vodOnExo = if (!isLiveStream && !isTunedLive) vodExoActive else null,
                     onToggleVodEngine = if (!isLiveStream && !isTunedLive) player::toggleVodEngine else null,
-                    // The poster on the film's card: the film's, or the series' for an episode.
-                    artworkUrl = when (zapSource) {
-                        MainSection.MOVIES -> playingMovie?.posterUrl
-                        MainSection.SERIES -> playingSeries?.posterUrl
-                        else -> null
-                    },
                     // ADD SUBTITLES entry: movies/episodes only, and only when the play path set an
                     // item context. Opens the OpenSubtitles search overlay below.
                     onSearchSubtitles = if (!isLiveStream && !isLiveChannel && subtitleContext != null) {

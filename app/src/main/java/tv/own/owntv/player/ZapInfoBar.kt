@@ -1,8 +1,5 @@
 package tv.own.owntv.player
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
@@ -67,11 +64,11 @@ data class ZapInfo(val guide: EpgNowNext?, val channel: MediaMeta? = null, val g
 internal fun panelChips(chips: List<String>): List<String> = chips.filterNot { it.contains(':') || it.endsWith("Mbps") }
 
 /**
- * The card's head and line for the channel on screen: the logo, the channel's number and name above the
- * programme, its times, the stream's facts and what follows, and the minutes left at the right; under it
- * the programme's progress from its start to its end. The engine's metadata as long as it is about that
- * channel (it carries the rewind line); until the new stream is open, the picked channel's own name,
- * number and logo, and no stream facts, since those still describe the stream before.
+ * The band's head and line for the channel on screen: the logo, the channel's number and name in small
+ * capitals over the programme, its times, the minutes left and the stream's badges, and what follows at
+ * the right; under it the programme's progress between its start and its end. The engine's metadata as
+ * long as it is about that channel (it carries the rewind line); until the new stream is open, the picked
+ * channel's own name, number and logo, and no badges, since those still describe the stream before.
  */
 @Composable
 internal fun LiveCardBody(player: PlaybackEngine, info: ZapInfo?, nowMs: Long) {
@@ -85,40 +82,35 @@ internal fun LiveCardBody(player: PlaybackEngine, info: ZapInfo?, nowMs: Long) {
     val now = guide?.now
     val formatTime = rememberSystemTimeFormatter()
     val separator = stringResource(R.string.content_metadata_separator)
-    val facts = panelChips(chips).joinToString(separator).takeIf { engineCaughtUp }.orEmpty()
-    val details = buildList {
+    val facts = buildList {
         if (now != null) {
             add(stringResource(R.string.content_live_time_range, formatTime(now.startMs), formatTime(now.stopMs)))
+            add(stringResource(R.string.tvplayer_card_left, (((now.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000).toInt()))
         } else if (info?.guidePending != true) {
             add(stringResource(R.string.tvplayer_no_guide))
         }
-        if (facts.isNotBlank()) add(facts)
-        guide?.next?.let { add(stringResource(R.string.tvplayer_next_at, formatTime(it.startMs)) + separator + it.title) }
     }
-    val left = now?.let { ((it.stopMs - nowMs).coerceAtLeast(0) + 59_999) / 60_000 }
+    val next = guide?.next
     CardHeader(
         title = now?.title ?: name.orEmpty(),
-        details = details,
-        artwork = CardArtwork.Logo(meta.logoUrl, name),
-        lead = meta.localizedSubtitle()?.takeIf { it.isNotBlank() },
-        context = name.takeIf { now != null },
-        asideLabel = left?.let { stringResource(R.string.tvplayer_card_left) },
-        asideValue = left?.let { stringResource(R.string.player_duration_minutes, it.toInt()) },
+        facts = facts,
+        badges = if (engineCaughtUp) panelChips(chips) else emptyList(),
+        eyebrow = listOfNotNull(meta.localizedSubtitle()?.takeIf { it.isNotBlank() }, name.takeIf { now != null }).joinToString(separator),
+        logo = CardLogo(meta.logoUrl, name),
+        nextLabel = next?.let { stringResource(R.string.tvplayer_next_at, formatTime(it.startMs)) },
+        nextValue = next?.title,
     )
-    // Without a programme the room stays, so the card does not change height when the guide arrives.
+    // Without a programme the room stays, so the band does not change height when the guide arrives.
     val span = now?.let { (it.stopMs - it.startMs).toFloat() } ?: 0f
-    Column {
-        CardLine(progress = { if (now == null || span <= 0f) 0f else (nowMs - now.startMs) / span }, modifier = Modifier.alpha(if (now == null) 0f else 1f))
-        Spacer(Modifier.height(rememberScreenUnits().dp(12)))
-        CardTimes(
-            start = now?.let { formatTime(it.startMs) }.orEmpty(),
-            end = now?.let { formatTime(it.stopMs) }.orEmpty(),
-            startIsNow = false,
-        )
-    }
+    CardLine(
+        start = now?.let { formatTime(it.startMs) }.orEmpty(),
+        end = now?.let { formatTime(it.stopMs) }.orEmpty(),
+        progress = { if (now == null || span <= 0f) 0f else (nowMs - now.startMs) / span },
+        modifier = Modifier.alpha(if (now == null) 0f else 1f),
+    )
 }
 
-/** The card along the bottom after a channel change: the programme and its line, nothing to choose. */
+/** The band along the bottom after a channel change: the programme and its line, nothing to choose. */
 @Composable
 internal fun ZapInfoBar(player: PlaybackEngine, info: ZapInfo?, modifier: Modifier = Modifier) {
     // The card is up for a few seconds, so the moment it opened is precise enough.

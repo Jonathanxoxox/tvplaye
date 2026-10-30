@@ -1,9 +1,6 @@
 package tv.own.owntv.player
 
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,19 +22,17 @@ import tv.own.owntv.R
 import tv.own.owntv.ui.format.rememberSystemTimeFormatter
 
 /**
- * The film and episode player in the same card as the channel's ([PlayerCard]): the poster, the series
- * in the accent with its season and episode, the title, the year, the stream's facts and what follows,
- * and when the film ends at the right. Under it the progress line, focusable here, where ◀▶ seek; then
- * the choices, Pause and the episode's neighbours on the left, the tracks and More on the right.
+ * The film and episode player in the same band as the channel's ([PlayerCard]): the series with its season
+ * and episode in small capitals, the title, the year, when it ends and the minutes left with the stream's
+ * badges, and what follows at the right. Under it the progress line, focusable here, where ◀▶ seek; then
+ * the choices: Pause and the episode's neighbours as round buttons, the tracks as pills, Settings at the right.
  */
 @Composable
 internal fun VodControlPanel(
     player: PlaybackEngine,
     position: () -> Long,
     duration: Long,
-    /** The film's or series' poster; null draws the card without one. */
-    artworkUrl: String?,
-    /** The episode that follows, for the details; null for a film or the last episode. */
+    /** The episode that follows, for the right of the head; null for a film or the last episode. */
     upNext: String?,
     seekFocus: FocusRequester,
     start: List<CardItem>,
@@ -45,61 +40,59 @@ internal fun VodControlPanel(
     menuFocus: FocusRequester,
     onActivity: () -> Unit,
     modifier: Modifier = Modifier,
+    /** How many of [start] are the round controls, before the divider and the track pills. */
+    controls: Int = -1,
 ) {
     PlayerCard(modifier) {
-        VodCardHeader(player, position, duration, artworkUrl, upNext)
+        VodCardHeader(player, position, duration, upNext)
         // No length yet (a stream still opening), no line to seek on: the room stays, so the row does not jump.
         if (duration > 0L) {
             VodCardLine(player, position, duration, seekFocus, onActivity)
         } else {
-            VodCardLineSpace()
+            CardLine(start = formatTime(0L), end = formatTime(0L), progress = { 0f }, modifier = Modifier.alpha(0f))
         }
-        CardMenu(start, end, menuFocus, onActivity)
+        CardMenu(start, end, menuFocus, onActivity, divider = controls)
     }
 }
 
 @Composable
-private fun VodCardHeader(player: PlaybackEngine, position: () -> Long, duration: Long, artworkUrl: String?, upNext: String?) {
+private fun VodCardHeader(player: PlaybackEngine, position: () -> Long, duration: Long, upNext: String?) {
     val meta by player.currentMeta.collectAsStateWithLifecycle()
     val chips by player.streamChips.collectAsStateWithLifecycle()
     val separator = stringResource(R.string.content_metadata_separator)
     val episodeTitle = meta.title?.takeIf { it.isNotBlank() }
     val title = episodeTitle
         ?: meta.episodeNumber?.let { stringResource(R.string.player_episode_number, it) }.orEmpty()
-    // An episode: the series in the accent, then its season and episode. A film has neither.
-    val series = meta.localizedSubtitle()?.takeIf { it.isNotBlank() }
-    val place = buildList {
+    // An episode: the series, its season and episode. A film has none of them.
+    val eyebrow = buildList {
+        meta.localizedSubtitle()?.takeIf { it.isNotBlank() }?.let(::add)
         meta.seasonNumber?.let { add(stringResource(R.string.player_season_number, it)) }
         // Without its own title the episode's number is the title already.
         if (episodeTitle != null) meta.episodeNumber?.let { add(stringResource(R.string.player_episode_number, it)) }
     }.joinToString(separator).ifBlank { null }
-    val details = buildList {
+    val clock = rememberSystemTimeFormatter()
+    val facts = buildList {
         meta.year?.takeIf { it.isNotBlank() }?.let(::add)
-        panelChips(chips).takeIf { it.isNotEmpty() }?.let { add(it.joinToString(separator)) }
-        upNext?.let { add(stringResource(R.string.tvplayer_vod_up_next, it)) }
+        if (duration > 0L) {
+            // Read each second, as the position ticks: when it ends if it plays on from here, and what is left.
+            val left = (duration - position()).coerceAtLeast(0)
+            add(stringResource(R.string.tvplayer_card_ends_at, clock(System.currentTimeMillis() + left)))
+            add(stringResource(R.string.tvplayer_card_left, ((left + 59_999) / 60_000).toInt()))
+        }
     }
     CardHeader(
         title = title,
-        details = details,
-        artwork = artworkUrl?.takeIf { it.isNotBlank() }?.let { CardArtwork.Poster(it) }
-            ?: meta.logoUrl?.takeIf { it.isNotBlank() }?.let { CardArtwork.Logo(it, title) },
-        lead = series,
-        context = place,
-        asideLabel = if (duration > 0L) stringResource(R.string.tvplayer_card_ends_at) else null,
-        asideValue = if (duration > 0L) vodEndsAt(position, duration) else null,
+        facts = facts,
+        badges = panelChips(chips),
+        eyebrow = eyebrow,
+        nextLabel = upNext?.let { stringResource(R.string.tvplayer_card_next) },
+        nextValue = upNext,
     )
 }
 
-/** When the film ends on the clock, if it plays on from here. Read each second, as the position ticks. */
-@Composable
-private fun vodEndsAt(position: () -> Long, duration: Long): String {
-    val clock = rememberSystemTimeFormatter()
-    return clock(System.currentTimeMillis() + (duration - position()).coerceAtLeast(0))
-}
-
 /**
- * The film's line and its times: elapsed at the left, what is left at the right. Focused it thickens and
- * takes the accent, and ◀▶ seek by the step set in Settings (left is back in every locale).
+ * The film's line between where it stands and its length. Focused it thickens with a larger thumb, and ◀▶
+ * seek by the step set in Settings (left is back in every locale). Its times tick here, not in the band.
  */
 @Composable
 private fun VodCardLine(
@@ -109,50 +102,25 @@ private fun VodCardLine(
     focusRequester: FocusRequester,
     onActivity: () -> Unit,
 ) {
-    val u = rememberScreenUnits()
     val seekStep by player.seekStepMs.collectAsStateWithLifecycle()
     val buffered = player.bufferedMs.collectAsStateWithLifecycle()
     var focused by remember { mutableStateOf(false) }
-    Column {
-        CardLine(
-            progress = { position().toFloat() / duration },
-            ahead = { buffered.value.toFloat() / duration },
-            focused = focused,
-            modifier = Modifier
-                .focusRequester(focusRequester)
-                .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
-                .onKeyEvent { e ->
-                    if (e.type == KeyEventType.KeyDown) when (e.key) {
-                        Key.DirectionLeft -> { player.seekBy(-seekStep); true }
-                        Key.DirectionRight -> { player.seekBy(seekStep); true }
-                        else -> false
-                    } else false
-                }
-                .focusable(),
-        )
-        Spacer(Modifier.height(u.dp(12)))
-        VodTimes(position, duration)
-    }
-}
-
-/** The times under the line: the only part of the card besides the end time that ticks. */
-@Composable
-private fun VodTimes(position: () -> Long, duration: Long) {
-    val pos = position().coerceIn(0L, duration)
-    CardTimes(
-        start = formatTime(pos),
-        end = stringResource(R.string.player_time_remaining, formatTime(duration - pos)),
-        startIsNow = true,
+    CardLine(
+        start = formatTime(position().coerceIn(0L, duration)),
+        end = formatTime(duration),
+        progress = { position().toFloat() / duration },
+        ahead = { buffered.value.toFloat() / duration },
+        focused = focused,
+        lineModifier = Modifier
+            .focusRequester(focusRequester)
+            .onFocusChanged { focused = it.isFocused; if (it.isFocused) onActivity() }
+            .onKeyEvent { e ->
+                if (e.type == KeyEventType.KeyDown) when (e.key) {
+                    Key.DirectionLeft -> { player.seekBy(-seekStep); true }
+                    Key.DirectionRight -> { player.seekBy(seekStep); true }
+                    else -> false
+                } else false
+            }
+            .focusable(),
     )
-}
-
-/** The line's room while the film has no length yet. */
-@Composable
-private fun VodCardLineSpace() {
-    val u = rememberScreenUnits()
-    Column(Modifier.alpha(0f)) {
-        CardLine(progress = { 0f })
-        Spacer(Modifier.height(u.dp(12)))
-        CardTimes(start = formatTime(0L), end = formatTime(0L), startIsNow = false)
-    }
 }

@@ -28,6 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -178,6 +181,12 @@ fun StageRail(
                 }
                 .focusGroup()
                 .background(tv.own.owntv.ui.theme.inScene(if (drawnOpen) MenuPanel else StripPanel))
+                // A hairline at its inner edge parts the menu from the page instead of a brighter panel.
+                .drawBehind {
+                    val w = 1.mpx.toPx()
+                    val x = if (layoutDirection == LayoutDirection.Rtl) 0f else size.width - w
+                    drawRect(Color.White.copy(alpha = 0.07f), topLeft = Offset(x, 0f), size = Size(w, size.height))
+                }
                 .padding(horizontal = if (drawnOpen) 26.mpx else 14.mpx, vertical = 40.mpx),
             horizontalAlignment = if (drawnOpen) Alignment.Start else Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.mpx),
@@ -210,9 +219,9 @@ fun StageRail(
     }
 }
 
-/** The open menu, a shade lighter than the page; the resting strip lighter still. */
-private val MenuPanel = Color(0xFF14787C)
-private val StripPanel = Color(0xFF1A878B)
+/** The open menu and the resting strip, each only a little lighter than the calm page (30 Oct 2026). */
+private val MenuPanel = Color(0xFF0F5056)
+private val StripPanel = Color(0xFF0E4950)
 private val MenuWidth = 440.mpx
 private val StripWidth = 110.mpx
 
@@ -280,8 +289,9 @@ private val MainSection.stageIcon: OwnTVIcon
     }
 
 /**
- * One menu row: on the strip only the icon (64 square), open the icon and the name. Focus is the
- * near-white bar with dark grey icon and text; the open section a lighter bar.
+ * One menu row: on the strip only the icon (64 square), open the icon and the name. Focus is the white
+ * bar with near-black icon and text; the open section a faint bar with a small accent dot before it, the
+ * other icons a step quieter (30 Oct 2026).
  */
 @Composable
 private fun RailItem(
@@ -297,21 +307,27 @@ private fun RailItem(
     StageSurface(
         onClick = onClick,
         radius = r,
-        idle = if (active) Modifier.background(Color.White.copy(alpha = 0.14f), RoundedCornerShape(r)) else Modifier,
+        idle = if (active) Modifier.background(Color.White.copy(alpha = 0.08f), RoundedCornerShape(r)) else Modifier,
         modifier = modifier.then(if (expanded) Modifier.fillMaxWidth().heightIn(min = 68.mpx) else Modifier.size(68.mpx)),
         contentAlignment = if (expanded) Alignment.CenterStart else Alignment.Center,
     ) { focused ->
         val tint = if (focused) a.onAccent else Color.White
+        val iconTint = if (focused || active) tint else Color.White.copy(alpha = 0.62f)
+        val dot: @Composable () -> Unit = {
+            Box(Modifier.size(6.mpx).background(if (active && !focused) a.accent else Color.Transparent, CircleShape))
+        }
         if (!expanded) {
-            OwnTVIcon(icon, tint, Modifier.size(32.mpx))
+            Box(Modifier.align(Alignment.CenterStart).padding(start = 5.mpx)) { dot() }
+            OwnTVIcon(icon, iconTint, Modifier.size(26.mpx))
             return@StageSurface
         }
         Row(
-            Modifier.fillMaxWidth().padding(horizontal = 20.mpx, vertical = 8.mpx),
-            horizontalArrangement = Arrangement.spacedBy(24.mpx),
+            Modifier.fillMaxWidth().padding(start = 12.mpx, end = 20.mpx, top = 8.mpx, bottom = 8.mpx),
+            horizontalArrangement = Arrangement.spacedBy(16.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            OwnTVIcon(icon, tint, Modifier.size(32.mpx))
+            dot()
+            OwnTVIcon(icon, iconTint, Modifier.size(26.mpx))
             Text(
                 label,
                 style = stageText(tv.own.owntv.ui.theme.StageListText, 600),
