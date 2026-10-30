@@ -49,7 +49,7 @@ fun PlayerLoader(
 }
 
 /** A wait shorter than this shows no loader at all, so a quick channel change is just the new picture. */
-private const val LOADER_DELAY_MS = 600L
+private const val LOADER_DELAY_MS = 1_600L
 
 @Composable
 private fun LoaderDot(sizeDp: Int, color: Color) {

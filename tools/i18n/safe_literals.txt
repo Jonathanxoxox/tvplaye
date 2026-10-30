@@ -1427,7 +1427,6 @@
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	audio
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	exoplayer
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	guide
-1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	history
 1	protocol	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	mpv
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	next
 1	technical	app/src/main/java/tv/own/owntv/player/PlayerHud.kt	play
