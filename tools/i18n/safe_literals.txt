@@ -1496,6 +1496,9 @@
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StageComponents.kt	−
 1	technical	app/src/main/java/tv/own/owntv/ui/stage/StagePopup.kt	$value ›
 1	technical	app/src/main/java/tv/own/owntv/ui/theme/Glass.kt	glassPosition
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	MAYO_MANROPE
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	font_manrope
+1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/MayoFont.kt	tvplayer
 1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	flutlicht_scenes
 1	preference-key	app/src/main/java/tv/own/owntv/ui/theme/NightScenes.kt	scene
 2	empty	app/src/main/java/tv/own/owntv/ui/theme/OwnTVColors.kt	\0

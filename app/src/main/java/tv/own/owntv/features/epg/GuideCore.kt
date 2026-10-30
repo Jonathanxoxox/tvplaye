@@ -202,31 +202,3 @@ internal fun ProgrammeStripCanvas(
     } }
 }
 
-/** The "Always ask" chooser: which player takes this catch-up archive. Deliberately tiny — it sits on
- *  top of the programme dialog, so it only asks the one question and gets out of the way. */
-@Composable
-internal fun CatchupPlayerChooser(
-    onInternal: () -> Unit,
-    onExternal: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    val fr = remember { FocusRequester() }
-    LaunchedEffect(Unit) { runCatching { fr.requestFocus() } }
-    tv.own.owntv.ui.stage.StagePopup(
-        onDismiss = onDismiss,
-        title = stringResource(R.string.settings_catchup_player),
-        body = stringResource(R.string.content_epg_player_choice_description),
-        width = 700.mpx,
-        buttons = { tv.own.owntv.ui.stage.StagePopupButton(stringResource(R.string.common_cancel), onClick = onDismiss, primary = false) },
-    ) {
-        BackHandler { onDismiss() }
-        tv.own.owntv.ui.stage.StagePopupOption(
-            title = stringResource(R.string.content_epg_own_player), onClick = onInternal,
-            modifier = Modifier.focusRequester(fr), leading = { tv.own.owntv.ui.stage.StagePopupIcon(OwnTVIcon.PLAY) },
-        )
-        tv.own.owntv.ui.stage.StagePopupOption(
-            title = stringResource(R.string.content_epg_external_player), onClick = onExternal,
-            leading = { tv.own.owntv.ui.stage.StagePopupIcon(OwnTVIcon.EXTERNAL) },
-        )
-    }
-}

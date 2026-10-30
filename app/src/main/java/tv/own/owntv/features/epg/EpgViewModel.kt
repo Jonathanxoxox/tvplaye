@@ -767,11 +767,6 @@ class EpgViewModel(
     private val _matchFinished = MutableSharedFlow<EpgMatchSummary>(extraBufferCapacity = 1)
     val matchFinished: SharedFlow<EpgMatchSummary> = _matchFinished.asSharedFlow()
 
-    private fun finishRun(summary: EpgMatchSummary) {
-        _matchSummary.value = summary
-        _matchFinished.tryEmit(summary)
-    }
-
     /**
      * Auto-match a SINGLE channel by name (Guide long-press → "Auto-match"). Surfaces the best candidate
      * in the same review dialog (one entry, so no accept/skip-all) for the user to accept or skip, rather
