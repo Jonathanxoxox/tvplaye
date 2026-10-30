@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -123,9 +122,6 @@ private const val TRACK_POLL_TRIES = 20
  *  spinner says the stream is reconnecting by itself, so a long outage doesn't look like a hung app.
  *  Counted from the stall, which itself only starts once the buffer (~10s) has run dry. */
 private const val RECONNECT_NOTICE_AFTER_MS = 10_000L
-
-/** A wait shorter than this shows no loader at all, so a quick channel change is just the new picture. */
-private const val LOADER_DELAY_MS = 600L
 
 internal enum class HudDialog { NONE, AUDIO, SUBS, SPEED, ZOOM, QUALITY, VOLUME, JUMP_BACK, SLEEP_TIMER }
 
@@ -1105,9 +1101,7 @@ fun PlayerHud(
             // the panel's own countdown and the engine re-asks by itself. The line under the loader says
             // why nothing is happening yet, so nobody reaches for Retry (or thinks the channel is dead).
             buffering -> Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                // Most channel changes are quicker than this: then nothing shows but the new picture.
-                val loaderDue by produceState(false) { delay(LOADER_DELAY_MS); value = true }
-                Box(Modifier.size(72.dp), contentAlignment = Alignment.Center) { if (loaderDue) PlayerLoader(sizeDp = 72) }
+                PlayerLoader(sizeDp = 72)
                 val stalledSince = stalledSinceMs
                 if (providerBackOff == null && stalledSince != null) {
                     val showNotice by produceState(false, stalledSince) {

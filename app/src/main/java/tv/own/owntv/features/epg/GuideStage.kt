@@ -68,7 +68,6 @@ import tv.own.owntv.features.live.LivePlate
 import tv.own.owntv.ui.components.ChannelLogoTile
 import tv.own.owntv.ui.components.OwnTVIcon
 import tv.own.owntv.ui.components.OwnTVPopup
-import tv.own.owntv.ui.components.LandmarkLoader
 import tv.own.owntv.ui.components.longPressMenuGuard
 import tv.own.owntv.ui.components.trapAllFocusExit
 import tv.own.owntv.ui.format.rememberSystemTimeFormatter
@@ -169,7 +168,7 @@ internal fun GuideVideo(
             }
         }
         if (playing && !shellDrawsVideo) tv.own.owntv.player.ExoPreviewSurface(engine = previewEngine, modifier = Modifier.fillMaxSize())
-        if (showVideo && previewState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) LandmarkLoader(sizeDp = 24)
+        if (showVideo && previewState == tv.own.owntv.player.LivePreviewEngine.State.LOADING) tv.own.owntv.player.PlayerLoader(sizeDp = 40)
         if (channelLine != null) Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.58f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.72f))))
         Box(Modifier.fillMaxSize().drawBehind { drawInnerRing(Color.White.copy(alpha = 0.08f), 1.mpx.toPx(), r.toPx()) })
         if (channel != null && channelLine != null) {
