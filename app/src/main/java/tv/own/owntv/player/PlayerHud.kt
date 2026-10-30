@@ -891,7 +891,7 @@ fun PlayerHud(
         tv.own.owntv.ui.theme.StageAppear(clockUp, Modifier.align(Alignment.BottomCenter), y = 1f, durationMs = 260) {
             if (zapInfo != null && bandTiles) {
                 HudControlPanel(
-                    player, zapInfo(), remote, onOpenHistoryList, panelFocus,
+                    player, zapInfo(), remote, panelFocus,
                     onSettings = { showPanel = false; showOptions = true },
                     onClose = { showPanel = false }, onActivity = { panelTick++ },
                 )
@@ -1245,15 +1245,15 @@ class LiveRemoteActions(
 )
 
 /**
- * The channel's band with its choices (OK in the live player): the guide and the history, then the
- * channels watched last with what is on them; at the right Settings, the options.
+ * The channel's band with its choices (OK in the live player): the guide and Settings, the options, then
+ * the channels watched last with what is on them. No history button: those channels are the history, and
+ * Settings at the start needs no walk past them (Jonathan, 30 Oct 2026).
  */
 @Composable
 private fun HudControlPanel(
     player: PlaybackEngine,
     info: ZapInfo?,
     remote: LiveRemoteActions?,
-    onOpenHistoryList: (() -> Unit)?,
     focus: FocusRequester,
     onSettings: () -> Unit,
     onClose: () -> Unit,
@@ -1263,16 +1263,15 @@ private fun HudControlPanel(
     val recent = remote?.panelChannels?.invoke().orEmpty()
     val tools = buildList {
         remote?.onOpenGuide?.let { add(CardItem("guide", stringResource(R.string.tvplayer_panel_guide), icon = OwnTVIcon.EPG) { onClose(); it() }) }
-        onOpenHistoryList?.let { add(CardItem("history", stringResource(R.string.tvplayer_panel_history), icon = OwnTVIcon.HISTORY) { onClose(); it() }) }
+        add(CardItem("settings", stringResource(R.string.tvplayer_card_settings), icon = OwnTVIcon.SETTINGS, onClick = onSettings))
     }
     val start = tools + recent.map { ch ->
         CardItem(ch.key, ch.label, ch.caption?.takeIf { it.isNotBlank() }, style = CardItemStyle.CHANNEL, logoUrl = ch.logoUrl) { onClose(); ch.onClick() }
     }
-    val end = listOf(CardItem("settings", stringResource(R.string.tvplayer_card_settings), icon = OwnTVIcon.SETTINGS, onClick = onSettings))
     // The band opens on a moment; the line and the minutes left are read from it, as on the zap band.
     val nowMs = remember(info?.guide) { System.currentTimeMillis() }
     PlayerCard(modifier) {
         LiveCardBody(player, info, nowMs)
-        CardMenu(start, end, focus, onActivity, divider = tools.size)
+        CardMenu(start, emptyList(), focus, onActivity, divider = tools.size)
     }
 }

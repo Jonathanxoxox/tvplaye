@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="tvplayer_panel_guide" translatable="false">TV-Guide</string>
-    <string name="tvplayer_panel_history" translatable="false">Verlauf</string>
     <string name="tvplayer_about_based_on" translatable="false">Basiert auf OwnTV (GPLv3) · %1$s</string>
     <string name="tvplayer_app_name" translatable="false">Mayo TV</string>
     <string name="tvplayer_startlog_title" translatable="false">Start-Protokoll</string>
