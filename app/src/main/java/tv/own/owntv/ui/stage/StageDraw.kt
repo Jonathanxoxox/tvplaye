@@ -122,9 +122,10 @@ fun Modifier.stageBackground(accent: Color): Modifier {
     val bg = LocalBackground.current
     // `.mine.light .bg`: the same lights over paper (#F8FAF9 → #F1F5F3 → #EEF1F6); Plain is #F4F7F5.
     val isLight = LocalStagePalette.current.isLight
-    // The petrol wash, moved into the hue of a colour theme or world (unchanged for Cyan Blau).
-    val washTop = inScene(Color(0xFF0F6569))
-    val washBottom = inScene(Color(0xFF0A4E53))
+    // The petrol wash, moved into the hue of a colour theme or world (unchanged for Cyan Blau). Calm since
+    // 30 Oct 2026: it runs only a little either side of the page.
+    val washTop = inScene(Color(0xFF0D484D))
+    val washBottom = inScene(Color(0xFF0B3D42))
     return when {
         bg.showsPicture -> if (bg.accentLight) drawBehindLights { w, h ->
             light(accent, 0.22f, Offset(w * 0.08f, h * 0.04f), 900.mpx.toPx(), 620.mpx.toPx(), 0.62f)

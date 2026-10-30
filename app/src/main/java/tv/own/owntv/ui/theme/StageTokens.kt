@@ -95,18 +95,19 @@ data class StagePalette(
             menuItemText = Color(0xFFEAF4F5),
             tagText = Color(0xFFCBE3E4),
             ink = Color.White,
-            page = Color(0xFF0B5257),
-            glassTint = Color(0xFF12696D),
-            glassOff = Color(0xFF12696D),
+            // The calmer petrol (30 Oct 2026): panels only a step off the page, parted by hairlines.
+            page = Color(0xFF0C4247),
+            glassTint = Color(0xFF0F4C52),
+            glassOff = Color(0xFF0F4C52),
             ok = Color(0xFF7BE3A4),
             warn = Color(0xFFFFB86B),
             danger = Color(0xFFFF8A7A),
             body = Color(0xFFD6E8E9),
             navText = Color(0xFFE6F2F3),
-            fxText = Color(0xFF4A5C5F),
-            fxLine = Color(0xFF66787B),
-            scrim = Color(3, 40, 43).copy(alpha = 0.55f),
-            wash = Color(11, 82, 87),
+            fxText = Color(0xFF0B1418),
+            fxLine = Color(0xFF3E4C51),
+            scrim = Color(3, 33, 36).copy(alpha = 0.55f),
+            wash = Color(12, 66, 71),
             shadowTint = Color.Black,
             shadowScale = 1f,
             segmentOn = Color.White.copy(alpha = 0.13f),
@@ -229,9 +230,12 @@ object StageRadii {
     val Tag = 6.mpx
 }
 
-/** TV Player: the near-white bar a focused item becomes in the dark theme, and the text on it. */
-val StageFocusFill = Color(0xFFE9F1F2)
-val StageOnFocus = Color(0xFF4A5C5F)
+/**
+ * TV Player: the bar a focused item becomes in the dark theme, and the text on it. Pure white with near-black
+ * text since 30 Oct 2026, the same pill as the player card's, so focus reads alike everywhere.
+ */
+val StageFocusFill = Color.White
+val StageOnFocus = Color(0xFF0B1418)
 
 /** The accent triple every Stage treatment is built from. */
 data class StageAccent(val accent: Color, val onAccent: Color, val focus: Color)
@@ -242,7 +246,7 @@ val stageAccent: StageAccent
     // In light the pale focus colour vanishes on white, so every ring is the accent itself.
     get() = OwnTVTheme.colors.let {
         if (LocalStagePalette.current.isLight) StageAccent(it.primary, it.onPrimary, it.primary)
-        // Dark: focus is the near-white bar ([StageFocusFill]), so whatever sits on it is dark grey.
+        // Dark: focus is the white bar ([StageFocusFill]), so whatever sits on it is near-black.
         else StageAccent(it.primary, StageOnFocus, it.focusBorder)
     }
 

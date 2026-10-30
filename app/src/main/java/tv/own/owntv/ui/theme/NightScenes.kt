@@ -138,10 +138,13 @@ fun StagePalette.forScene(scene: NightScene): StagePalette {
     if (isLight) return this
     val t = tintOf(scene) ?: return this
     val page = Color(t.page)
+    // As calm as Cyan Blau since 30 Oct 2026: the panels keep only part of the theme's step off the page,
+    // and hairlines part the columns.
+    val glass = lerp(page, Color(t.glass), CalmGlassStep)
     return copy(
         page = page,
-        glassTint = Color(t.glass),
-        glassOff = Color(t.glass),
+        glassTint = glass,
+        glassOff = glass,
         muted = Color(t.muted),
         dim = Color(t.dim),
         tagText = Color(t.tag),
@@ -150,6 +153,9 @@ fun StagePalette.forScene(scene: NightScene): StagePalette {
         wash = page,
     )
 }
+
+/** How much of a theme's own page-to-glass step its panels keep (Cyan Blau's calmer step, about 0.4). */
+private const val CalmGlassStep = 0.4f
 
 /** [accent] (0 = none) replaces the accent chosen in Settings while the theme is on: buttons, focus ring, progress. */
 private class SceneTint(val page: Long, val glass: Long, val muted: Long, val dim: Long, val tag: Long, val body: Long, val accent: Long = 0)
