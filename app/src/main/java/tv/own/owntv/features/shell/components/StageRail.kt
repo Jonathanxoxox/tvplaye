@@ -298,8 +298,7 @@ private val MainSection.stageIcon: OwnTVIcon
 
 /**
  * One menu row: on the strip only the icon (64 square), open the icon and the name. Focus is the white
- * bar with near-black icon and text; the open section a faint bar with a small accent dot before it, the
- * other icons a step quieter (30 Oct 2026).
+ * bar with near-black icon and text; the open section a faint bar, the other icons a step quieter (30 Oct 2026).
  */
 @Composable
 private fun RailItem(
@@ -321,20 +320,15 @@ private fun RailItem(
     ) { focused ->
         val tint = if (focused) a.onAccent else Color.White
         val iconTint = if (focused || active) tint else Color.White.copy(alpha = 0.62f)
-        val dot: @Composable () -> Unit = {
-            Box(Modifier.size(6.mpx).background(if (active && !focused) a.accent else Color.Transparent, CircleShape))
-        }
         if (!expanded) {
-            Box(Modifier.align(Alignment.CenterStart).padding(start = 5.mpx)) { dot() }
             OwnTVIcon(icon, iconTint, Modifier.size(26.mpx))
             return@StageSurface
         }
         Row(
-            Modifier.fillMaxWidth().padding(start = 12.mpx, end = 20.mpx, top = 8.mpx, bottom = 8.mpx),
-            horizontalArrangement = Arrangement.spacedBy(16.mpx),
+            Modifier.fillMaxWidth().padding(horizontal = 20.mpx, vertical = 8.mpx),
+            horizontalArrangement = Arrangement.spacedBy(24.mpx),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            dot()
             OwnTVIcon(icon, iconTint, Modifier.size(26.mpx))
             Text(
                 label,
