@@ -46,6 +46,32 @@ def key(name, n=1, wait=0.6, long=False):
         time.sleep(wait)
 
 
+_key_dev = []
+
+
+def hold(code=28, seconds=1.5):
+    """Eine Taste wirklich gedrückt halten (Standard: Enter, Linux-Code 28), über das Eingabegerät des
+    Emulators. `input keyevent --longpress` schickt nur eine Wiederholung; gehalten erzeugt Android die
+    Wiederholungen selbst, alle 50 ms, wie bei einer Fernbedienung (braucht adb root, siehe screens.sh)."""
+    if not _key_dev:
+        dev, cur = None, None
+        for line in sh("getevent -pl").splitlines():
+            m = re.match(r"add device \d+: (\S+)", line)
+            if m:
+                cur = m.group(1)
+            elif cur and "KEY_ENTER" in line and dev is None:
+                dev = cur
+        _key_dev.append(dev)
+    dev = _key_dev[0]
+    if not dev:
+        print("[hold] kein Eingabegerät mit KEY_ENTER, nehme --longpress", flush=True)
+        key("ENTER", long=True, wait=0)
+        return
+    sh(f"sendevent {dev} 1 {code} 1; sendevent {dev} 0 0 0")
+    time.sleep(seconds)
+    sh(f"sendevent {dev} 1 {code} 0; sendevent {dev} 0 0 0")
+
+
 def bounds(node):
     m = re.findall(r"\d+", node.get("bounds", "[0,0][0,0]"))
     return tuple(int(v) for v in m)
@@ -793,7 +819,11 @@ def record(name, *keys_, seconds=5, wait=0.4):
                             "--time-limit", str(seconds), remote])
     time.sleep(1.2)  # screenrecord braucht einen Moment, bis das erste Bild läuft
     for k in keys_:
-        key(k, wait=wait)
+        if k == "HOLD_OK":
+            hold()
+            time.sleep(wait)
+        else:
+            key(k.removesuffix("_LONG"), wait=wait, long=k.endswith("_LONG"))
     try:
         rec.wait(timeout=seconds + 20)
     except subprocess.TimeoutExpired:
@@ -818,6 +848,25 @@ def open_settings_card(card):
         return False
     time.sleep(2)
     return True
+
+
+def longpress_tour():
+    """OK gedrückt halten auf einem Titel: das Menü muss offen bleiben, wenn OK losgelassen wird (es schloss
+    sich wieder und schaltete dabei seine erste Zeile, Favoriten, um). Danach Zurück: das Menü geht zu."""
+    for section in ["Filme", "Serien"]:
+        for i in range(3):
+            if not open_section(section):
+                break
+            key("DPAD_RIGHT", n=2, wait=1.5)
+            s = slug(section)
+            probe(f"{s}-titel-{i}")
+            record(f"{s}-lang-ok-{i}", "HOLD_OK", seconds=6, wait=1.5)
+            probe(f"{s}-lang-ok-zurueck-{i}", "BACK")
+    # Im Guide: lang OK auf einem Sender öffnet sein Menü.
+    if open_section("Live-TV"):
+        key("DPAD_RIGHT", n=2, wait=1.5)
+        record("guide-lang-ok", "HOLD_OK", seconds=6, wait=1.5)
+        probe("guide-lang-ok-zurueck", "BACK")
 
 
 def flicker_tour():
@@ -920,13 +969,15 @@ def main():
         return
     # TOUR_PARTS=vod,scenes,player,… läuft nur durch diese Teile (schneller beim Arbeiten an einem Bereich).
     parts = [p for p in os.environ.get("TOUR_PARTS", "all").replace(" ", "").split(",") if p]
-    for part, name, fn in [
+    tour = [
         ("menu", "menue", rail_tour), ("vod", "filme-serien", vod_tour), ("more", "mehr-tour", more_tour),
         ("guide", "guide", guide_tour), ("player", "player", player_tour),
         ("settings", "einstellungen-tour", settings_tour), ("scenes", "szenen", scenes_tour),
         ("nav", "navigation", nav_tour), ("sports", "sport", sports_tour),
-        # Nur auf Anfrage (TOUR_PARTS=flicker): Videos statt Fotos, für kurze Sprünge.
-    ] + ([("flicker", "flackern", flicker_tour)] if "flicker" in parts else []):
+    ]
+    # Nur auf Anfrage (TOUR_PARTS=flicker, longpress): Videos statt Fotos, für kurze Sprünge.
+    tour += [(p, n, f) for p, n, f in [("flicker", "flackern", flicker_tour), ("longpress", "lang-ok", longpress_tour)] if p in parts]
+    for part, name, fn in tour:
         if "all" in parts or part in parts:
             step(name, fn)
     with open(os.path.join(OUT, "steps.json"), "w", encoding="utf-8") as f:
