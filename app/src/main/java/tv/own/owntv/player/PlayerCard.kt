@@ -65,8 +65,11 @@ import tv.own.owntv.ui.theme.stageAccent
  * a white pill. Sized in frame pixels ([ScreenUnits]) so it takes the same share of the picture on any box.
  */
 
-/** The card's fill: dark enough to read on, as the box cannot blur the video behind it. */
-private val CardFill = Color(0xFF0E1418).copy(alpha = 0.84f)
+/**
+ * The card's fill: a light slate glass rather than near-black (too dark, Jonathan, 30 Oct 2026), still
+ * dense enough that white text reads over a bright picture, as the box cannot blur the video behind it.
+ */
+private val CardFill = Color(0xFF2E3842).copy(alpha = 0.74f)
 
 /** Text on the white pill. */
 private val CardInk = Color(0xFF0B1418)
@@ -105,14 +108,14 @@ internal fun PlayerCard(modifier: Modifier = Modifier, content: @Composable Colu
     val shape = RoundedCornerShape(u.dp(28))
     Box(
         modifier.fillMaxWidth()
-            .background(Brush.verticalGradient(0f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.5f)))
+            .background(Brush.verticalGradient(0f to Color.Transparent, 1f to Color.Black.copy(alpha = 0.28f)))
             .padding(start = u.dp(64), end = u.dp(64), top = u.dp(80), bottom = u.dp(56)),
     ) {
         Column(
             Modifier.fillMaxWidth()
                 .clip(shape)
                 .background(CardFill)
-                .border(u.dp(1), Color.White.copy(alpha = 0.09f), shape)
+                .border(u.dp(1), Color.White.copy(alpha = 0.14f), shape)
                 .padding(start = u.dp(44), end = u.dp(44), top = u.dp(36), bottom = u.dp(30)),
             verticalArrangement = Arrangement.spacedBy(u.dp(28)),
             content = content,
@@ -155,14 +158,14 @@ internal fun CardHeader(
             if (details.isNotEmpty()) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(u.dp(18))) {
                     details.forEach {
-                        Text(it, style = u.cardText(18, 500), color = Color.White.copy(alpha = 0.62f), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
+                        Text(it, style = u.cardText(18, 500), color = Color.White.copy(alpha = 0.7f), maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f, fill = false))
                     }
                 }
             }
         }
         if (asideValue != null) {
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.spacedBy(u.dp(4))) {
-                asideLabel?.let { Text(it, style = u.cardText(16, 500), color = Color.White.copy(alpha = 0.55f), maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                asideLabel?.let { Text(it, style = u.cardText(16, 500), color = Color.White.copy(alpha = 0.65f), maxLines = 1, overflow = TextOverflow.Ellipsis) }
                 Text(asideValue, style = u.cardNumbers(32, 500), color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
         }
@@ -308,7 +311,7 @@ private fun CardButton(item: CardItem, modifier: Modifier, onActivity: () -> Uni
             Text(item.label, style = u.cardText(19, if (focused) 600 else 500), color = ink, maxLines = 1, overflow = TextOverflow.Ellipsis)
             item.value?.let {
                 Text(
-                    it, style = u.cardText(19, 500), color = if (focused) CardInk.copy(alpha = 0.55f) else Color.White.copy(alpha = 0.42f),
+                    it, style = u.cardText(19, 500), color = if (focused) CardInk.copy(alpha = 0.55f) else Color.White.copy(alpha = 0.55f),
                     maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.widthIn(max = u.dp(280)),
                 )
             }
