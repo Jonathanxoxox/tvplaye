@@ -200,6 +200,9 @@ fun EpgScreen(
         }
     }
     val query by vm.query.collectAsStateWithLifecycle()
+    // The groups' search, which the guide's channels follow (see the grid below).
+    val groupsQuery by vm.categoryQuery.collectAsStateWithLifecycle()
+    val searching = groupsQuery.isNotBlank()
     val matching by vm.matching.collectAsStateWithLifecycle()
     val review by vm.review.collectAsStateWithLifecycle()
     val matchSummary by vm.matchSummary.collectAsStateWithLifecycle()
@@ -652,8 +655,9 @@ fun EpgScreen(
 
         // No control line above the grid any more (Jonathan, 27 Oct 2026: "die Filter oberhalb des Guides
         // können auch weg"): the categories are the second level, the rest lives in the menus, as in TiviMate.
-        // A search left over from before has no field to clear it from, so it goes.
-        LaunchedEffect(Unit) { if (query.isNotEmpty()) vm.setQuery("") }
+        // The guide's search is the groups' field: it lists the channels whose name holds the words or on
+        // which they run now. Back from the player the field still holds them, so the guide shows them too.
+        LaunchedEffect(Unit) { if (query != groupsQuery) vm.setQuery(groupsQuery) }
 
         // The grid: ruler at 518, rows from 566.
         Box(Modifier.fillMaxWidth().weight(1f).padding(top = 18.mpx)) {
@@ -842,8 +846,10 @@ fun EpgScreen(
                     },
             )
             LiveCategories(
-                searchQuery = vm.categoryQuery.collectAsStateWithLifecycle().value,
-                onSearchQueryChange = vm::setCategoryQuery,
+                searchQuery = groupsQuery,
+                onSearchQueryChange = { vm.setCategoryQuery(it); vm.setQuery(it) },
+                searchPlaceholder = stringResource(R.string.tvplayer_guide_search),
+                searchLeavesRight = true,
                 entries = groupEntries,
                 selectedIndex = railItems.indexOfFirst { it.key == (categoryKey ?: LiveKey.All) }.coerceAtLeast(0),
                 groupsHeading = groupsHeading,
@@ -852,6 +858,8 @@ fun EpgScreen(
                 listState = groupsListState,
                 onSelect = { idx ->
                     browsedGroup = null
+                    // A group chosen from the search opens as itself: the search makes way for it.
+                    if (searching) vm.clearSearch()
                     railItems.getOrNull(idx)?.key?.let { key -> if (liveMode) liveVm.select(key) else vm.setCategoryFilter(key) }
                     focusedRow = 0
                     anchorId = null
@@ -872,9 +880,10 @@ fun EpgScreen(
                     }
                 },
                 onNavigateRight = {
-                    browsedGroup?.let(applyGroup)
+                    // While searching the guide holds the results: ▶ goes to them, not to the group browsed past.
+                    if (!searching) browsedGroup?.let(applyGroup)
                     browsedGroup = null
-                    focusGrid()
+                    if (searching) focusGrid(0) else focusGrid()
                 },
                 onRowFocus = { idx ->
                     browsedGroup = idx
